@@ -221,7 +221,7 @@ export default function Home() {
   async function fetchWebinars() {
     try {
       const { data, error } = await supabase
-        .from('QR_landing_webinar_links')
+        .from('qr_landing_webinar_links')
         .select('*')
         .eq('is_active', true)
         .order('course_order', { ascending: true })
@@ -292,7 +292,7 @@ export default function Home() {
       }
 
       const { data, error } = await supabase
-        .from('QR_landing_registrations')
+        .from('qr_landing_registrations')
         .insert([registrationData])
         .select()
 
