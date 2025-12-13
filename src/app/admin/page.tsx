@@ -120,7 +120,7 @@ export default function AdminPage() {
   async function fetchCampaigns() {
     try {
       const { data, error } = await supabase
-        .from('QR_utm_campaigns')
+        .from('qr_utm_campaigns')
         .select('*')
         .order('created_at', { ascending: false })
       
@@ -135,7 +135,7 @@ export default function AdminPage() {
     setAnalyticsLoading(true)
     try {
       let query = supabase
-        .from('QR_landing_registrations')
+        .from('qr_landing_registrations')
         .select('*')
         .order('registered_at', { ascending: false })
         .limit(500)
@@ -198,13 +198,13 @@ export default function AdminPage() {
 
       if (editingCampaign) {
         const { error } = await supabase
-          .from('QR_utm_campaigns')
+          .from('qr_utm_campaigns')
           .update(campaignData)
           .eq('id', editingCampaign.id)
         if (error) throw error
       } else {
         const { error } = await supabase
-          .from('QR_utm_campaigns')
+          .from('qr_utm_campaigns')
           .insert([campaignData])
         if (error) throw error
       }
@@ -223,7 +223,7 @@ export default function AdminPage() {
     if (!confirm('Are you sure you want to delete this campaign?')) return
     try {
       const { error } = await supabase
-        .from('QR_utm_campaigns')
+        .from('qr_utm_campaigns')
         .delete()
         .eq('id', id)
       if (error) throw error
@@ -709,11 +709,11 @@ export default function AdminPage() {
                     onChange={(e) => setFilters({...filters, courseId: e.target.value})}
                   >
                     <option value="">All Courses</option>
-                    <option value="1">Professionals</option>
-                    <option value="2">Schools</option>
-                    <option value="3">College/Job Seekers</option>
-                    <option value="4">Tech Dev</option>
-                    <option value="5">Business Leaders</option>
+                    <option value="6">Professionals</option>
+                    <option value="7">Schools</option>
+                    <option value="8">College/Job Seekers</option>
+                    <option value="9">Tech Dev</option>
+                    <option value="10">Business Leaders</option>
                   </select>
                 </div>
                 <div className="flex items-end">
@@ -758,7 +758,7 @@ export default function AdminPage() {
                           <td className="px-4 py-3 text-gray-600">{reg.mobile}</td>
                           <td className="px-4 py-3">
                             <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs">
-                              {reg.course_id === 1 ? 'Professional' : reg.course_id === 2 ? 'School' : reg.course_id === 3 ? 'College' : reg.course_id === 4 ? 'Tech' : 'Leader'}
+                              {reg.course_id === 6 ? 'Professional' : reg.course_id === 7 ? 'School' : reg.course_id === 8 ? 'College' : reg.course_id === 9 ? 'Tech' : 'Leader'}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-gray-600 capitalize">{reg.profession_choice?.replace(/_/g, ' ')}</td>
