@@ -7,6 +7,9 @@ import { supabase } from '@/lib/supabase'
 const ADMIN_USERNAME = 'arijitwith'
 const ADMIN_PASSWORD = 'reach500'
 
+// Base URL for the webinar landing page
+const BASE_URL = 'https://www.webinar.ostaran.com'
+
 interface UTMCampaign {
   id: string
   campaign_id: number
@@ -187,12 +190,11 @@ export default function AdminPage() {
   async function saveCampaign(e: React.FormEvent) {
     e.preventDefault()
     try {
-      const baseUrl = 'https://a-iwith-arijit-qr-landing.vercel.app'
-      const fullUrl = `${baseUrl}?utm_source=${campaignForm.utm_source}&utm_medium=${campaignForm.utm_medium}&utm_campaign=${campaignForm.utm_campaign}${campaignForm.utm_term ? `&utm_term=${campaignForm.utm_term}` : ''}${campaignForm.utm_content ? `&utm_content=${campaignForm.utm_content}` : ''}`
+      const fullUrl = `${BASE_URL}?utm_source=${campaignForm.utm_source}&utm_medium=${campaignForm.utm_medium}&utm_campaign=${campaignForm.utm_campaign}${campaignForm.utm_term ? `&utm_term=${campaignForm.utm_term}` : ''}${campaignForm.utm_content ? `&utm_content=${campaignForm.utm_content}` : ''}`
 
       const campaignData = {
         ...campaignForm,
-        base_url: baseUrl,
+        base_url: BASE_URL,
         full_url: fullUrl
       }
 
@@ -287,7 +289,7 @@ export default function AdminPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `registrations_${new Date().toISOString().split('T')[0]}.csv`
+    a.download = `webinar_registrations_${new Date().toISOString().split('T')[0]}.csv`
     a.click()
   }
 
@@ -301,7 +303,7 @@ export default function AdminPage() {
               AI
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-            <p className="text-gray-500 text-sm mt-1">AIwithArijit.com</p>
+            <p className="text-gray-500 text-sm mt-1">webinar.ostaran.com</p>
           </div>
           
           <form onSubmit={handleLogin} className="space-y-4">
@@ -354,7 +356,7 @@ export default function AdminPage() {
             </div>
             <div>
               <h1 className="font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-xs text-gray-500">AIwithArijit.com</p>
+              <p className="text-xs text-gray-500">webinar.ostaran.com</p>
             </div>
           </div>
           <button
