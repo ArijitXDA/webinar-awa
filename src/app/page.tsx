@@ -34,12 +34,6 @@ const XIcon = () => (
   </svg>
 )
 
-const SparklesIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-  </svg>
-)
-
 const LinkedInIcon = () => (
   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
     <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
@@ -49,12 +43,6 @@ const LinkedInIcon = () => (
 const ShareIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-  </svg>
-)
-
-const QuoteIcon = () => (
-  <svg className="w-8 h-8 text-indigo-200" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
   </svg>
 )
 
@@ -73,6 +61,15 @@ const courseIcons: { [key: number]: string } = {
   3: '🎓',
   4: '💻',
   5: '🏆',
+}
+
+// Popularity tags for each track
+const popularityTags: { [key: number]: string } = {
+  1: '⭐ Most popular in India',
+  2: '⭐ Most popular in India',
+  3: '⭐ Most popular in India',
+  4: '⭐ Most popular in Bengaluru',
+  5: '⭐ Most popular in Mumbai',
 }
 
 // Profession choices for the form
@@ -421,19 +418,27 @@ export default function Home() {
           
           {/* Hero Section */}
           <div className="text-center mb-3">
-            <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold mb-2 shadow-sm">
-              <SparklesIcon />
-              <span>100% FREE Certification</span>
+            {/* Urgency Badge - Dark Red */}
+            <div className="inline-flex items-center gap-1.5 bg-red-700 text-white px-3 py-1.5 rounded-full text-xs font-bold mb-2 shadow-lg animate-pulse">
+              <span>🔥</span>
+              <span>100% FREE, Limited Seats</span>
             </div>
+            
             <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2 leading-tight">
-              Get <span className="gradient-text">AI Certified</span> in
-              <br />90 Minutes
+              <span className="gradient-text">FREE AI Certification</span>
+              <br />in Just 90 Minutes
             </h1>
-            <p className="text-sm text-gray-600 max-w-xs mx-auto leading-relaxed mb-3">
+            <p className="text-sm text-gray-600 max-w-xs mx-auto leading-relaxed mb-2">
               Boost your resume, LinkedIn & career prospects with industry-recognized AI certification
             </p>
             
-            {/* Micro-trust badges - NEW */}
+            {/* Social Proof */}
+            <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 px-3 py-1.5 rounded-full text-xs font-semibold mb-2 border border-green-200">
+              <span>🎓</span>
+              <span>10,000+ Professionals & Students trained in last 12 months</span>
+            </div>
+            
+            {/* Micro-trust badges */}
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-gray-600 mb-2">
               <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Live Training</span>
               <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Certificate</span>
@@ -449,7 +454,7 @@ export default function Home() {
       <section className="relative z-10 px-3 pb-4">
         <div className="max-w-lg mx-auto">
           <h2 className="text-center text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Choose Your Track
+            Choose your webinar
           </h2>
           
           {loading ? (
@@ -462,7 +467,14 @@ export default function Home() {
             <div className="space-y-2">
               {webinars.map((webinar) => (
                 <div key={webinar.course_id} className={`webinar-card ${expandedCard === webinar.course_id ? 'ring-2 ring-indigo-500/50' : ''}`}>
-                  <div className="p-2.5 cursor-pointer" onClick={() => setExpandedCard(expandedCard === webinar.course_id ? null : webinar.course_id)}>
+                  {/* Popularity Tag */}
+                  <div className="px-2.5 pt-2">
+                    <span className="inline-flex items-center text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                      {popularityTags[webinar.course_order]}
+                    </span>
+                  </div>
+                  
+                  <div className="p-2.5 pt-1.5 cursor-pointer" onClick={() => setExpandedCard(expandedCard === webinar.course_id ? null : webinar.course_id)}>
                     <div className="flex items-start gap-2.5">
                       <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${courseColors[webinar.course_order] || courseColors[1]} flex items-center justify-center text-base shadow-md flex-shrink-0`}>
                         {courseIcons[webinar.course_order] || '🎯'}
@@ -474,7 +486,7 @@ export default function Home() {
                           <span className="flex items-center gap-0.5"><CalendarIcon />{formatDate(webinar.webinar_date)}</span>
                           <span>{formatTime(webinar.webinar_time, webinar.timezone)}</span>
                         </div>
-                        {/* Age group shown on card - NEW */}
+                        {/* Age group shown on card */}
                         <div className="mt-1">
                           <span className="inline-flex items-center gap-0.5 text-xs text-indigo-600 font-medium">
                             <UsersIcon /> {webinar.age_group}
@@ -535,21 +547,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trainer Info Section - MOVED BELOW TRACKS */}
+      {/* Trainer Info Section - WITH IMAGE */}
       <section className="relative z-10 px-3 pb-4">
         <div className="max-w-lg mx-auto">
           <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
-            <p className="text-xs text-center text-gray-500 uppercase tracking-wide mb-2 font-semibold">Your Trainer</p>
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-md flex-shrink-0">
-                AC
+            <p className="text-xs text-center text-gray-500 uppercase tracking-wide mb-3 font-semibold">Your Trainer</p>
+            <div className="flex items-center gap-4">
+              {/* Trainer Image */}
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-1 shadow-lg flex-shrink-0">
+                <img 
+                  src="/trainer-arijit.jpg" 
+                  alt="Arijit Chowdhury" 
+                  className="w-full h-full rounded-full object-cover"
+                />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 text-base">Arijit Chowdhury</p>
-                <p className="text-xs text-gray-600 leading-tight">
+                <p className="font-bold text-gray-900 text-lg">Arijit Chowdhury</p>
+                <p className="text-sm text-gray-600 leading-tight">
                   Researcher & Trainer - Agentic AI & Quantum Computing
                 </p>
-                <p className="text-xs text-indigo-600 font-medium">
+                <p className="text-sm text-indigo-600 font-semibold mt-0.5">
                   IIT-Bombay • Star Analytix • NLDIBM
                 </p>
               </div>
@@ -562,41 +579,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section - NEW */}
+      {/* Testimonials Section - PREMIUM BLACK GOLD THEME */}
       <section className="relative z-10 px-3 pb-4">
         <div className="max-w-lg mx-auto">
-          <div className="text-center mb-4">
-            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-              ⭐ Trusted by Scientists, CXOs & Professors
-            </p>
-          </div>
-          
-          <div className="space-y-3">
-            {testimonials.map((testimonial, idx) => (
-              <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 relative">
-                <div className="absolute -top-2 -left-1 opacity-20">
-                  <QuoteIcon />
-                </div>
-                <p className="text-sm text-gray-700 italic leading-relaxed mb-3 relative z-10">
-                  "{testimonial.quote}"
-                </p>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-gray-900 text-sm">— {testimonial.name}</p>
-                    <p className="text-xs text-gray-500">{testimonial.title}</p>
+          <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl p-5 shadow-2xl">
+            <div className="text-center mb-4">
+              <p className="text-sm font-bold text-amber-400 uppercase tracking-wider flex items-center justify-center gap-2">
+                <span>⭐</span> Trusted by Scientists, CXOs & Professors <span>⭐</span>
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              {testimonials.map((testimonial, idx) => (
+                <div key={idx} className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 rounded-xl p-4 border border-amber-500/20 relative overflow-hidden">
+                  {/* Gold accent line */}
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
+                  
+                  {/* Quote mark */}
+                  <div className="absolute -top-1 left-3 text-amber-500/30 text-4xl font-serif">"</div>
+                  
+                  <p className="text-sm text-gray-200 italic leading-relaxed mb-3 relative z-10 pl-4">
+                    {testimonial.quote}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-amber-400 text-sm">— {testimonial.name}</p>
+                      <p className="text-xs text-gray-400">{testimonial.title}</p>
+                    </div>
+                    <a href={testimonial.linkedin} target="_blank" rel="noopener noreferrer"
+                      className="text-amber-400 hover:text-amber-300 transition-colors">
+                      <LinkedInIcon />
+                    </a>
                   </div>
-                  <a href={testimonial.linkedin} target="_blank" rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-700 text-xs font-medium flex items-center gap-1">
-                    <LinkedInIcon />
-                  </a>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Final CTA Section - NEW */}
+      {/* Final CTA Section */}
       <section className="relative z-10 px-3 pb-8">
         <div className="max-w-lg mx-auto">
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-center shadow-xl">
@@ -771,9 +793,15 @@ export default function Home() {
                   ) : 'Complete Registration'}
                 </button>
               ) : (
-                <button onClick={closeModal} className="w-full py-3 rounded-xl font-semibold text-white bg-gray-700 hover:bg-gray-800 shadow-lg transition-all">
-                  Done
-                </button>
+                <div className="space-y-2">
+                  <button onClick={closeModal} className="w-full py-3 rounded-xl font-semibold text-white bg-gray-700 hover:bg-gray-800 shadow-lg transition-all">
+                    Done
+                  </button>
+                  <a href="https://www.AIwithArijit.com" target="_blank" rel="noopener noreferrer"
+                    className="w-full py-2 rounded-lg font-medium text-indigo-600 text-sm bg-indigo-50 hover:bg-indigo-100 flex items-center justify-center gap-1 transition-colors">
+                    Visit www.AIwithArijit.com →
+                  </a>
+                </div>
               )}
             </div>
           </div>
