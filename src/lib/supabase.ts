@@ -31,7 +31,7 @@ export interface Registration {
   full_name: string
   email: string
   mobile: string
-  date_of_birth: string
+  age: string
   profession_choice: string
   other_profession_description?: string
   course_id: number
