@@ -36,7 +36,7 @@ interface Registration {
   full_name: string
   email: string
   mobile: string
-  date_of_birth: string
+  age: string
   profession_choice: string
   course_id: number
   course_name: string
@@ -277,9 +277,9 @@ export default function AdminPage() {
   }
 
   function exportToCSV() {
-    const headers = ['Name', 'Email', 'Mobile', 'DOB', 'Profession', 'Course', 'Date', 'UTM Source', 'UTM Campaign', 'Device', 'Registered At']
+    const headers = ['Name', 'Email', 'Mobile', 'Age', 'Profession', 'Course', 'Date', 'UTM Source', 'UTM Campaign', 'Device', 'Registered At']
     const rows = registrations.map(r => [
-      r.full_name, r.email, r.mobile, r.date_of_birth, r.profession_choice,
+      r.full_name, r.email, r.mobile, r.age || '', r.profession_choice,
       r.course_name, r.webinar_date, r.utm_source || '', r.utm_campaign || '',
       r.device_type || '', r.registered_at
     ])
@@ -744,6 +744,7 @@ export default function AdminPage() {
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mobile</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Age</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Profession</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">UTM Source</th>
@@ -758,6 +759,7 @@ export default function AdminPage() {
                           <td className="px-4 py-3 font-medium text-gray-900">{reg.full_name}</td>
                           <td className="px-4 py-3 text-gray-600">{reg.email}</td>
                           <td className="px-4 py-3 text-gray-600">{reg.mobile}</td>
+                          <td className="px-4 py-3 text-gray-600">{reg.age || '-'}</td>
                           <td className="px-4 py-3">
                             <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs">
                               {reg.course_id === 6 ? 'Professional' : reg.course_id === 7 ? 'School' : reg.course_id === 8 ? 'College' : reg.course_id === 9 ? 'Tech' : 'Leader'}
