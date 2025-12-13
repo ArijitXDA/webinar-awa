@@ -22,12 +22,6 @@ const UsersIcon = () => (
   </svg>
 )
 
-const CheckIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-  </svg>
-)
-
 const ChevronDownIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -37,12 +31,6 @@ const ChevronDownIcon = () => (
 const XIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  </svg>
-)
-
-const WhatsAppIcon = () => (
-  <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
   </svg>
 )
 
@@ -61,6 +49,12 @@ const LinkedInIcon = () => (
 const ShareIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+  </svg>
+)
+
+const QuoteIcon = () => (
+  <svg className="w-8 h-8 text-indigo-200" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
   </svg>
 )
 
@@ -93,53 +87,94 @@ const professionChoices = [
   { value: 'other', label: 'Other' },
 ]
 
-// Fallback webinar data
+// Age options for dropdown
+const ageOptions = [
+  { value: '', label: 'Select your age' },
+  { value: '10-15', label: '10-15 years' },
+  { value: '16-18', label: '16-18 years' },
+  { value: '19-23', label: '19-23 years' },
+  { value: '24-30', label: '24-30 years' },
+  { value: '31-40', label: '31-40 years' },
+  { value: '41-50', label: '41-50 years' },
+  { value: '51-60', label: '51-60 years' },
+  { value: '60+', label: '60+ years' },
+]
+
+// Testimonials data
+const testimonials = [
+  {
+    quote: "Arijit made Agentic AI easy even for a novice like me. He doesn't just teach concepts — he helps students build real intelligent agents for real-world problems.",
+    name: "Dakshayani B P",
+    title: "Retired Scientist & Director, ISRO",
+    linkedin: "https://www.linkedin.com/in/dakshayani-bp/"
+  },
+  {
+    quote: "Arijit's grip on data science and AI is exceptional. He seamlessly bridges simple tools to advanced AI-ML solutions across industries.",
+    name: "Dr. Harish B Suri",
+    title: "Professor | IIM Mumbai | IIT Kharagpur",
+    linkedin: "https://www.linkedin.com/in/dr-harish-b-suri-8596772/"
+  },
+  {
+    quote: "Arijit has a rare ability to simplify complex AI and analytics concepts. His depth in BI, Cognitive AI and numerical analysis clearly sets him apart.",
+    name: "Suvajit Ray",
+    title: "Head of Product & Distribution, IIFL Capital",
+    linkedin: "https://www.linkedin.com/in/suvajitray/"
+  },
+  {
+    quote: "A rare blend of technical depth, mentorship and strategic thinking.",
+    name: "Sourav Choudhury",
+    title: "IIM Mumbai | Harvard Business School | Nestle",
+    linkedin: "https://www.linkedin.com/in/sourav-choudhury-97b7531/"
+  }
+]
+
+// Fallback webinar data with UPDATED names and descriptions
 const fallbackWebinars = [
   {
-    id: '1', course_id: 1, course_name: 'Agentic AI Certification for Working Professionals',
-    course_short_name: 'Agentic AI - Professionals', duration_minutes: 90,
-    target_audience: 'Working Professionals across all industries - IT, Finance, Healthcare, Manufacturing, Retail, Education.',
-    age_group: '24 to 60 years', webinar_date: '2025-01-19', webinar_time: '11:00:00', timezone: 'IST',
+    id: '1', course_id: 6, course_name: 'Agentic AI Certification for Working Professionals',
+    course_short_name: 'AI for Working Professionals', duration_minutes: 90,
+    target_audience: 'Working Professionals across all Non-IT industries - Finance, Healthcare, Manufacturing, Retail, Education, Auto and more. Perfect for those looking to upskill and stay relevant in the AI era.',
+    age_group: '24-60 years', webinar_date: '2025-01-19', webinar_time: '11:00:00', timezone: 'IST',
     registration_link: null, ms_teams_link: null, is_active: true, max_registrations: 500, current_registrations: 0,
     course_description: 'Master Agentic AI concepts',
     benefits: ['Official AI Certification', 'Hands-on Training', 'Career Guidance', 'Lifetime AI Library Access', 'Resume Tips'],
     course_order: 1
   },
   {
-    id: '2', course_id: 2, course_name: 'AI for School Students & Future Readiness',
-    course_short_name: 'AI for Schools', duration_minutes: 90,
+    id: '2', course_id: 7, course_name: 'AI for School Students & Future Readiness',
+    course_short_name: 'AI for Schools (CBSE/ICSE/State Boards)', duration_minutes: 90,
     target_audience: 'School students who want to get ahead. Parents encouraged to join.',
-    age_group: '10 to 16 years', webinar_date: '2025-01-19', webinar_time: '15:00:00', timezone: 'IST',
+    age_group: '10-16 years', webinar_date: '2025-01-19', webinar_time: '15:00:00', timezone: 'IST',
     registration_link: null, ms_teams_link: null, is_active: true, max_registrations: 500, current_registrations: 0,
     course_description: 'Fun AI introduction',
-    benefits: ['Certificate of Participation', 'Fun AI Activities', 'Career Path Guidance', 'Free Resources', 'Parent Guide'],
+    benefits: ['Certificate of Participation', 'Live AI projects and demonstrations', 'Career Path Guidance', 'Free Resources', 'Parent Guide'],
     course_order: 2
   },
   {
-    id: '3', course_id: 3, course_name: 'AI Certification for College Students & Job Seekers',
+    id: '3', course_id: 8, course_name: 'AI Certification for College Students & Job Seekers',
     course_short_name: 'AI for College & Job Seekers', duration_minutes: 90,
     target_audience: 'College students, fresh graduates, and job seekers.',
-    age_group: '17 to 23 years', webinar_date: '2025-01-19', webinar_time: '17:00:00', timezone: 'IST',
+    age_group: '17-23 years', webinar_date: '2025-01-19', webinar_time: '17:00:00', timezone: 'IST',
     registration_link: null, ms_teams_link: null, is_active: true, max_registrations: 500, current_registrations: 0,
     course_description: 'Get job-ready with AI',
     benefits: ['AI Certification for Resume', 'LinkedIn Optimization', 'Internship Opportunities', 'Interview Prep', 'Resources'],
     course_order: 3
   },
   {
-    id: '4', course_id: 4, course_name: 'Agentic AI Development for Tech Professionals',
+    id: '4', course_id: 9, course_name: 'Agentic AI Development for Tech Professionals',
     course_short_name: 'Agentic AI - Tech Dev', duration_minutes: 90,
     target_audience: 'Software Developers, Data Engineers, Data Scientists, ML Engineers.',
-    age_group: '20 to 55 years', webinar_date: '2025-01-19', webinar_time: '19:00:00', timezone: 'IST',
+    age_group: '20-55 years', webinar_date: '2025-01-19', webinar_time: '19:00:00', timezone: 'IST',
     registration_link: null, ms_teams_link: null, is_active: true, max_registrations: 500, current_registrations: 0,
     course_description: 'Build AI Agents',
     benefits: ['Developer Certification', 'Hands-on Workshop', 'Code Repos', 'Framework Training', 'Dev Community'],
     course_order: 4
   },
   {
-    id: '5', course_id: 5, course_name: 'Digital & Generative AI Transformation for Business Leaders',
+    id: '5', course_id: 10, course_name: 'Digital & Generative AI Transformation for Business Leaders',
     course_short_name: 'AI for Business Leaders', duration_minutes: 90,
     target_audience: 'CXOs, Directors, VPs, General Managers, Entrepreneurs.',
-    age_group: '30 to 65 years', webinar_date: '2025-01-19', webinar_time: '21:00:00', timezone: 'IST',
+    age_group: '30-65 years', webinar_date: '2025-01-19', webinar_time: '21:00:00', timezone: 'IST',
     registration_link: null, ms_teams_link: null, is_active: true, max_registrations: 500, current_registrations: 0,
     course_description: 'Strategic AI transformation',
     benefits: ['Executive AI Certificate', 'Strategy Framework', 'ROI Models', 'Case Studies', 'Consultation'],
@@ -206,7 +241,7 @@ export default function Home() {
   const [landingUrl, setLandingUrl] = useState('')
   
   const [formData, setFormData] = useState({
-    full_name: '', email: '', mobile: '', date_of_birth: '',
+    full_name: '', email: '', mobile: '', age: '',
     profession_choice: '', other_profession_description: '', marketing_consent: true,
   })
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({})
@@ -230,7 +265,17 @@ export default function Home() {
         console.error('Supabase fetch error:', error)
         setWebinars(fallbackWebinars as any)
       } else {
-        setWebinars(data && data.length > 0 ? data : fallbackWebinars as any)
+        // Apply name overrides from fallback for display
+        const updatedData = (data && data.length > 0 ? data : fallbackWebinars).map((w: any) => {
+          if (w.course_order === 1) {
+            return { ...w, course_short_name: 'AI for Working Professionals' }
+          }
+          if (w.course_order === 2) {
+            return { ...w, course_short_name: 'AI for Schools (CBSE/ICSE/State Boards)' }
+          }
+          return w
+        })
+        setWebinars(updatedData as any)
       }
     } catch (error) {
       console.error('Error fetching webinars:', error)
@@ -247,7 +292,7 @@ export default function Home() {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Invalid email format'
     if (!formData.mobile.trim()) errors.mobile = 'Mobile is required'
     else if (!/^[+]?[\d\s-]{10,15}$/.test(formData.mobile.replace(/\s/g, ''))) errors.mobile = 'Invalid mobile number'
-    if (!formData.date_of_birth) errors.date_of_birth = 'Date of birth is required'
+    if (!formData.age) errors.age = 'Please select your age'
     if (!formData.profession_choice) errors.profession_choice = 'Please select your profession'
     if (formData.profession_choice === 'other' && !formData.other_profession_description.trim()) {
       errors.other_profession_description = 'Please describe your profession'
@@ -270,7 +315,7 @@ export default function Home() {
         full_name: formData.full_name.trim(),
         email: formData.email.trim().toLowerCase(),
         mobile: formData.mobile.trim(),
-        date_of_birth: formData.date_of_birth,
+        age: formData.age,
         profession_choice: formData.profession_choice,
         other_profession_description: formData.profession_choice === 'other' ? formData.other_profession_description.trim() : null,
         course_id: selectedWebinar.course_id,
@@ -318,7 +363,7 @@ export default function Home() {
     setShowModal(true)
     setSubmitted(false)
     setErrorMessage(null)
-    setFormData({ full_name: '', email: '', mobile: '', date_of_birth: '', profession_choice: '', other_profession_description: '', marketing_consent: true })
+    setFormData({ full_name: '', email: '', mobile: '', age: '', profession_choice: '', other_profession_description: '', marketing_consent: true })
     setFormErrors({})
   }
 
@@ -344,16 +389,16 @@ export default function Home() {
     return `https://wa.me/?text=${message}`
   }
 
-  const trustBadges = [
-    { icon: '🎥', text: 'Online Live Sessions' },
-    { icon: '👨‍🏫', text: 'Expert Trainers' },
-    { icon: '📜', text: 'Career Certificate' },
-    { icon: '📚', text: 'AI Library Access' },
-    { icon: '🎁', text: 'Get Bonus Codes' },
-  ]
+  // Open registration for first webinar (Working Professionals)
+  function openFirstWebinarRegistration() {
+    const firstWebinar = webinars.find(w => w.course_order === 1) || webinars[0]
+    if (firstWebinar) {
+      openRegistrationModal(firstWebinar)
+    }
+  }
 
   return (
-    <main className="min-h-screen relative overflow-hidden">
+    <main className="min-h-screen relative overflow-hidden bg-gradient-to-b from-slate-50 to-white">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl" />
@@ -384,43 +429,24 @@ export default function Home() {
               Get <span className="gradient-text">AI Certified</span> in
               <br />90 Minutes
             </h1>
-            <p className="text-sm text-gray-600 max-w-xs mx-auto leading-relaxed">
+            <p className="text-sm text-gray-600 max-w-xs mx-auto leading-relaxed mb-3">
               Boost your resume, LinkedIn & career prospects with industry-recognized AI certification
             </p>
-          </div>
-
-          {/* Trainer Info */}
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-3 mb-3 border border-indigo-100">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0">
-                AC
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 text-sm">Arijit Chowdhury</p>
-                <p className="text-xs text-gray-600 leading-tight">
-                  Researcher & Trainer - Agentic AI & Quantum Computing
-                </p>
-                <p className="text-xs text-indigo-600 font-medium">
-                  IIT-Bombay • Star Analytix • NLDIBM
-                </p>
-              </div>
+            
+            {/* Micro-trust badges - NEW */}
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-gray-600 mb-2">
+              <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Live Training</span>
+              <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Certificate</span>
+              <span className="flex items-center gap-1"><span className="text-green-500">✔</span> No Spam</span>
+              <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Free Forever</span>
+              <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Library Access</span>
             </div>
-          </div>
-
-          {/* Trust badges */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-2 scrollbar-hide">
-            {trustBadges.map((badge, idx) => (
-              <div key={idx} className="flex items-center gap-1 bg-white rounded-full px-2.5 py-1 shadow-sm border border-gray-100 flex-shrink-0">
-                <span className="text-sm">{badge.icon}</span>
-                <span className="text-xs text-gray-700 font-medium whitespace-nowrap">{badge.text}</span>
-              </div>
-            ))}
           </div>
         </div>
       </header>
 
       {/* Course Cards Section */}
-      <section className="relative z-10 px-3 pb-24">
+      <section className="relative z-10 px-3 pb-4">
         <div className="max-w-lg mx-auto">
           <h2 className="text-center text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
             Choose Your Track
@@ -448,6 +474,12 @@ export default function Home() {
                           <span className="flex items-center gap-0.5"><CalendarIcon />{formatDate(webinar.webinar_date)}</span>
                           <span>{formatTime(webinar.webinar_time, webinar.timezone)}</span>
                         </div>
+                        {/* Age group shown on card - NEW */}
+                        <div className="mt-1">
+                          <span className="inline-flex items-center gap-0.5 text-xs text-indigo-600 font-medium">
+                            <UsersIcon /> {webinar.age_group}
+                          </span>
+                        </div>
                       </div>
                       <div className={`transition-transform duration-300 text-gray-400 ${expandedCard === webinar.course_id ? 'rotate-180' : ''}`}>
                         <ChevronDownIcon />
@@ -459,10 +491,11 @@ export default function Home() {
                     <div className="px-2.5 pb-2.5 animate-fade-in">
                       <div className="pt-2 border-t border-gray-100">
                         <div className="mb-2">
-                          <span className="inline-flex items-center gap-1 bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full text-xs font-medium mb-1">
-                            <UsersIcon />{webinar.age_group}
-                          </span>
-                          <p className="text-xs text-gray-600 leading-relaxed">{webinar.target_audience}</p>
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            {webinar.course_order === 1 
+                              ? 'Working Professionals across all Non-IT industries - Finance, Healthcare, Manufacturing, Retail, Education, Auto and more. Perfect for those looking to upskill and stay relevant in the AI era.'
+                              : webinar.target_audience}
+                          </p>
                         </div>
                         <div className="mb-2">
                           <h4 className="text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">What You Get</h4>
@@ -474,7 +507,7 @@ export default function Home() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                   </svg>
                                 </span>
-                                <span>{benefit}</span>
+                                <span>{webinar.course_order === 2 && benefit === 'Fun AI Activities' ? 'Live AI projects and demonstrations' : benefit}</span>
                               </li>
                             ))}
                           </ul>
@@ -502,164 +535,293 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Trainer Info Section - MOVED BELOW TRACKS */}
+      <section className="relative z-10 px-3 pb-4">
+        <div className="max-w-lg mx-auto">
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
+            <p className="text-xs text-center text-gray-500 uppercase tracking-wide mb-2 font-semibold">Your Trainer</p>
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-md flex-shrink-0">
+                AC
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 text-base">Arijit Chowdhury</p>
+                <p className="text-xs text-gray-600 leading-tight">
+                  Researcher & Trainer - Agentic AI & Quantum Computing
+                </p>
+                <p className="text-xs text-indigo-600 font-medium">
+                  IIT-Bombay • Star Analytix • NLDIBM
+                </p>
+              </div>
+            </div>
+            <a href="https://www.linkedin.com/in/arijit-chowdhury-86020b19/" target="_blank" rel="noopener noreferrer"
+              className="mt-3 w-full py-2 rounded-lg font-semibold text-white text-sm bg-blue-600 hover:bg-blue-700 shadow-md flex items-center justify-center gap-2 transition-colors">
+              <LinkedInIcon />View LinkedIn Profile
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section - NEW */}
+      <section className="relative z-10 px-3 pb-4">
+        <div className="max-w-lg mx-auto">
+          <div className="text-center mb-4">
+            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+              ⭐ Trusted by Scientists, CXOs & Professors
+            </p>
+          </div>
+          
+          <div className="space-y-3">
+            {testimonials.map((testimonial, idx) => (
+              <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 relative">
+                <div className="absolute -top-2 -left-1 opacity-20">
+                  <QuoteIcon />
+                </div>
+                <p className="text-sm text-gray-700 italic leading-relaxed mb-3 relative z-10">
+                  "{testimonial.quote}"
+                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">— {testimonial.name}</p>
+                    <p className="text-xs text-gray-500">{testimonial.title}</p>
+                  </div>
+                  <a href={testimonial.linkedin} target="_blank" rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-700 text-xs font-medium flex items-center gap-1">
+                    <LinkedInIcon />
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section - NEW */}
+      <section className="relative z-10 px-3 pb-8">
+        <div className="max-w-lg mx-auto">
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-center shadow-xl">
+            <p className="text-white text-lg font-bold mb-2">
+              🎯 Join the Next Free AI Certification
+            </p>
+            <p className="text-indigo-100 text-sm mb-4">90 minutes that can transform your career</p>
+            <button onClick={openFirstWebinarRegistration}
+              className="w-full py-3 rounded-xl font-bold text-indigo-600 text-base bg-white shadow-lg hover:shadow-xl transition-all duration-300 active:scale-[0.98]">
+              Register FREE →
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-100 py-2 px-4 z-40">
+      <footer className="relative z-10 py-4 px-4 border-t border-gray-100 bg-white/50">
         <div className="max-w-lg mx-auto text-center">
-          <p className="text-xs text-gray-500">© 2025 <span className="font-semibold">AIwithArijit.com</span> | Powered by Star Analytix & oStaran</p>
+          <p className="text-xs text-gray-500">
+            © 2025 AIwithArijit.com | <a href="mailto:AI@withArijit.com" className="text-indigo-600 hover:underline">AI@withArijit.com</a>
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            Star Analytix • oStaran • NLDIBM
+          </p>
         </div>
       </footer>
 
-      {/* WhatsApp Floating Button */}
-      <a href="https://wa.me/919930051053?text=Hi%20Arijit%2C%20I%20want%20to%20know%20more%20about%20the%20AI%20Certification%20Webinar"
-        target="_blank" rel="noopener noreferrer" className="whatsapp-btn" aria-label="Chat on WhatsApp">
-        <WhatsAppIcon />
-      </a>
-
-      {/* Registration Modal - Fixed for mobile scrolling */}
+      {/* Registration Modal - IMPROVED FOR MOBILE */}
       {showModal && selectedWebinar && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={closeModal}>
-          <div className="min-h-screen py-4 px-4 flex items-start justify-center overflow-y-auto">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md my-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
-              {/* Modal header */}
-              <div className={`bg-gradient-to-r ${courseColors[selectedWebinar.course_order] || courseColors[1]} text-white p-4 rounded-t-2xl`}>
-                <div className="flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={closeModal} />
+          <div className="relative bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl max-h-[90vh] flex flex-col">
+            {/* Fixed Header */}
+            <div className="flex-shrink-0 px-4 pt-4 pb-2 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${courseColors[selectedWebinar.course_order] || courseColors[1]} flex items-center justify-center text-sm shadow-md`}>
+                    {courseIcons[selectedWebinar.course_order] || '🎯'}
+                  </div>
                   <div>
-                    <h3 className="font-bold text-lg">Register Now</h3>
-                    <p className="text-sm opacity-90">{selectedWebinar.course_short_name}</p>
+                    <h2 className="font-bold text-gray-900 text-sm leading-tight">{selectedWebinar.course_short_name}</h2>
+                    <p className="text-xs text-gray-500">{formatDate(selectedWebinar.webinar_date)} • {formatTime(selectedWebinar.webinar_time, selectedWebinar.timezone)}</p>
                   </div>
-                  <button onClick={closeModal} className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
-                    <XIcon />
-                  </button>
                 </div>
+                <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors">
+                  <XIcon />
+                </button>
               </div>
+            </div>
 
-              {/* Modal body - scrollable */}
-              <div className="p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
-                {!submitted ? (
-                  <form onSubmit={handleSubmit} className="space-y-3">
-                    <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-                      <p className="text-xs text-gray-500 mb-0.5">You are registering for</p>
-                      <p className="font-semibold text-gray-800 text-sm">{selectedWebinar.course_name}</p>
-                      <p className="text-xs text-gray-600 mt-0.5">{formatDate(selectedWebinar.webinar_date)} at {formatTime(selectedWebinar.webinar_time, selectedWebinar.timezone)}</p>
-                    </div>
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto px-4 py-3">
+              {errorMessage && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm mb-3">
+                  {errorMessage}
+                </div>
+              )}
 
-                    {errorMessage && (
-                      <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg">{errorMessage}</div>
-                    )}
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                      <input type="text" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.full_name ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
-                        placeholder="Enter your full name" value={formData.full_name} onChange={(e) => setFormData({...formData, full_name: e.target.value})} />
-                      {formErrors.full_name && <p className="text-red-500 text-xs mt-1">{formErrors.full_name}</p>}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                      <input type="email" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.email ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
-                        placeholder="your.email@example.com" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
-                      {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number *</label>
-                      <input type="tel" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.mobile ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
-                        placeholder="+91 98765 43210" value={formData.mobile} onChange={(e) => setFormData({...formData, mobile: e.target.value})} />
-                      {formErrors.mobile && <p className="text-red-500 text-xs mt-1">{formErrors.mobile}</p>}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
-                      <input type="date" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.date_of_birth ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
-                        value={formData.date_of_birth} onChange={(e) => setFormData({...formData, date_of_birth: e.target.value})} />
-                      {formErrors.date_of_birth && <p className="text-red-500 text-xs mt-1">{formErrors.date_of_birth}</p>}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">I am a... *</label>
-                      <select className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.profession_choice ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
-                        value={formData.profession_choice} onChange={(e) => setFormData({...formData, profession_choice: e.target.value})}>
-                        <option value="">Select your profession</option>
-                        {professionChoices.map((choice) => (<option key={choice.value} value={choice.value}>{choice.label}</option>))}
-                      </select>
-                      {formErrors.profession_choice && <p className="text-red-500 text-xs mt-1">{formErrors.profession_choice}</p>}
-                    </div>
-
-                    {formData.profession_choice === 'other' && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Please describe *</label>
-                        <input type="text" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.other_profession_description ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
-                          placeholder="Describe your profession" value={formData.other_profession_description} onChange={(e) => setFormData({...formData, other_profession_description: e.target.value})} />
-                        {formErrors.other_profession_description && <p className="text-red-500 text-xs mt-1">{formErrors.other_profession_description}</p>}
-                      </div>
-                    )}
-
-                    <div className="flex items-start gap-2">
-                      <input type="checkbox" id="consent" className="w-4 h-4 mt-0.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                        checked={formData.marketing_consent} onChange={(e) => setFormData({...formData, marketing_consent: e.target.checked})} />
-                      <label htmlFor="consent" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
-                        You authorize <span className="font-semibold">AIwithArijit, Star Analytix, oStaran</span> to send you AI course related communications.
-                      </label>
-                    </div>
-
-                    <button type="submit" disabled={submitting}
-                      className={`w-full py-3 rounded-xl font-bold text-white text-base bg-gradient-to-r ${courseColors[selectedWebinar.course_order] || courseColors[1]} shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed`}>
-                      {submitting ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                          </svg>
-                          Submitting...
-                        </span>
-                      ) : 'Complete Registration'}
-                    </button>
-                  </form>
-                ) : (
-                  <div className="text-center py-4">
-                    <div className="w-16 h-16 mx-auto mb-3 bg-green-100 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">🎉 Registration Successful!</h3>
-                    <p className="text-gray-600 mb-3 text-sm">
-                      Thank you <span className="font-semibold">{registeredData?.name}</span> for registering for the AI Webinar on{' '}
-                      <span className="font-semibold">{registeredData?.date}</span> at <span className="font-semibold">{registeredData?.time}</span>.
-                    </p>
-                    <div className="bg-blue-50 rounded-lg p-3 mb-3">
-                      <p className="text-sm text-blue-800">📧 You shall soon receive a <span className="font-semibold">Live Session Registration Link</span> in your email & WhatsApp.</p>
-                    </div>
-                    
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 mb-3 border border-green-100">
-                      <p className="text-sm font-semibold text-gray-800 mb-2 flex items-center justify-center gap-1">
-                        <ShareIcon />Invite Friends & Colleagues
-                      </p>
-                      <a href={getWhatsAppShareLink()} target="_blank" rel="noopener noreferrer"
-                        className="w-full py-2 rounded-lg font-semibold text-white text-sm bg-green-500 hover:bg-green-600 shadow-md flex items-center justify-center gap-2 transition-colors">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                        Share on WhatsApp
-                      </a>
-                    </div>
-
-                    <a href="https://www.linkedin.com/in/arijit-chowdhury-86020b19/" target="_blank" rel="noopener noreferrer"
-                      className="w-full py-2 rounded-lg font-semibold text-white text-sm bg-blue-600 hover:bg-blue-700 shadow-md flex items-center justify-center gap-2 mb-3 transition-colors">
-                      <LinkedInIcon />View Trainer's Profile
-                    </a>
-
-                    <p className="text-xs text-gray-500 mb-3">
-                      For queries: <a href="mailto:AI@withArijit.com" className="text-indigo-600 font-semibold hover:underline">AI@withArijit.com</a>
-                    </p>
-                    <button onClick={closeModal} className="w-full py-2.5 rounded-xl font-semibold text-white bg-gray-700 hover:bg-gray-800 shadow-lg transition-all">
-                      Done
-                    </button>
+              {!submitted ? (
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                    <input type="text" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.full_name ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
+                      placeholder="Enter your full name" value={formData.full_name} onChange={(e) => setFormData({...formData, full_name: e.target.value})} />
+                    {formErrors.full_name && <p className="text-red-500 text-xs mt-1">{formErrors.full_name}</p>}
                   </div>
-                )}
-              </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                    <input type="email" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.email ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
+                      placeholder="your.email@example.com" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                    {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number *</label>
+                    <input type="tel" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.mobile ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
+                      placeholder="+91 98765 43210" value={formData.mobile} onChange={(e) => setFormData({...formData, mobile: e.target.value})} />
+                    {formErrors.mobile && <p className="text-red-500 text-xs mt-1">{formErrors.mobile}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Age *</label>
+                    <select className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.age ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
+                      value={formData.age} onChange={(e) => setFormData({...formData, age: e.target.value})}>
+                      {ageOptions.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                    {formErrors.age && <p className="text-red-500 text-xs mt-1">{formErrors.age}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">I am a... *</label>
+                    <select className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.profession_choice ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
+                      value={formData.profession_choice} onChange={(e) => setFormData({...formData, profession_choice: e.target.value})}>
+                      <option value="">Select your profession</option>
+                      {professionChoices.map((choice) => (<option key={choice.value} value={choice.value}>{choice.label}</option>))}
+                    </select>
+                    {formErrors.profession_choice && <p className="text-red-500 text-xs mt-1">{formErrors.profession_choice}</p>}
+                  </div>
+
+                  {formData.profession_choice === 'other' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Please describe *</label>
+                      <input type="text" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.other_profession_description ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
+                        placeholder="Describe your profession" value={formData.other_profession_description} onChange={(e) => setFormData({...formData, other_profession_description: e.target.value})} />
+                      {formErrors.other_profession_description && <p className="text-red-500 text-xs mt-1">{formErrors.other_profession_description}</p>}
+                    </div>
+                  )}
+
+                  <div className="flex items-start gap-2">
+                    <input type="checkbox" id="consent" className="w-4 h-4 mt-0.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      checked={formData.marketing_consent} onChange={(e) => setFormData({...formData, marketing_consent: e.target.checked})} />
+                    <label htmlFor="consent" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
+                      You authorize <span className="font-semibold">AIwithArijit, Star Analytix, oStaran</span> to send you AI course related communications.
+                    </label>
+                  </div>
+                </form>
+              ) : (
+                <div className="text-center py-2">
+                  <div className="w-16 h-16 mx-auto mb-3 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">🎉 Registration Successful!</h3>
+                  <p className="text-gray-600 mb-3 text-sm">
+                    Thank you <span className="font-semibold">{registeredData?.name}</span> for registering for the AI Webinar on{' '}
+                    <span className="font-semibold">{registeredData?.date}</span> at <span className="font-semibold">{registeredData?.time}</span>.
+                  </p>
+                  <div className="bg-blue-50 rounded-lg p-3 mb-3">
+                    <p className="text-sm text-blue-800">📧 You shall soon receive a <span className="font-semibold">Live Session Registration Link</span> in your email & WhatsApp.</p>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 mb-3 border border-green-100">
+                    <p className="text-sm font-semibold text-gray-800 mb-2 flex items-center justify-center gap-1">
+                      <ShareIcon />Invite Friends & Colleagues
+                    </p>
+                    <a href={getWhatsAppShareLink()} target="_blank" rel="noopener noreferrer"
+                      className="w-full py-2 rounded-lg font-semibold text-white text-sm bg-green-500 hover:bg-green-600 shadow-md flex items-center justify-center gap-2 transition-colors">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                      Share on WhatsApp
+                    </a>
+                  </div>
+
+                  <a href="https://www.linkedin.com/in/arijit-chowdhury-86020b19/" target="_blank" rel="noopener noreferrer"
+                    className="w-full py-2 rounded-lg font-semibold text-white text-sm bg-blue-600 hover:bg-blue-700 shadow-md flex items-center justify-center gap-2 mb-3 transition-colors">
+                    <LinkedInIcon />View Trainer's Profile
+                  </a>
+
+                  <p className="text-xs text-gray-500 mb-3">
+                    For queries: <a href="mailto:AI@withArijit.com" className="text-indigo-600 font-semibold hover:underline">AI@withArijit.com</a>
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Fixed Footer with Submit Button - ALWAYS VISIBLE */}
+            <div className="flex-shrink-0 px-4 py-3 border-t border-gray-100 bg-white rounded-b-2xl">
+              {!submitted ? (
+                <button type="button" onClick={handleSubmit} disabled={submitting}
+                  className={`w-full py-3 rounded-xl font-bold text-white text-base bg-gradient-to-r ${courseColors[selectedWebinar.course_order] || courseColors[1]} shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed`}>
+                  {submitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Submitting...
+                    </span>
+                  ) : 'Complete Registration'}
+                </button>
+              ) : (
+                <button onClick={closeModal} className="w-full py-3 rounded-xl font-semibold text-white bg-gray-700 hover:bg-gray-800 shadow-lg transition-all">
+                  Done
+                </button>
+              )}
             </div>
           </div>
         </div>
       )}
+
+      {/* Global Styles */}
+      <style jsx global>{`
+        .gradient-text {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .webinar-card {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+          border: 1px solid rgba(0,0,0,0.05);
+          transition: all 0.2s ease;
+        }
+        .webinar-card:hover {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .shimmer {
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </main>
   )
 }
