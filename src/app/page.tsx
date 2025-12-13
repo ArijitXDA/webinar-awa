@@ -1,665 +1,788 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, WebinarLink, Registration } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
-// Icons as inline SVGs
-const ClockIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-)
+// Admin credentials
+const ADMIN_USERNAME = 'arijitwith'
+const ADMIN_PASSWORD = 'reach500'
 
-const CalendarIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-  </svg>
-)
-
-const UsersIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-  </svg>
-)
-
-const CheckIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-  </svg>
-)
-
-const ChevronDownIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-  </svg>
-)
-
-const XIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  </svg>
-)
-
-const WhatsAppIcon = () => (
-  <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-  </svg>
-)
-
-const SparklesIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-  </svg>
-)
-
-const LinkedInIcon = () => (
-  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-  </svg>
-)
-
-const ShareIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-  </svg>
-)
-
-// Color mapping for different course types
-const courseColors: { [key: number]: string } = {
-  1: 'from-purple-500 to-indigo-600',
-  2: 'from-emerald-500 to-teal-600',
-  3: 'from-blue-500 to-cyan-600',
-  4: 'from-orange-500 to-amber-600',
-  5: 'from-rose-500 to-pink-600',
+interface UTMCampaign {
+  id: string
+  campaign_id: number
+  campaign_name: string
+  campaign_description: string
+  utm_source: string
+  utm_medium: string
+  utm_campaign: string
+  utm_term: string
+  utm_content: string
+  base_url: string
+  full_url: string
+  placement_location: string
+  placement_city: string
+  is_active: boolean
+  total_scans: number
+  total_registrations: number
+  created_at: string
 }
 
-const courseIcons: { [key: number]: string } = {
-  1: '💼',
-  2: '📚',
-  3: '🎓',
-  4: '💻',
-  5: '🏆',
+interface Registration {
+  id: string
+  registration_id: number
+  full_name: string
+  email: string
+  mobile: string
+  date_of_birth: string
+  profession_choice: string
+  course_id: number
+  course_name: string
+  webinar_date: string
+  webinar_time: string
+  utm_source: string
+  utm_medium: string
+  utm_campaign: string
+  device_type: string
+  registered_at: string
+  registration_status: string
 }
 
-// Profession choices for the form
-const professionChoices = [
-  { value: 'school_student', label: 'School Student' },
-  { value: 'college_student', label: 'College Student' },
-  { value: 'job_seeker', label: 'Job Seeker' },
-  { value: 'working_professional', label: 'Working Professional' },
-  { value: 'tech_developer', label: 'Tech Developer' },
-  { value: 'data_engineer_scientist', label: 'Data Engineer / Data Scientist' },
-  { value: 'home_maker', label: 'Home Maker' },
-  { value: 'other', label: 'Other' },
-]
-
-// Fallback webinar data
-const fallbackWebinars = [
-  {
-    id: '1', course_id: 1, course_name: 'Agentic AI Certification for Working Professionals',
-    course_short_name: 'Agentic AI - Professionals', duration_minutes: 90,
-    target_audience: 'Working Professionals across all industries - IT, Finance, Healthcare, Manufacturing, Retail, Education.',
-    age_group: '24 to 60 years', webinar_date: '2025-01-19', webinar_time: '11:00:00', timezone: 'IST',
-    registration_link: null, ms_teams_link: null, is_active: true, max_registrations: 500, current_registrations: 0,
-    course_description: 'Master Agentic AI concepts',
-    benefits: ['Official AI Certification', 'Hands-on Training', 'Career Guidance', 'Lifetime AI Library Access', 'Resume Tips'],
-    course_order: 1
-  },
-  {
-    id: '2', course_id: 2, course_name: 'AI for School Students & Future Readiness',
-    course_short_name: 'AI for Schools', duration_minutes: 90,
-    target_audience: 'School students who want to get ahead. Parents encouraged to join.',
-    age_group: '10 to 16 years', webinar_date: '2025-01-19', webinar_time: '15:00:00', timezone: 'IST',
-    registration_link: null, ms_teams_link: null, is_active: true, max_registrations: 500, current_registrations: 0,
-    course_description: 'Fun AI introduction',
-    benefits: ['Certificate of Participation', 'Fun AI Activities', 'Career Path Guidance', 'Free Resources', 'Parent Guide'],
-    course_order: 2
-  },
-  {
-    id: '3', course_id: 3, course_name: 'AI Certification for College Students & Job Seekers',
-    course_short_name: 'AI for College & Job Seekers', duration_minutes: 90,
-    target_audience: 'College students, fresh graduates, and job seekers.',
-    age_group: '17 to 23 years', webinar_date: '2025-01-19', webinar_time: '17:00:00', timezone: 'IST',
-    registration_link: null, ms_teams_link: null, is_active: true, max_registrations: 500, current_registrations: 0,
-    course_description: 'Get job-ready with AI',
-    benefits: ['AI Certification for Resume', 'LinkedIn Optimization', 'Internship Opportunities', 'Interview Prep', 'Resources'],
-    course_order: 3
-  },
-  {
-    id: '4', course_id: 4, course_name: 'Agentic AI Development for Tech Professionals',
-    course_short_name: 'Agentic AI - Tech Dev', duration_minutes: 90,
-    target_audience: 'Software Developers, Data Engineers, Data Scientists, ML Engineers.',
-    age_group: '20 to 55 years', webinar_date: '2025-01-19', webinar_time: '19:00:00', timezone: 'IST',
-    registration_link: null, ms_teams_link: null, is_active: true, max_registrations: 500, current_registrations: 0,
-    course_description: 'Build AI Agents',
-    benefits: ['Developer Certification', 'Hands-on Workshop', 'Code Repos', 'Framework Training', 'Dev Community'],
-    course_order: 4
-  },
-  {
-    id: '5', course_id: 5, course_name: 'Digital & Generative AI Transformation for Business Leaders',
-    course_short_name: 'AI for Business Leaders', duration_minutes: 90,
-    target_audience: 'CXOs, Directors, VPs, General Managers, Entrepreneurs.',
-    age_group: '30 to 65 years', webinar_date: '2025-01-19', webinar_time: '21:00:00', timezone: 'IST',
-    registration_link: null, ms_teams_link: null, is_active: true, max_registrations: 500, current_registrations: 0,
-    course_description: 'Strategic AI transformation',
-    benefits: ['Executive AI Certificate', 'Strategy Framework', 'ROI Models', 'Case Studies', 'Consultation'],
-    course_order: 5
-  }
-]
-
-// Format date for display
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
-}
-
-// Format time for display
-function formatTime(timeStr: string, timezone: string): string {
-  const [hours, minutes] = timeStr.split(':')
-  const hour = parseInt(hours)
-  const ampm = hour >= 12 ? 'PM' : 'AM'
-  const displayHour = hour % 12 || 12
-  return `${displayHour}:${minutes} ${ampm} ${timezone}`
-}
-
-// Get UTM parameters from URL
-function getUTMParams(): { [key: string]: string } {
-  if (typeof window === 'undefined') return {}
-  const params = new URLSearchParams(window.location.search)
-  return {
-    utm_source: params.get('utm_source') || '',
-    utm_medium: params.get('utm_medium') || '',
-    utm_campaign: params.get('utm_campaign') || '',
-    utm_term: params.get('utm_term') || '',
-    utm_content: params.get('utm_content') || '',
-  }
-}
-
-function getDeviceType(): string {
-  if (typeof window === 'undefined') return 'unknown'
-  const ua = navigator.userAgent
-  if (/tablet|ipad|playbook|silk/i.test(ua)) return 'tablet'
-  if (/mobile|iphone|ipod|android|blackberry|opera|mini|windows\sce|palm|smartphone|iemobile/i.test(ua)) return 'mobile'
-  return 'desktop'
-}
-
-function getBrowser(): string {
-  if (typeof window === 'undefined') return 'unknown'
-  const ua = navigator.userAgent
-  if (ua.includes('Chrome')) return 'Chrome'
-  if (ua.includes('Firefox')) return 'Firefox'
-  if (ua.includes('Safari')) return 'Safari'
-  if (ua.includes('Edge')) return 'Edge'
-  return 'Other'
-}
-
-export default function Home() {
-  const [webinars, setWebinars] = useState<WebinarLink[]>([])
-  const [loading, setLoading] = useState(true)
-  const [expandedCard, setExpandedCard] = useState<number | null>(null)
-  const [showModal, setShowModal] = useState(false)
-  const [selectedWebinar, setSelectedWebinar] = useState<WebinarLink | null>(null)
-  const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [registeredData, setRegisteredData] = useState<{name: string, date: string, time: string, timezone: string} | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [landingUrl, setLandingUrl] = useState('')
+export default function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [loginError, setLoginError] = useState('')
+  const [activeTab, setActiveTab] = useState<'utm' | 'analytics'>('utm')
   
-  const [formData, setFormData] = useState({
-    full_name: '', email: '', mobile: '', date_of_birth: '',
-    profession_choice: '', other_profession_description: '', marketing_consent: true,
+  // UTM State
+  const [campaigns, setCampaigns] = useState<UTMCampaign[]>([])
+  const [showCampaignForm, setShowCampaignForm] = useState(false)
+  const [editingCampaign, setEditingCampaign] = useState<UTMCampaign | null>(null)
+  const [campaignForm, setCampaignForm] = useState({
+    campaign_name: '',
+    campaign_description: '',
+    utm_source: '',
+    utm_medium: 'qr_code',
+    utm_campaign: '',
+    utm_term: '',
+    utm_content: '',
+    placement_location: '',
+    placement_city: '',
+    is_active: true
   })
-  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({})
+  
+  // Analytics State
+  const [registrations, setRegistrations] = useState<Registration[]>([])
+  const [analyticsLoading, setAnalyticsLoading] = useState(false)
+  const [filters, setFilters] = useState({
+    dateFrom: '',
+    dateTo: '',
+    utmSource: '',
+    utmCampaign: '',
+    courseId: '',
+    profession: ''
+  })
+  const [stats, setStats] = useState({
+    total: 0,
+    today: 0,
+    thisWeek: 0,
+    thisMonth: 0
+  })
 
+  // Check auth on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setLandingUrl(window.location.origin + window.location.pathname)
+    const auth = sessionStorage.getItem('admin_auth')
+    if (auth === 'true') {
+      setIsAuthenticated(true)
+      fetchCampaigns()
+      fetchRegistrations()
     }
-    fetchWebinars()
   }, [])
 
-  async function fetchWebinars() {
-    try {
-      const { data, error } = await supabase
-        .from('qr_landing_webinar_links')
-        .select('*')
-        .eq('is_active', true)
-        .order('course_order', { ascending: true })
-
-      if (error) {
-        console.error('Supabase fetch error:', error)
-        setWebinars(fallbackWebinars as any)
-      } else {
-        setWebinars(data && data.length > 0 ? data : fallbackWebinars as any)
-      }
-    } catch (error) {
-      console.error('Error fetching webinars:', error)
-      setWebinars(fallbackWebinars as any)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  function validateForm(): boolean {
-    const errors: {[key: string]: string} = {}
-    if (!formData.full_name.trim()) errors.full_name = 'Name is required'
-    if (!formData.email.trim()) errors.email = 'Email is required'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Invalid email format'
-    if (!formData.mobile.trim()) errors.mobile = 'Mobile is required'
-    else if (!/^[+]?[\d\s-]{10,15}$/.test(formData.mobile.replace(/\s/g, ''))) errors.mobile = 'Invalid mobile number'
-    if (!formData.date_of_birth) errors.date_of_birth = 'Date of birth is required'
-    if (!formData.profession_choice) errors.profession_choice = 'Please select your profession'
-    if (formData.profession_choice === 'other' && !formData.other_profession_description.trim()) {
-      errors.other_profession_description = 'Please describe your profession'
-    }
-    setFormErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
+  function handleLogin(e: React.FormEvent) {
     e.preventDefault()
-    if (!validateForm() || !selectedWebinar) return
-    
-    setSubmitting(true)
-    setErrorMessage(null)
-    
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true)
+      sessionStorage.setItem('admin_auth', 'true')
+      setLoginError('')
+      fetchCampaigns()
+      fetchRegistrations()
+    } else {
+      setLoginError('Invalid credentials')
+    }
+  }
+
+  function handleLogout() {
+    setIsAuthenticated(false)
+    sessionStorage.removeItem('admin_auth')
+  }
+
+  async function fetchCampaigns() {
     try {
-      const utmParams = getUTMParams()
+      const { data, error } = await supabase
+        .from('qr_utm_campaigns')
+        .select('*')
+        .order('created_at', { ascending: false })
       
-      const registrationData = {
-        full_name: formData.full_name.trim(),
-        email: formData.email.trim().toLowerCase(),
-        mobile: formData.mobile.trim(),
-        date_of_birth: formData.date_of_birth,
-        profession_choice: formData.profession_choice,
-        other_profession_description: formData.profession_choice === 'other' ? formData.other_profession_description.trim() : null,
-        course_id: selectedWebinar.course_id,
-        course_name: selectedWebinar.course_name,
-        webinar_date: selectedWebinar.webinar_date,
-        webinar_time: selectedWebinar.webinar_time,
-        timezone: selectedWebinar.timezone,
-        marketing_consent: formData.marketing_consent,
-        utm_source: utmParams.utm_source || null,
-        utm_medium: utmParams.utm_medium || null,
-        utm_campaign: utmParams.utm_campaign || null,
-        utm_term: utmParams.utm_term || null,
-        utm_content: utmParams.utm_content || null,
-        referrer_url: typeof document !== 'undefined' ? document.referrer || null : null,
-        landing_page_url: typeof window !== 'undefined' ? window.location.href : null,
-        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
-        device_type: getDeviceType(),
-        browser: getBrowser(),
+      if (error) throw error
+      setCampaigns(data || [])
+    } catch (error) {
+      console.error('Error fetching campaigns:', error)
+    }
+  }
+
+  async function fetchRegistrations() {
+    setAnalyticsLoading(true)
+    try {
+      let query = supabase
+        .from('qr_landing_registrations')
+        .select('*')
+        .order('registered_at', { ascending: false })
+        .limit(500)
+
+      if (filters.dateFrom) {
+        query = query.gte('registered_at', filters.dateFrom)
+      }
+      if (filters.dateTo) {
+        query = query.lte('registered_at', filters.dateTo + 'T23:59:59')
+      }
+      if (filters.utmSource) {
+        query = query.eq('utm_source', filters.utmSource)
+      }
+      if (filters.utmCampaign) {
+        query = query.eq('utm_campaign', filters.utmCampaign)
+      }
+      if (filters.courseId) {
+        query = query.eq('course_id', parseInt(filters.courseId))
+      }
+      if (filters.profession) {
+        query = query.eq('profession_choice', filters.profession)
       }
 
-      const { data, error } = await supabase
-        .from('qr_landing_registrations')
-        .insert([registrationData])
-        .select()
+      const { data, error } = await query
 
       if (error) throw error
+      setRegistrations(data || [])
 
-      setRegisteredData({
-        name: formData.full_name,
-        date: formatDate(selectedWebinar.webinar_date),
-        time: formatTime(selectedWebinar.webinar_time, selectedWebinar.timezone),
-        timezone: selectedWebinar.timezone
+      // Calculate stats
+      const now = new Date()
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+      const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+
+      const allData = data || []
+      setStats({
+        total: allData.length,
+        today: allData.filter(r => new Date(r.registered_at) >= today).length,
+        thisWeek: allData.filter(r => new Date(r.registered_at) >= weekAgo).length,
+        thisMonth: allData.filter(r => new Date(r.registered_at) >= monthAgo).length
       })
-      setSubmitted(true)
-    } catch (error: any) {
-      console.error('Registration error:', error)
-      setErrorMessage(error.message || 'Registration failed. Please try again or contact AI@withArijit.com')
+    } catch (error) {
+      console.error('Error fetching registrations:', error)
     } finally {
-      setSubmitting(false)
+      setAnalyticsLoading(false)
     }
   }
 
-  function openRegistrationModal(webinar: WebinarLink) {
-    setSelectedWebinar(webinar)
-    setShowModal(true)
-    setSubmitted(false)
-    setErrorMessage(null)
-    setFormData({ full_name: '', email: '', mobile: '', date_of_birth: '', profession_choice: '', other_profession_description: '', marketing_consent: true })
-    setFormErrors({})
+  async function saveCampaign(e: React.FormEvent) {
+    e.preventDefault()
+    try {
+      const baseUrl = 'https://a-iwith-arijit-qr-landing.vercel.app'
+      const fullUrl = `${baseUrl}?utm_source=${campaignForm.utm_source}&utm_medium=${campaignForm.utm_medium}&utm_campaign=${campaignForm.utm_campaign}${campaignForm.utm_term ? `&utm_term=${campaignForm.utm_term}` : ''}${campaignForm.utm_content ? `&utm_content=${campaignForm.utm_content}` : ''}`
+
+      const campaignData = {
+        ...campaignForm,
+        base_url: baseUrl,
+        full_url: fullUrl
+      }
+
+      if (editingCampaign) {
+        const { error } = await supabase
+          .from('qr_utm_campaigns')
+          .update(campaignData)
+          .eq('id', editingCampaign.id)
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from('qr_utm_campaigns')
+          .insert([campaignData])
+        if (error) throw error
+      }
+
+      setShowCampaignForm(false)
+      setEditingCampaign(null)
+      resetCampaignForm()
+      fetchCampaigns()
+    } catch (error) {
+      console.error('Error saving campaign:', error)
+      alert('Error saving campaign')
+    }
   }
 
-  function closeModal() {
-    setShowModal(false)
-    setSelectedWebinar(null)
-    setSubmitted(false)
-    setErrorMessage(null)
+  async function deleteCampaign(id: string) {
+    if (!confirm('Are you sure you want to delete this campaign?')) return
+    try {
+      const { error } = await supabase
+        .from('qr_utm_campaigns')
+        .delete()
+        .eq('id', id)
+      if (error) throw error
+      fetchCampaigns()
+    } catch (error) {
+      console.error('Error deleting campaign:', error)
+    }
   }
 
-  function getWhatsAppShareLink(): string {
-    const message = encodeURIComponent(
-      `🎓 I am attending this 90 minute AI Certification webinar by AI Researcher & trainer Arijit Chowdhury.\n\n` +
-      `✅ You also can register yourself now!\n\n` +
-      `What you get:\n` +
-      `📜 AI Certificates to update your resume\n` +
-      `💼 LinkedIn profile boost\n` +
-      `🚀 Career prospects with AI skills\n\n` +
-      `⏱️ It's a 90 Minute online webinar\n` +
-      `💯 It's completely FREE!\n\n` +
-      `👉 Register here: ${landingUrl}`
-    )
-    return `https://wa.me/?text=${message}`
+  function resetCampaignForm() {
+    setCampaignForm({
+      campaign_name: '',
+      campaign_description: '',
+      utm_source: '',
+      utm_medium: 'qr_code',
+      utm_campaign: '',
+      utm_term: '',
+      utm_content: '',
+      placement_location: '',
+      placement_city: '',
+      is_active: true
+    })
   }
 
-  const trustBadges = [
-    { icon: '🎥', text: 'Online Live Sessions' },
-    { icon: '👨‍🏫', text: 'Expert Trainers' },
-    { icon: '📜', text: 'Career Certificate' },
-    { icon: '📚', text: 'AI Library Access' },
-    { icon: '🎁', text: 'Get Bonus Codes' },
-  ]
+  function editCampaign(campaign: UTMCampaign) {
+    setEditingCampaign(campaign)
+    setCampaignForm({
+      campaign_name: campaign.campaign_name || '',
+      campaign_description: campaign.campaign_description || '',
+      utm_source: campaign.utm_source || '',
+      utm_medium: campaign.utm_medium || 'qr_code',
+      utm_campaign: campaign.utm_campaign || '',
+      utm_term: campaign.utm_term || '',
+      utm_content: campaign.utm_content || '',
+      placement_location: campaign.placement_location || '',
+      placement_city: campaign.placement_city || '',
+      is_active: campaign.is_active
+    })
+    setShowCampaignForm(true)
+  }
 
-  return (
-    <main className="min-h-screen relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 -left-40 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 right-1/3 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl" />
-      </div>
+  function generateQRCode(url: string): string {
+    return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`
+  }
 
-      {/* Header */}
-      <header className="relative z-10 pt-4 pb-2 px-4">
-        <div className="max-w-lg mx-auto">
-          {/* Logo */}
-          <div className="flex items-center justify-center mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/30">
-                AI
-              </div>
-              <span className="text-xl font-bold text-gray-800">WithArijit.com</span>
+  function copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text)
+    alert('Copied to clipboard!')
+  }
+
+  function exportToCSV() {
+    const headers = ['Name', 'Email', 'Mobile', 'DOB', 'Profession', 'Course', 'Date', 'UTM Source', 'UTM Campaign', 'Device', 'Registered At']
+    const rows = registrations.map(r => [
+      r.full_name, r.email, r.mobile, r.date_of_birth, r.profession_choice,
+      r.course_name, r.webinar_date, r.utm_source || '', r.utm_campaign || '',
+      r.device_type || '', r.registered_at
+    ])
+    
+    const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `registrations_${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+  }
+
+  // Login Screen
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-900 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4 shadow-lg">
+              AI
             </div>
+            <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
+            <p className="text-gray-500 text-sm mt-1">AIwithArijit.com</p>
           </div>
           
-          {/* Hero Section */}
-          <div className="text-center mb-3">
-            <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold mb-2 shadow-sm">
-              <SparklesIcon />
-              <span>100% FREE Certification</span>
+          <form onSubmit={handleLogin} className="space-y-4">
+            {loginError && (
+              <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-200">
+                {loginError}
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+              <input
+                type="text"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2 leading-tight">
-              Get <span className="gradient-text">AI Certified</span> in
-              <br />90 Minutes
-            </h1>
-            <p className="text-sm text-gray-600 max-w-xs mx-auto leading-relaxed">
-              Boost your resume, LinkedIn & career prospects with industry-recognized AI certification
-            </p>
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                type="password"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg"
+            >
+              Login
+            </button>
+          </form>
+        </div>
+      </div>
+    )
+  }
 
-          {/* Trainer Info */}
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-3 mb-3 border border-indigo-100">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0">
-                AC
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 text-sm">Arijit Chowdhury</p>
-                <p className="text-xs text-gray-600 leading-tight">
-                  Researcher & Trainer - Agentic AI & Quantum Computing
-                </p>
-                <p className="text-xs text-indigo-600 font-medium">
-                  IIT-Bombay • Star Analytix • NLDIBM
-                </p>
-              </div>
+  // Admin Dashboard
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
+              AI
+            </div>
+            <div>
+              <h1 className="font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-xs text-gray-500">AIwithArijit.com</p>
             </div>
           </div>
-
-          {/* Trust badges */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-2 scrollbar-hide">
-            {trustBadges.map((badge, idx) => (
-              <div key={idx} className="flex items-center gap-1 bg-white rounded-full px-2.5 py-1 shadow-sm border border-gray-100 flex-shrink-0">
-                <span className="text-sm">{badge.icon}</span>
-                <span className="text-xs text-gray-700 font-medium whitespace-nowrap">{badge.text}</span>
-              </div>
-            ))}
-          </div>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            Logout
+          </button>
         </div>
       </header>
 
-      {/* Course Cards Section */}
-      <section className="relative z-10 px-3 pb-24">
-        <div className="max-w-lg mx-auto">
-          <h2 className="text-center text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Choose Your Track
-          </h2>
-          
-          {loading ? (
-            <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="bg-white rounded-xl p-4 shimmer h-16" />
-              ))}
+      {/* Tabs */}
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab('utm')}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              activeTab === 'utm'
+                ? 'bg-indigo-600 text-white shadow-lg'
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            📊 UTM & QR Management
+          </button>
+          <button
+            onClick={() => { setActiveTab('analytics'); fetchRegistrations(); }}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              activeTab === 'analytics'
+                ? 'bg-indigo-600 text-white shadow-lg'
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            📈 Registration Analytics
+          </button>
+        </div>
+
+        {/* UTM Management Tab */}
+        {activeTab === 'utm' && (
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">UTM Campaigns & QR Codes</h2>
+              <button
+                onClick={() => { setShowCampaignForm(true); setEditingCampaign(null); resetCampaignForm(); }}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+              >
+                + Create New Campaign
+              </button>
             </div>
-          ) : (
-            <div className="space-y-2">
-              {webinars.map((webinar) => (
-                <div key={webinar.course_id} className={`webinar-card ${expandedCard === webinar.course_id ? 'ring-2 ring-indigo-500/50' : ''}`}>
-                  <div className="p-2.5 cursor-pointer" onClick={() => setExpandedCard(expandedCard === webinar.course_id ? null : webinar.course_id)}>
-                    <div className="flex items-start gap-2.5">
-                      <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${courseColors[webinar.course_order] || courseColors[1]} flex items-center justify-center text-base shadow-md flex-shrink-0`}>
-                        {courseIcons[webinar.course_order] || '🎯'}
+
+            {/* Campaign Form Modal */}
+            {showCampaignForm && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <div className="p-6 border-b">
+                    <h3 className="text-lg font-bold">{editingCampaign ? 'Edit Campaign' : 'Create New Campaign'}</h3>
+                  </div>
+                  <form onSubmit={saveCampaign} className="p-6 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Name *</label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          value={campaignForm.campaign_name}
+                          onChange={(e) => setCampaignForm({...campaignForm, campaign_name: e.target.value})}
+                          required
+                        />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-0.5 pr-5">{webinar.course_short_name}</h3>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-500">
-                          <span className="flex items-center gap-0.5"><ClockIcon />{webinar.duration_minutes}min</span>
-                          <span className="flex items-center gap-0.5"><CalendarIcon />{formatDate(webinar.webinar_date)}</span>
-                          <span>{formatTime(webinar.webinar_time, webinar.timezone)}</span>
-                        </div>
-                      </div>
-                      <div className={`transition-transform duration-300 text-gray-400 ${expandedCard === webinar.course_id ? 'rotate-180' : ''}`}>
-                        <ChevronDownIcon />
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Placement City</label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          value={campaignForm.placement_city}
+                          onChange={(e) => setCampaignForm({...campaignForm, placement_city: e.target.value})}
+                        />
                       </div>
                     </div>
-                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                      <textarea
+                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        rows={2}
+                        value={campaignForm.campaign_description}
+                        onChange={(e) => setCampaignForm({...campaignForm, campaign_description: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Placement Location</label>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        placeholder="e.g., Mumbai Local Train Stations"
+                        value={campaignForm.placement_location}
+                        onChange={(e) => setCampaignForm({...campaignForm, placement_location: e.target.value})}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Source *</label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          placeholder="e.g., qr_standee, linkedin, facebook"
+                          value={campaignForm.utm_source}
+                          onChange={(e) => setCampaignForm({...campaignForm, utm_source: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Medium *</label>
+                        <select
+                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          value={campaignForm.utm_medium}
+                          onChange={(e) => setCampaignForm({...campaignForm, utm_medium: e.target.value})}
+                        >
+                          <option value="qr_code">QR Code</option>
+                          <option value="offline">Offline</option>
+                          <option value="social">Social</option>
+                          <option value="email">Email</option>
+                          <option value="paid">Paid</option>
+                          <option value="referral">Referral</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Campaign *</label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          placeholder="e.g., jan2025_mumbai"
+                          value={campaignForm.utm_campaign}
+                          onChange={(e) => setCampaignForm({...campaignForm, utm_campaign: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Term</label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          value={campaignForm.utm_term}
+                          onChange={(e) => setCampaignForm({...campaignForm, utm_term: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Content</label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          value={campaignForm.utm_content}
+                          onChange={(e) => setCampaignForm({...campaignForm, utm_content: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="is_active"
+                        checked={campaignForm.is_active}
+                        onChange={(e) => setCampaignForm({...campaignForm, is_active: e.target.checked})}
+                        className="w-4 h-4 rounded border-gray-300"
+                      />
+                      <label htmlFor="is_active" className="text-sm text-gray-700">Active Campaign</label>
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => { setShowCampaignForm(false); setEditingCampaign(null); }}
+                        className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                      >
+                        {editingCampaign ? 'Update Campaign' : 'Create Campaign'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
 
-                  {expandedCard === webinar.course_id && (
-                    <div className="px-2.5 pb-2.5 animate-fade-in">
-                      <div className="pt-2 border-t border-gray-100">
-                        <div className="mb-2">
-                          <span className="inline-flex items-center gap-1 bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full text-xs font-medium mb-1">
-                            <UsersIcon />{webinar.age_group}
-                          </span>
-                          <p className="text-xs text-gray-600 leading-relaxed">{webinar.target_audience}</p>
-                        </div>
-                        <div className="mb-2">
-                          <h4 className="text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">What You Get</h4>
-                          <ul className="space-y-1">
-                            {(Array.isArray(webinar.benefits) ? webinar.benefits : []).slice(0, 5).map((benefit, idx) => (
-                              <li key={idx} className="flex items-start gap-1.5 text-xs text-gray-600">
-                                <span className="w-3.5 h-3.5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                  <svg className="w-2 h-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </span>
-                                <span>{benefit}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                        <button onClick={(e) => { e.stopPropagation(); openRegistrationModal(webinar); }}
-                          className={`w-full py-2 rounded-lg font-semibold text-white text-sm bg-gradient-to-r ${courseColors[webinar.course_order] || courseColors[1]} shadow-lg hover:shadow-xl transition-all duration-300 active:scale-[0.98]`}>
-                          Register Now - FREE
+            {/* Campaigns List */}
+            <div className="space-y-4">
+              {campaigns.length === 0 ? (
+                <div className="bg-white rounded-xl p-8 text-center text-gray-500">
+                  No campaigns yet. Create your first UTM campaign!
+                </div>
+              ) : (
+                campaigns.map((campaign) => (
+                  <div key={campaign.id} className="bg-white rounded-xl shadow-sm border p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="font-bold text-lg text-gray-900">{campaign.campaign_name}</h3>
+                        <p className="text-sm text-gray-500">{campaign.campaign_description}</p>
+                        {campaign.placement_location && (
+                          <p className="text-sm text-indigo-600 mt-1">📍 {campaign.placement_location} {campaign.placement_city && `• ${campaign.placement_city}`}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${campaign.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                          {campaign.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                      <p className="text-xs text-gray-500 mb-1">Campaign URL:</p>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 text-sm bg-white px-3 py-2 rounded border break-all">{campaign.full_url}</code>
+                        <button
+                          onClick={() => copyToClipboard(campaign.full_url)}
+                          className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
+                        >
+                          Copy
                         </button>
                       </div>
                     </div>
-                  )}
 
-                  {expandedCard !== webinar.course_id && (
-                    <div className="px-2.5 pb-2.5">
-                      <button onClick={(e) => { e.stopPropagation(); openRegistrationModal(webinar); }}
-                        className={`w-full py-1.5 rounded-lg font-semibold text-white text-sm bg-gradient-to-r ${courseColors[webinar.course_order] || courseColors[1]} shadow-md hover:shadow-lg transition-all duration-300 active:scale-[0.98]`}>
-                        Register FREE
-                      </button>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-shrink-0">
+                        <img
+                          src={generateQRCode(campaign.full_url)}
+                          alt="QR Code"
+                          className="w-24 h-24 rounded-lg border"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="grid grid-cols-3 gap-2 text-sm mb-3">
+                          <div className="bg-gray-100 rounded px-2 py-1">
+                            <span className="text-gray-500">Source:</span> <span className="font-medium">{campaign.utm_source}</span>
+                          </div>
+                          <div className="bg-gray-100 rounded px-2 py-1">
+                            <span className="text-gray-500">Medium:</span> <span className="font-medium">{campaign.utm_medium}</span>
+                          </div>
+                          <div className="bg-gray-100 rounded px-2 py-1">
+                            <span className="text-gray-500">Campaign:</span> <span className="font-medium">{campaign.utm_campaign}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <a
+                            href={generateQRCode(campaign.full_url)}
+                            download={`qr_${campaign.utm_campaign}.png`}
+                            className="px-3 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                          >
+                            Download QR
+                          </a>
+                          <button
+                            onClick={() => editCampaign(campaign)}
+                            className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => deleteCampaign(campaign.id)}
+                            className="px-3 py-1.5 bg-red-100 text-red-600 rounded text-sm hover:bg-red-200"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-100 py-2 px-4 z-40">
-        <div className="max-w-lg mx-auto text-center">
-          <p className="text-xs text-gray-500">© 2025 <span className="font-semibold">AIwithArijit.com</span> | Powered by Star Analytix & oStaran</p>
-        </div>
-      </footer>
-
-      {/* WhatsApp Floating Button */}
-      <a href="https://wa.me/919930051053?text=Hi%20Arijit%2C%20I%20want%20to%20know%20more%20about%20the%20AI%20Certification%20Webinar"
-        target="_blank" rel="noopener noreferrer" className="whatsapp-btn" aria-label="Chat on WhatsApp">
-        <WhatsAppIcon />
-      </a>
-
-      {/* Registration Modal - Fixed for mobile scrolling */}
-      {showModal && selectedWebinar && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={closeModal}>
-          <div className="min-h-screen py-4 px-4 flex items-start justify-center overflow-y-auto">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md my-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
-              {/* Modal header */}
-              <div className={`bg-gradient-to-r ${courseColors[selectedWebinar.course_order] || courseColors[1]} text-white p-4 rounded-t-2xl`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-lg">Register Now</h3>
-                    <p className="text-sm opacity-90">{selectedWebinar.course_short_name}</p>
                   </div>
-                  <button onClick={closeModal} className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
-                    <XIcon />
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Registration Analytics</h2>
+              <button
+                onClick={exportToCSV}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+              >
+                📥 Export CSV
+              </button>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-4 gap-4 mb-6">
+              <div className="bg-white rounded-xl p-4 shadow-sm border">
+                <p className="text-sm text-gray-500">Total Registrations</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+              </div>
+              <div className="bg-white rounded-xl p-4 shadow-sm border">
+                <p className="text-sm text-gray-500">Today</p>
+                <p className="text-3xl font-bold text-green-600">{stats.today}</p>
+              </div>
+              <div className="bg-white rounded-xl p-4 shadow-sm border">
+                <p className="text-sm text-gray-500">This Week</p>
+                <p className="text-3xl font-bold text-blue-600">{stats.thisWeek}</p>
+              </div>
+              <div className="bg-white rounded-xl p-4 shadow-sm border">
+                <p className="text-sm text-gray-500">This Month</p>
+                <p className="text-3xl font-bold text-purple-600">{stats.thisMonth}</p>
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border mb-4">
+              <div className="grid grid-cols-6 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Date From</label>
+                  <input
+                    type="date"
+                    className="w-full px-2 py-1.5 border rounded text-sm"
+                    value={filters.dateFrom}
+                    onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Date To</label>
+                  <input
+                    type="date"
+                    className="w-full px-2 py-1.5 border rounded text-sm"
+                    value={filters.dateTo}
+                    onChange={(e) => setFilters({...filters, dateTo: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">UTM Source</label>
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1.5 border rounded text-sm"
+                    placeholder="e.g., qr_standee"
+                    value={filters.utmSource}
+                    onChange={(e) => setFilters({...filters, utmSource: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">UTM Campaign</label>
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1.5 border rounded text-sm"
+                    value={filters.utmCampaign}
+                    onChange={(e) => setFilters({...filters, utmCampaign: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Course</label>
+                  <select
+                    className="w-full px-2 py-1.5 border rounded text-sm"
+                    value={filters.courseId}
+                    onChange={(e) => setFilters({...filters, courseId: e.target.value})}
+                  >
+                    <option value="">All Courses</option>
+                    <option value="6">Professionals</option>
+                    <option value="7">Schools</option>
+                    <option value="8">College/Job Seekers</option>
+                    <option value="9">Tech Dev</option>
+                    <option value="10">Business Leaders</option>
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={fetchRegistrations}
+                    className="w-full py-1.5 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700"
+                  >
+                    Apply Filters
                   </button>
                 </div>
               </div>
+            </div>
 
-              {/* Modal body - scrollable */}
-              <div className="p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
-                {!submitted ? (
-                  <form onSubmit={handleSubmit} className="space-y-3">
-                    <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-                      <p className="text-xs text-gray-500 mb-0.5">You are registering for</p>
-                      <p className="font-semibold text-gray-800 text-sm">{selectedWebinar.course_name}</p>
-                      <p className="text-xs text-gray-600 mt-0.5">{formatDate(selectedWebinar.webinar_date)} at {formatTime(selectedWebinar.webinar_time, selectedWebinar.timezone)}</p>
-                    </div>
-
-                    {errorMessage && (
-                      <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg">{errorMessage}</div>
-                    )}
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                      <input type="text" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.full_name ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
-                        placeholder="Enter your full name" value={formData.full_name} onChange={(e) => setFormData({...formData, full_name: e.target.value})} />
-                      {formErrors.full_name && <p className="text-red-500 text-xs mt-1">{formErrors.full_name}</p>}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                      <input type="email" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.email ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
-                        placeholder="your.email@example.com" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
-                      {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number *</label>
-                      <input type="tel" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.mobile ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
-                        placeholder="+91 98765 43210" value={formData.mobile} onChange={(e) => setFormData({...formData, mobile: e.target.value})} />
-                      {formErrors.mobile && <p className="text-red-500 text-xs mt-1">{formErrors.mobile}</p>}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
-                      <input type="date" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.date_of_birth ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
-                        value={formData.date_of_birth} onChange={(e) => setFormData({...formData, date_of_birth: e.target.value})} />
-                      {formErrors.date_of_birth && <p className="text-red-500 text-xs mt-1">{formErrors.date_of_birth}</p>}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">I am a... *</label>
-                      <select className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.profession_choice ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
-                        value={formData.profession_choice} onChange={(e) => setFormData({...formData, profession_choice: e.target.value})}>
-                        <option value="">Select your profession</option>
-                        {professionChoices.map((choice) => (<option key={choice.value} value={choice.value}>{choice.label}</option>))}
-                      </select>
-                      {formErrors.profession_choice && <p className="text-red-500 text-xs mt-1">{formErrors.profession_choice}</p>}
-                    </div>
-
-                    {formData.profession_choice === 'other' && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Please describe *</label>
-                        <input type="text" className={`w-full px-3 py-2.5 rounded-lg border ${formErrors.other_profession_description ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm`}
-                          placeholder="Describe your profession" value={formData.other_profession_description} onChange={(e) => setFormData({...formData, other_profession_description: e.target.value})} />
-                        {formErrors.other_profession_description && <p className="text-red-500 text-xs mt-1">{formErrors.other_profession_description}</p>}
-                      </div>
-                    )}
-
-                    <div className="flex items-start gap-2">
-                      <input type="checkbox" id="consent" className="w-4 h-4 mt-0.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                        checked={formData.marketing_consent} onChange={(e) => setFormData({...formData, marketing_consent: e.target.checked})} />
-                      <label htmlFor="consent" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
-                        You authorize <span className="font-semibold">AIwithArijit, Star Analytix, oStaran</span> to send you AI course related communications.
-                      </label>
-                    </div>
-
-                    <button type="submit" disabled={submitting}
-                      className={`w-full py-3 rounded-xl font-bold text-white text-base bg-gradient-to-r ${courseColors[selectedWebinar.course_order] || courseColors[1]} shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed`}>
-                      {submitting ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                          </svg>
-                          Submitting...
-                        </span>
-                      ) : 'Complete Registration'}
-                    </button>
-                  </form>
-                ) : (
-                  <div className="text-center py-4">
-                    <div className="w-16 h-16 mx-auto mb-3 bg-green-100 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">🎉 Registration Successful!</h3>
-                    <p className="text-gray-600 mb-3 text-sm">
-                      Thank you <span className="font-semibold">{registeredData?.name}</span> for registering for the AI Webinar on{' '}
-                      <span className="font-semibold">{registeredData?.date}</span> at <span className="font-semibold">{registeredData?.time}</span>.
-                    </p>
-                    <div className="bg-blue-50 rounded-lg p-3 mb-3">
-                      <p className="text-sm text-blue-800">📧 You shall soon receive a <span className="font-semibold">Live Session Registration Link</span> in your email & WhatsApp.</p>
-                    </div>
-                    
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 mb-3 border border-green-100">
-                      <p className="text-sm font-semibold text-gray-800 mb-2 flex items-center justify-center gap-1">
-                        <ShareIcon />Invite Friends & Colleagues
-                      </p>
-                      <a href={getWhatsAppShareLink()} target="_blank" rel="noopener noreferrer"
-                        className="w-full py-2 rounded-lg font-semibold text-white text-sm bg-green-500 hover:bg-green-600 shadow-md flex items-center justify-center gap-2 transition-colors">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                        Share on WhatsApp
-                      </a>
-                    </div>
-
-                    <a href="https://www.linkedin.com/in/arijit-chowdhury-86020b19/" target="_blank" rel="noopener noreferrer"
-                      className="w-full py-2 rounded-lg font-semibold text-white text-sm bg-blue-600 hover:bg-blue-700 shadow-md flex items-center justify-center gap-2 mb-3 transition-colors">
-                      <LinkedInIcon />View Trainer's Profile
-                    </a>
-
-                    <p className="text-xs text-gray-500 mb-3">
-                      For queries: <a href="mailto:AI@withArijit.com" className="text-indigo-600 font-semibold hover:underline">AI@withArijit.com</a>
-                    </p>
-                    <button onClick={closeModal} className="w-full py-2.5 rounded-xl font-semibold text-white bg-gray-700 hover:bg-gray-800 shadow-lg transition-all">
-                      Done
-                    </button>
-                  </div>
-                )}
-              </div>
+            {/* Registrations Table */}
+            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+              {analyticsLoading ? (
+                <div className="p-8 text-center text-gray-500">Loading...</div>
+              ) : registrations.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">No registrations found</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mobile</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Profession</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">UTM Source</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Device</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Registered</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {registrations.map((reg, idx) => (
+                        <tr key={reg.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-gray-500">{idx + 1}</td>
+                          <td className="px-4 py-3 font-medium text-gray-900">{reg.full_name}</td>
+                          <td className="px-4 py-3 text-gray-600">{reg.email}</td>
+                          <td className="px-4 py-3 text-gray-600">{reg.mobile}</td>
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs">
+                              {reg.course_id === 6 ? 'Professional' : reg.course_id === 7 ? 'School' : reg.course_id === 8 ? 'College' : reg.course_id === 9 ? 'Tech' : 'Leader'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600 capitalize">{reg.profession_choice?.replace(/_/g, ' ')}</td>
+                          <td className="px-4 py-3">
+                            {reg.utm_source ? (
+                              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">{reg.utm_source}</span>
+                            ) : (
+                              <span className="text-gray-400">Direct</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-gray-600 capitalize">{reg.device_type || '-'}</td>
+                          <td className="px-4 py-3 text-gray-500 text-xs">
+                            {new Date(reg.registered_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      )}
-    </main>
+        )}
+      </div>
+    </div>
   )
 }
