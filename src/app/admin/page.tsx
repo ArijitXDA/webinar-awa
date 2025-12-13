@@ -8,7 +8,7 @@ const ADMIN_USERNAME = 'arijitwith'
 const ADMIN_PASSWORD = 'reach500'
 
 // Base URL for the webinar landing page
-const BASE_URL = 'https://www.webinar.ostaran.com'
+const BASE_URL = 'https://webinar.ostaran.com'
 
 interface UTMCampaign {
   id: string
