@@ -452,7 +452,7 @@ export default function Home() {
             {/* Social Proof */}
             <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 px-3 py-1.5 rounded-full text-xs font-semibold mb-2 border border-green-200">
               <span>🎓</span>
-              <span>10,000+ Professionals & Students trained in last 12 months</span>
+              <span>50,000+ trained from India, USA & Canada</span>
             </div>
             
             {/* Micro-trust badges */}
