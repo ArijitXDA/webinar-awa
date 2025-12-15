@@ -459,7 +459,7 @@ export default function Home() {
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-gray-600 mb-2">
               <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Live Training</span>
               <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Certificate</span>
-              <span className="flex items-center gap-1"><span className="text-green-500">✔</span> No Spam</span>
+              <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Learn AI</span>
               <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Free Forever</span>
               <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Library Access</span>
             </div>
