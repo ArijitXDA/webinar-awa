@@ -658,7 +658,7 @@ export default function Home() {
             © 2025 AIwithArijit.com | <a href="mailto:AI@withArijit.com" className="text-indigo-600 hover:underline">AI@withArijit.com</a>
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            Star Analytix • oStaran • NLDIBM
+            Star Analytix • oStaran.com
           </p>
         </div>
       </footer>
