@@ -242,10 +242,17 @@ export default function Home() {
     profession_choice: '', other_profession_description: '', marketing_consent: true,
   })
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({})
+  const [utmLocation, setUtmLocation] = useState<string | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setLandingUrl(window.location.origin + window.location.pathname)
+      // Get UTM source for dynamic location tag
+      const params = new URLSearchParams(window.location.search)
+      const source = params.get('utm_source')
+      if (source) {
+        setUtmLocation(source)
+      }
     }
     fetchWebinars()
   }, [])
@@ -423,6 +430,16 @@ export default function Home() {
               <span>🔥</span>
               <span>100% FREE, Limited Seats</span>
             </div>
+            
+            {/* Dynamic Location Tag - shows utm_source */}
+            {utmLocation && (
+              <div className="block mb-2">
+                <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
+                  <span>📍</span>
+                  <span>Exclusive at {utmLocation}, only for today!</span>
+                </span>
+              </div>
+            )}
             
             <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2 leading-tight">
               <span className="gradient-text">FREE AI Certification</span>
