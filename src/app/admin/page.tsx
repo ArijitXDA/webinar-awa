@@ -50,6 +50,112 @@ interface Registration {
   registration_status: string
 }
 
+interface DailyCount {
+  date: string
+  count: number
+}
+
+// Simple Line Chart Component
+function LineChart({ data, height = 200 }: { data: DailyCount[], height?: number }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-48 text-gray-400">
+        No data available for chart
+      </div>
+    )
+  }
+
+  const maxCount = Math.max(...data.map(d => d.count), 1)
+  const padding = 40
+  const chartWidth = 100 // percentage
+  const chartHeight = height - padding * 2
+
+  // Calculate points for the line
+  const points = data.map((d, i) => {
+    const x = (i / (data.length - 1 || 1)) * 100
+    const y = 100 - (d.count / maxCount) * 100
+    return { x, y, ...d }
+  })
+
+  // Create SVG path
+  const linePath = points.map((p, i) => 
+    `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
+  ).join(' ')
+
+  // Create area path (for gradient fill)
+  const areaPath = `${linePath} L ${points[points.length - 1]?.x || 0} 100 L 0 100 Z`
+
+  return (
+    <div className="relative" style={{ height }}>
+      {/* Y-axis labels */}
+      <div className="absolute left-0 top-0 bottom-8 w-10 flex flex-col justify-between text-xs text-gray-400">
+        <span>{maxCount}</span>
+        <span>{Math.round(maxCount / 2)}</span>
+        <span>0</span>
+      </div>
+      
+      {/* Chart area */}
+      <div className="absolute left-12 right-0 top-0 bottom-8">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
+          {/* Grid lines */}
+          <line x1="0" y1="0" x2="100" y2="0" stroke="#e5e7eb" strokeWidth="0.5" />
+          <line x1="0" y1="50" x2="100" y2="50" stroke="#e5e7eb" strokeWidth="0.5" strokeDasharray="2" />
+          <line x1="0" y1="100" x2="100" y2="100" stroke="#e5e7eb" strokeWidth="0.5" />
+          
+          {/* Gradient fill */}
+          <defs>
+            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0.05" />
+            </linearGradient>
+          </defs>
+          <path d={areaPath} fill="url(#areaGradient)" />
+          
+          {/* Line */}
+          <path d={linePath} fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          
+          {/* Data points */}
+          {points.map((p, i) => (
+            <circle key={i} cx={p.x} cy={p.y} r="3" fill="#6366f1" stroke="white" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+          ))}
+        </svg>
+        
+        {/* Hover tooltips */}
+        <div className="absolute inset-0 flex">
+          {points.map((p, i) => (
+            <div 
+              key={i} 
+              className="flex-1 group relative"
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
+                {p.date}: {p.count} registrations
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* X-axis labels */}
+      <div className="absolute left-12 right-0 bottom-0 h-6 flex justify-between text-xs text-gray-400">
+        {data.length <= 7 ? (
+          data.map((d, i) => (
+            <span key={i} className="text-center" style={{ width: `${100 / data.length}%` }}>
+              {new Date(d.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+            </span>
+          ))
+        ) : (
+          <>
+            <span>{new Date(data[0].date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+            <span>{new Date(data[Math.floor(data.length / 2)].date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+            <span>{new Date(data[data.length - 1].date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [username, setUsername] = useState('')
@@ -91,6 +197,11 @@ export default function AdminPage() {
     thisWeek: 0,
     thisMonth: 0
   })
+  
+  // New state for dropdown options and chart data
+  const [utmSourceOptions, setUtmSourceOptions] = useState<string[]>([])
+  const [utmCampaignOptions, setUtmCampaignOptions] = useState<string[]>([])
+  const [dailyRegistrations, setDailyRegistrations] = useState<DailyCount[]>([])
 
   // Check auth on mount
   useEffect(() => {
@@ -99,6 +210,7 @@ export default function AdminPage() {
       setIsAuthenticated(true)
       fetchCampaigns()
       fetchRegistrations()
+      fetchUTMOptions()
     }
   }, [])
 
@@ -110,6 +222,7 @@ export default function AdminPage() {
       setLoginError('')
       fetchCampaigns()
       fetchRegistrations()
+      fetchUTMOptions()
     } else {
       setLoginError('Invalid credentials')
     }
@@ -131,6 +244,50 @@ export default function AdminPage() {
       setCampaigns(data || [])
     } catch (error) {
       console.error('Error fetching campaigns:', error)
+    }
+  }
+
+  // Fetch unique UTM sources and campaigns for dropdowns
+  async function fetchUTMOptions() {
+    try {
+      // Fetch unique UTM sources from registrations
+      const { data: sourceData, error: sourceError } = await supabase
+        .from('qr_landing_registrations')
+        .select('utm_source')
+        .not('utm_source', 'is', null)
+        .not('utm_source', 'eq', '')
+      
+      if (!sourceError && sourceData) {
+        const uniqueSources = [...new Set(sourceData.map(d => d.utm_source).filter(Boolean))]
+        setUtmSourceOptions(uniqueSources.sort())
+      }
+
+      // Fetch unique UTM campaigns from registrations
+      const { data: campaignData, error: campaignError } = await supabase
+        .from('qr_landing_registrations')
+        .select('utm_campaign')
+        .not('utm_campaign', 'is', null)
+        .not('utm_campaign', 'eq', '')
+      
+      if (!campaignError && campaignData) {
+        const uniqueCampaigns = [...new Set(campaignData.map(d => d.utm_campaign).filter(Boolean))]
+        setUtmCampaignOptions(uniqueCampaigns.sort())
+      }
+
+      // Also fetch from UTM campaigns table and merge
+      const { data: utmTableData, error: utmTableError } = await supabase
+        .from('qr_utm_campaigns')
+        .select('utm_source, utm_campaign')
+      
+      if (!utmTableError && utmTableData) {
+        const tableSources = utmTableData.map(d => d.utm_source).filter(Boolean)
+        const tableCampaigns = utmTableData.map(d => d.utm_campaign).filter(Boolean)
+        
+        setUtmSourceOptions(prev => [...new Set([...prev, ...tableSources])].sort())
+        setUtmCampaignOptions(prev => [...new Set([...prev, ...tableCampaigns])].sort())
+      }
+    } catch (error) {
+      console.error('Error fetching UTM options:', error)
     }
   }
 
@@ -180,11 +337,49 @@ export default function AdminPage() {
         thisWeek: allData.filter(r => new Date(r.registered_at) >= weekAgo).length,
         thisMonth: allData.filter(r => new Date(r.registered_at) >= monthAgo).length
       })
+
+      // Calculate daily registrations for chart
+      calculateDailyRegistrations(allData)
     } catch (error) {
       console.error('Error fetching registrations:', error)
     } finally {
       setAnalyticsLoading(false)
     }
+  }
+
+  function calculateDailyRegistrations(data: Registration[]) {
+    if (!data || data.length === 0) {
+      setDailyRegistrations([])
+      return
+    }
+
+    // Group by date
+    const dateMap: { [key: string]: number } = {}
+    
+    data.forEach(reg => {
+      const date = new Date(reg.registered_at).toISOString().split('T')[0]
+      dateMap[date] = (dateMap[date] || 0) + 1
+    })
+
+    // Get date range (last 14 days or from data range)
+    const dates = Object.keys(dateMap).sort()
+    const endDate = new Date()
+    const startDate = new Date(endDate.getTime() - 13 * 24 * 60 * 60 * 1000) // Last 14 days
+
+    // Fill in missing dates with 0
+    const dailyData: DailyCount[] = []
+    const currentDate = new Date(startDate)
+    
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0]
+      dailyData.push({
+        date: dateStr,
+        count: dateMap[dateStr] || 0
+      })
+      currentDate.setDate(currentDate.getDate() + 1)
+    }
+
+    setDailyRegistrations(dailyData)
   }
 
   async function saveCampaign(e: React.FormEvent) {
@@ -215,23 +410,9 @@ export default function AdminPage() {
       setEditingCampaign(null)
       resetCampaignForm()
       fetchCampaigns()
+      fetchUTMOptions() // Refresh dropdown options
     } catch (error) {
       console.error('Error saving campaign:', error)
-      alert('Error saving campaign')
-    }
-  }
-
-  async function deleteCampaign(id: string) {
-    if (!confirm('Are you sure you want to delete this campaign?')) return
-    try {
-      const { error } = await supabase
-        .from('qr_utm_campaigns')
-        .delete()
-        .eq('id', id)
-      if (error) throw error
-      fetchCampaigns()
-    } catch (error) {
-      console.error('Error deleting campaign:', error)
     }
   }
 
@@ -253,11 +434,11 @@ export default function AdminPage() {
   function editCampaign(campaign: UTMCampaign) {
     setEditingCampaign(campaign)
     setCampaignForm({
-      campaign_name: campaign.campaign_name || '',
+      campaign_name: campaign.campaign_name,
       campaign_description: campaign.campaign_description || '',
-      utm_source: campaign.utm_source || '',
-      utm_medium: campaign.utm_medium || 'qr_code',
-      utm_campaign: campaign.utm_campaign || '',
+      utm_source: campaign.utm_source,
+      utm_medium: campaign.utm_medium,
+      utm_campaign: campaign.utm_campaign,
       utm_term: campaign.utm_term || '',
       utm_content: campaign.utm_content || '',
       placement_location: campaign.placement_location || '',
@@ -267,74 +448,102 @@ export default function AdminPage() {
     setShowCampaignForm(true)
   }
 
-  function generateQRCode(url: string): string {
+  async function deleteCampaign(id: string) {
+    if (!confirm('Are you sure you want to delete this campaign?')) return
+    try {
+      const { error } = await supabase
+        .from('qr_utm_campaigns')
+        .delete()
+        .eq('id', id)
+      if (error) throw error
+      fetchCampaigns()
+      fetchUTMOptions() // Refresh dropdown options
+    } catch (error) {
+      console.error('Error deleting campaign:', error)
+    }
+  }
+
+  function generateQRCode(url: string) {
     return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`
   }
 
-  function copyToClipboard(text: string) {
-    navigator.clipboard.writeText(text)
-    alert('Copied to clipboard!')
-  }
-
   function exportToCSV() {
-    const headers = ['Name', 'Email', 'Mobile', 'Age', 'Profession', 'Course', 'Date', 'UTM Source', 'UTM Campaign', 'Device', 'Registered At']
+    if (registrations.length === 0) return
+
+    const headers = ['Name', 'Email', 'Mobile', 'Age', 'Profession', 'Course', 'UTM Source', 'UTM Campaign', 'Device', 'Registered At']
     const rows = registrations.map(r => [
-      r.full_name, r.email, r.mobile, r.age || '', r.profession_choice,
-      r.course_name, r.webinar_date, r.utm_source || '', r.utm_campaign || '',
-      r.device_type || '', r.registered_at
+      r.full_name,
+      r.email,
+      r.mobile,
+      r.age || '',
+      r.profession_choice,
+      r.course_name,
+      r.utm_source || 'Direct',
+      r.utm_campaign || '',
+      r.device_type || '',
+      new Date(r.registered_at).toLocaleString('en-IN')
     ])
-    
-    const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
+
+    const csvContent = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `webinar_registrations_${new Date().toISOString().split('T')[0]}.csv`
+    a.download = `registrations_${new Date().toISOString().split('T')[0]}.csv`
     a.click()
+  }
+
+  function clearFilters() {
+    setFilters({
+      dateFrom: '',
+      dateTo: '',
+      utmSource: '',
+      utmCampaign: '',
+      courseId: '',
+      profession: ''
+    })
   }
 
   // Login Screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-900 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100">
+        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4 shadow-lg">
-              AI
+            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-white text-2xl font-bold">AI</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-            <p className="text-gray-500 text-sm mt-1">webinar.ostaran.com</p>
+            <p className="text-gray-500 text-sm mt-1">AIwithArijit.com Webinar Dashboard</p>
           </div>
           
           <form onSubmit={handleLogin} className="space-y-4">
-            {loginError && (
-              <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-200">
-                {loginError}
-              </div>
-            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
               <input
                 type="text"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                required
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter username"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <input
                 type="password"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter password"
               />
             </div>
+            {loginError && (
+              <p className="text-red-500 text-sm">{loginError}</p>
+            )}
             <button
               type="submit"
-              className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg"
+              className="w-full py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition-shadow"
             >
               Login
             </button>
@@ -344,198 +553,157 @@ export default function AdminPage() {
     )
   }
 
-  // Admin Dashboard
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="bg-white border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
-              AI
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold">AI</span>
             </div>
             <div>
-              <h1 className="font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-xs text-gray-500">webinar.ostaran.com</p>
+              <h1 className="font-bold text-gray-900">Webinar Admin</h1>
+              <p className="text-xs text-gray-500">AIwithArijit.com</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setActiveTab('utm')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'utm' ? 'bg-white shadow text-indigo-600' : 'text-gray-600'}`}
+              >
+                📊 UTM Campaigns
+              </button>
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'analytics' ? 'bg-white shadow text-indigo-600' : 'text-gray-600'}`}
+              >
+                📈 Analytics
+              </button>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Tabs */}
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setActiveTab('utm')}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              activeTab === 'utm'
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'bg-white text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            📊 UTM & QR Management
-          </button>
-          <button
-            onClick={() => { setActiveTab('analytics'); fetchRegistrations(); }}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              activeTab === 'analytics'
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'bg-white text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            📈 Registration Analytics
-          </button>
-        </div>
-
-        {/* UTM Management Tab */}
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* UTM Campaigns Tab */}
         {activeTab === 'utm' && (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">UTM Campaigns & QR Codes</h2>
+              <h2 className="text-xl font-bold text-gray-900">UTM Campaign Manager</h2>
               <button
                 onClick={() => { setShowCampaignForm(true); setEditingCampaign(null); resetCampaignForm(); }}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
               >
-                + Create New Campaign
+                + New Campaign
               </button>
             </div>
 
             {/* Campaign Form Modal */}
             {showCampaignForm && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <div className="p-6 border-b">
-                    <h3 className="text-lg font-bold">{editingCampaign ? 'Edit Campaign' : 'Create New Campaign'}</h3>
-                  </div>
-                  <form onSubmit={saveCampaign} className="p-6 space-y-4">
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-2xl p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto">
+                  <h3 className="text-lg font-bold mb-4">{editingCampaign ? 'Edit Campaign' : 'Create New Campaign'}</h3>
+                  <form onSubmit={saveCampaign} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
+                      <div className="col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Name *</label>
                         <input
                           type="text"
-                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          required
+                          className="w-full px-3 py-2 border rounded-lg"
                           value={campaignForm.campaign_name}
                           onChange={(e) => setCampaignForm({...campaignForm, campaign_name: e.target.value})}
+                          placeholder="e.g., BaaMee Andheri Launch"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Source *</label>
+                        <input
+                          type="text"
                           required
+                          className="w-full px-3 py-2 border rounded-lg"
+                          value={campaignForm.utm_source}
+                          onChange={(e) => setCampaignForm({...campaignForm, utm_source: e.target.value})}
+                          placeholder="e.g., BaaMee"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Medium</label>
+                        <select
+                          className="w-full px-3 py-2 border rounded-lg"
+                          value={campaignForm.utm_medium}
+                          onChange={(e) => setCampaignForm({...campaignForm, utm_medium: e.target.value})}
+                        >
+                          <option value="qr_code">QR Code</option>
+                          <option value="standee">Standee</option>
+                          <option value="poster">Poster</option>
+                          <option value="flyer">Flyer</option>
+                          <option value="digital">Digital</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Campaign *</label>
+                        <input
+                          type="text"
+                          required
+                          className="w-full px-3 py-2 border rounded-lg"
+                          value={campaignForm.utm_campaign}
+                          onChange={(e) => setCampaignForm({...campaignForm, utm_campaign: e.target.value})}
+                          placeholder="e.g., jan2025_launch"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Placement Location</label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border rounded-lg"
+                          value={campaignForm.placement_location}
+                          onChange={(e) => setCampaignForm({...campaignForm, placement_location: e.target.value})}
+                          placeholder="e.g., Counter, Window"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Placement City</label>
                         <input
                           type="text"
-                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3 py-2 border rounded-lg"
                           value={campaignForm.placement_city}
                           onChange={(e) => setCampaignForm({...campaignForm, placement_city: e.target.value})}
+                          placeholder="e.g., Mumbai, Andheri"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea
+                          className="w-full px-3 py-2 border rounded-lg"
+                          rows={2}
+                          value={campaignForm.campaign_description}
+                          onChange={(e) => setCampaignForm({...campaignForm, campaign_description: e.target.value})}
+                          placeholder="Brief description of the campaign"
                         />
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                      <textarea
-                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                        rows={2}
-                        value={campaignForm.campaign_description}
-                        onChange={(e) => setCampaignForm({...campaignForm, campaign_description: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Placement Location</label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                        placeholder="e.g., Mumbai Local Train Stations"
-                        value={campaignForm.placement_location}
-                        onChange={(e) => setCampaignForm({...campaignForm, placement_location: e.target.value})}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Source *</label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                          placeholder="e.g., qr_standee, linkedin, facebook"
-                          value={campaignForm.utm_source}
-                          onChange={(e) => setCampaignForm({...campaignForm, utm_source: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Medium *</label>
-                        <select
-                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                          value={campaignForm.utm_medium}
-                          onChange={(e) => setCampaignForm({...campaignForm, utm_medium: e.target.value})}
-                        >
-                          <option value="qr_code">QR Code</option>
-                          <option value="offline">Offline</option>
-                          <option value="social">Social</option>
-                          <option value="email">Email</option>
-                          <option value="paid">Paid</option>
-                          <option value="referral">Referral</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Campaign *</label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                          placeholder="e.g., jan2025_mumbai"
-                          value={campaignForm.utm_campaign}
-                          onChange={(e) => setCampaignForm({...campaignForm, utm_campaign: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Term</label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                          value={campaignForm.utm_term}
-                          onChange={(e) => setCampaignForm({...campaignForm, utm_term: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">UTM Content</label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                          value={campaignForm.utm_content}
-                          onChange={(e) => setCampaignForm({...campaignForm, utm_content: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="is_active"
-                        checked={campaignForm.is_active}
-                        onChange={(e) => setCampaignForm({...campaignForm, is_active: e.target.checked})}
-                        className="w-4 h-4 rounded border-gray-300"
-                      />
-                      <label htmlFor="is_active" className="text-sm text-gray-700">Active Campaign</label>
-                    </div>
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex gap-3 justify-end mt-6">
                       <button
                         type="button"
                         onClick={() => { setShowCampaignForm(false); setEditingCampaign(null); }}
-                        className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="px-4 py-2 border rounded-lg hover:bg-gray-50"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
                       >
-                        {editingCampaign ? 'Update Campaign' : 'Create Campaign'}
+                        {editingCampaign ? 'Update' : 'Create'} Campaign
                       </button>
                     </div>
                   </form>
@@ -544,82 +712,67 @@ export default function AdminPage() {
             )}
 
             {/* Campaigns List */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               {campaigns.length === 0 ? (
                 <div className="bg-white rounded-xl p-8 text-center text-gray-500">
                   No campaigns yet. Create your first UTM campaign!
                 </div>
               ) : (
                 campaigns.map((campaign) => (
-                  <div key={campaign.id} className="bg-white rounded-xl shadow-sm border p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="font-bold text-lg text-gray-900">{campaign.campaign_name}</h3>
-                        <p className="text-sm text-gray-500">{campaign.campaign_description}</p>
-                        {campaign.placement_location && (
-                          <p className="text-sm text-indigo-600 mt-1">📍 {campaign.placement_location} {campaign.placement_city && `• ${campaign.placement_city}`}</p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${campaign.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                          {campaign.is_active ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                      <p className="text-xs text-gray-500 mb-1">Campaign URL:</p>
-                      <div className="flex items-center gap-2">
-                        <code className="flex-1 text-sm bg-white px-3 py-2 rounded border break-all">{campaign.full_url}</code>
-                        <button
-                          onClick={() => copyToClipboard(campaign.full_url)}
-                          className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
-                        >
-                          Copy
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                      <div className="flex-shrink-0">
-                        <img
-                          src={generateQRCode(campaign.full_url)}
-                          alt="QR Code"
-                          className="w-24 h-24 rounded-lg border"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="grid grid-cols-3 gap-2 text-sm mb-3">
-                          <div className="bg-gray-100 rounded px-2 py-1">
-                            <span className="text-gray-500">Source:</span> <span className="font-medium">{campaign.utm_source}</span>
+                  <div key={campaign.id} className="bg-white rounded-xl border shadow-sm overflow-hidden">
+                    <div className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-gray-900">{campaign.campaign_name}</h3>
+                            <span className={`px-2 py-0.5 rounded-full text-xs ${campaign.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                              {campaign.is_active ? 'Active' : 'Inactive'}
+                            </span>
                           </div>
-                          <div className="bg-gray-100 rounded px-2 py-1">
-                            <span className="text-gray-500">Medium:</span> <span className="font-medium">{campaign.utm_medium}</span>
+                          {campaign.campaign_description && (
+                            <p className="text-sm text-gray-500 mb-2">{campaign.campaign_description}</p>
+                          )}
+                          <div className="flex items-center gap-2 mb-2">
+                            <code className="text-xs bg-gray-100 px-2 py-1 rounded break-all">{campaign.full_url}</code>
+                            <button
+                              onClick={() => navigator.clipboard.writeText(campaign.full_url)}
+                              className="text-indigo-600 text-xs hover:underline"
+                            >
+                              Copy
+                            </button>
                           </div>
-                          <div className="bg-gray-100 rounded px-2 py-1">
-                            <span className="text-gray-500">Campaign:</span> <span className="font-medium">{campaign.utm_campaign}</span>
+                          <div className="flex gap-2 text-xs flex-wrap">
+                            <div className="bg-gray-100 rounded px-2 py-1">
+                              <span className="text-gray-500">Source:</span> <span className="font-medium">{campaign.utm_source}</span>
+                            </div>
+                            <div className="bg-gray-100 rounded px-2 py-1">
+                              <span className="text-gray-500">Medium:</span> <span className="font-medium">{campaign.utm_medium}</span>
+                            </div>
+                            <div className="bg-gray-100 rounded px-2 py-1">
+                              <span className="text-gray-500">Campaign:</span> <span className="font-medium">{campaign.utm_campaign}</span>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <a
-                            href={generateQRCode(campaign.full_url)}
-                            download={`qr_${campaign.utm_campaign}.png`}
-                            className="px-3 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-                          >
-                            Download QR
-                          </a>
-                          <button
-                            onClick={() => editCampaign(campaign)}
-                            className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => deleteCampaign(campaign.id)}
-                            className="px-3 py-1.5 bg-red-100 text-red-600 rounded text-sm hover:bg-red-200"
-                          >
-                            Delete
-                          </button>
+                          <div className="flex gap-2 mt-3">
+                            <a
+                              href={generateQRCode(campaign.full_url)}
+                              download={`qr_${campaign.utm_campaign}.png`}
+                              className="px-3 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                            >
+                              Download QR
+                            </a>
+                            <button
+                              onClick={() => editCampaign(campaign)}
+                              className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => deleteCampaign(campaign.id)}
+                              className="px-3 py-1.5 bg-red-100 text-red-600 rounded text-sm hover:bg-red-200"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -663,8 +816,23 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {/* Registrations Over Time Chart */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border mb-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">📈 Registrations Over Last 14 Days</h3>
+              <LineChart data={dailyRegistrations} height={220} />
+            </div>
+
             {/* Filters */}
             <div className="bg-white rounded-xl p-4 shadow-sm border mb-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-700">🔍 Filters</h3>
+                <button
+                  onClick={clearFilters}
+                  className="text-xs text-indigo-600 hover:underline"
+                >
+                  Clear All
+                </button>
+              </div>
               <div className="grid grid-cols-6 gap-3">
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Date From</label>
@@ -686,22 +854,29 @@ export default function AdminPage() {
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">UTM Source</label>
-                  <input
-                    type="text"
+                  <select
                     className="w-full px-2 py-1.5 border rounded text-sm"
-                    placeholder="e.g., qr_standee"
                     value={filters.utmSource}
                     onChange={(e) => setFilters({...filters, utmSource: e.target.value})}
-                  />
+                  >
+                    <option value="">All Sources</option>
+                    {utmSourceOptions.map((source) => (
+                      <option key={source} value={source}>{source}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">UTM Campaign</label>
-                  <input
-                    type="text"
+                  <select
                     className="w-full px-2 py-1.5 border rounded text-sm"
                     value={filters.utmCampaign}
                     onChange={(e) => setFilters({...filters, utmCampaign: e.target.value})}
-                  />
+                  >
+                    <option value="">All Campaigns</option>
+                    {utmCampaignOptions.map((campaign) => (
+                      <option key={campaign} value={campaign}>{campaign}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Course</label>
