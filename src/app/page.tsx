@@ -434,9 +434,9 @@ export default function Home() {
             {/* Dynamic Location Tag - shows utm_source */}
             {utmLocation && (
               <div className="block mb-2">
-                <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
+                <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs shadow-lg">
                   <span>📍</span>
-                  <span>Exclusive at {utmLocation}, only for today!</span>
+                  <span>Exclusive at <span className="font-black bg-white/30 px-1.5 py-0.5 rounded text-yellow-100">{utmLocation}</span>, <span className="font-black underline decoration-2 decoration-yellow-200">only for today!</span></span>
                 </span>
               </div>
             )}
@@ -452,14 +452,14 @@ export default function Home() {
             {/* Social Proof */}
             <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 px-3 py-1.5 rounded-full text-xs font-semibold mb-2 border border-green-200">
               <span>🎓</span>
-              <span>50,000+ trained from India, USA & Canada</span>
+              <span>10,000+ Professionals & Students trained in last 12 months</span>
             </div>
             
             {/* Micro-trust badges */}
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-gray-600 mb-2">
               <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Live Training</span>
               <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Certificate</span>
-              <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Learn AI</span>
+              <span className="flex items-center gap-1"><span className="text-green-500">✔</span> No Spam</span>
               <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Free Forever</span>
               <span className="flex items-center gap-1"><span className="text-green-500">✔</span> Library Access</span>
             </div>
@@ -658,7 +658,7 @@ export default function Home() {
             © 2025 AIwithArijit.com | <a href="mailto:AI@withArijit.com" className="text-indigo-600 hover:underline">AI@withArijit.com</a>
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            Star Analytix • oStaran.com
+            Star Analytix • oStaran • NLDIBM
           </p>
         </div>
       </footer>
