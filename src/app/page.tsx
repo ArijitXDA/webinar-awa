@@ -598,7 +598,7 @@ export default function Home() {
                   Researcher & Trainer - Agentic AI & Quantum Computing
                 </p>
                 <p className="text-sm text-indigo-600 font-semibold mt-0.5">
-                  AIwithArijit.com • oStaran.com • Star Analytix
+                  IIT Bombay • NLDIBM • Star Analytix
                 </p>
               </div>
             </div>
@@ -840,7 +840,7 @@ export default function Home() {
             © 2025 AIwithArijit.com | <a href="mailto:AI@withArijit.com" className="text-indigo-600 hover:underline">AI@withArijit.com</a>
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            Star Analytix • oStaran • NLDIBM
+            Star Analytix • oStaran
           </p>
         </div>
       </footer>
