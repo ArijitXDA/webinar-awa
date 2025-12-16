@@ -414,12 +414,26 @@ export default function Home() {
       <header className="relative z-10 pt-4 pb-2 px-4">
         <div className="max-w-lg mx-auto">
           {/* Logo */}
-          <div className="flex items-center justify-center mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/30">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            {/* AIwithArijit.com Logo */}
+            <div className="flex items-center gap-1.5">
+              <div className="w-7 h-7 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-md flex items-center justify-center text-white font-bold text-xs shadow-md shadow-blue-500/30">
                 AI
               </div>
-              <span className="text-xl font-bold text-gray-800">WithArijit.com</span>
+              <span className="text-sm font-bold text-gray-800">WithArijit.com</span>
+            </div>
+            
+            {/* Divider */}
+            <div className="h-5 w-px bg-gray-300"></div>
+            
+            {/* oStaran.com Logo */}
+            <div className="flex items-center gap-1.5">
+              <img 
+                src="/oStaran.png" 
+                alt="oStaran.com" 
+                className="w-7 h-7 object-contain"
+              />
+              <span className="text-sm font-bold text-gray-800">oStaran.com</span>
             </div>
           </div>
           
