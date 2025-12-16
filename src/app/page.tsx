@@ -598,7 +598,7 @@ export default function Home() {
                   Researcher & Trainer - Agentic AI & Quantum Computing
                 </p>
                 <p className="text-sm text-indigo-600 font-semibold mt-0.5">
-                  IIT-Bombay • Star Analytix • NLDIBM
+                  AIwithArijit.com • oStaran.com • Star Analytix
                 </p>
               </div>
             </div>
