@@ -50,6 +50,21 @@ interface Registration {
   registration_status: string
 }
 
+interface WebinarRating {
+  id: string
+  rating_id: number
+  email: string
+  mobile: string
+  full_name: string
+  course_name: string
+  rating: number
+  feedback: string
+  source: string
+  rated_at: string
+  // Joined from registration
+  webinar_date?: string
+}
+
 interface DailyCount {
   date: string
   count: number
@@ -66,43 +81,33 @@ function LineChart({ data, height = 200 }: { data: DailyCount[], height?: number
   }
 
   const maxCount = Math.max(...data.map(d => d.count), 1)
-  const padding = 40
-  const chartWidth = 100 // percentage
-  const chartHeight = height - padding * 2
 
-  // Calculate points for the line
   const points = data.map((d, i) => {
     const x = (i / (data.length - 1 || 1)) * 100
     const y = 100 - (d.count / maxCount) * 100
     return { x, y, ...d }
   })
 
-  // Create SVG path
   const linePath = points.map((p, i) => 
     `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
   ).join(' ')
 
-  // Create area path (for gradient fill)
   const areaPath = `${linePath} L ${points[points.length - 1]?.x || 0} 100 L 0 100 Z`
 
   return (
     <div className="relative" style={{ height }}>
-      {/* Y-axis labels */}
       <div className="absolute left-0 top-0 bottom-8 w-10 flex flex-col justify-between text-xs text-gray-400">
         <span>{maxCount}</span>
         <span>{Math.round(maxCount / 2)}</span>
         <span>0</span>
       </div>
       
-      {/* Chart area */}
       <div className="absolute left-12 right-0 top-0 bottom-8">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
-          {/* Grid lines */}
           <line x1="0" y1="0" x2="100" y2="0" stroke="#e5e7eb" strokeWidth="0.5" />
           <line x1="0" y1="50" x2="100" y2="50" stroke="#e5e7eb" strokeWidth="0.5" strokeDasharray="2" />
           <line x1="0" y1="100" x2="100" y2="100" stroke="#e5e7eb" strokeWidth="0.5" />
           
-          {/* Gradient fill */}
           <defs>
             <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
@@ -110,24 +115,16 @@ function LineChart({ data, height = 200 }: { data: DailyCount[], height?: number
             </linearGradient>
           </defs>
           <path d={areaPath} fill="url(#areaGradient)" />
-          
-          {/* Line */}
           <path d={linePath} fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
           
-          {/* Data points */}
           {points.map((p, i) => (
             <circle key={i} cx={p.x} cy={p.y} r="3" fill="#6366f1" stroke="white" strokeWidth="2" vectorEffect="non-scaling-stroke" />
           ))}
         </svg>
         
-        {/* Hover tooltips */}
         <div className="absolute inset-0 flex">
           {points.map((p, i) => (
-            <div 
-              key={i} 
-              className="flex-1 group relative"
-              style={{ cursor: 'pointer' }}
-            >
+            <div key={i} className="flex-1 group relative" style={{ cursor: 'pointer' }}>
               <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
                 {p.date}: {p.count} registrations
               </div>
@@ -136,7 +133,6 @@ function LineChart({ data, height = 200 }: { data: DailyCount[], height?: number
         </div>
       </div>
       
-      {/* X-axis labels */}
       <div className="absolute left-12 right-0 bottom-0 h-6 flex justify-between text-xs text-gray-400">
         {data.length <= 7 ? (
           data.map((d, i) => (
@@ -156,12 +152,112 @@ function LineChart({ data, height = 200 }: { data: DailyCount[], height?: number
   )
 }
 
+// Funnel Chart Component
+function FunnelChart({ totalRegistrations, totalRated }: { totalRegistrations: number, totalRated: number }) {
+  const conversionRate = totalRegistrations > 0 ? ((totalRated / totalRegistrations) * 100).toFixed(1) : '0'
+  
+  return (
+    <div className="flex flex-col items-center">
+      {/* Funnel shape */}
+      <div className="relative w-full max-w-xs">
+        {/* Top - Registrations */}
+        <div className="relative">
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-t-xl py-4 px-6 text-center">
+            <p className="text-xs opacity-80">Total Registrations</p>
+            <p className="text-3xl font-bold">{totalRegistrations}</p>
+          </div>
+          {/* Funnel connector */}
+          <div className="h-0 w-0 mx-auto border-l-[60px] border-l-transparent border-r-[60px] border-r-transparent border-t-[20px] border-t-purple-500"></div>
+        </div>
+        
+        {/* Bottom - Rated */}
+        <div className="relative mt-1">
+          <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl py-4 px-6 text-center mx-8">
+            <p className="text-xs opacity-80">Rated</p>
+            <p className="text-3xl font-bold">{totalRated}</p>
+          </div>
+        </div>
+        
+        {/* Conversion Rate */}
+        <div className="text-center mt-4">
+          <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm">
+            <span className="text-gray-500">Conversion:</span>
+            <span className="font-bold text-indigo-600">{conversionRate}%</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Rating TreeMap Component
+function RatingTreeMap({ ratingDistribution }: { ratingDistribution: { [key: number]: number } }) {
+  const total = Object.values(ratingDistribution).reduce((a, b) => a + b, 0)
+  
+  const ratingColors: { [key: number]: { bg: string, text: string, label: string } } = {
+    5: { bg: 'bg-green-500', text: 'text-white', label: '🤩 Excellent' },
+    4: { bg: 'bg-lime-500', text: 'text-white', label: '😊 Very Good' },
+    3: { bg: 'bg-yellow-400', text: 'text-gray-800', label: '🙂 Good' },
+    2: { bg: 'bg-orange-400', text: 'text-white', label: '😐 Fair' },
+    1: { bg: 'bg-red-500', text: 'text-white', label: '😞 Poor' },
+  }
+
+  // Calculate sizes based on count
+  const ratings = [5, 4, 3, 2, 1]
+  
+  return (
+    <div className="space-y-2">
+      {ratings.map((rating) => {
+        const count = ratingDistribution[rating] || 0
+        const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : '0'
+        const widthPercentage = total > 0 ? Math.max((count / total) * 100, 10) : 10
+        
+        return (
+          <div key={rating} className="flex items-center gap-3">
+            <div className="w-16 text-right">
+              <span className="text-lg">{'★'.repeat(rating)}{'☆'.repeat(5-rating)}</span>
+            </div>
+            <div className="flex-1 h-10 bg-gray-100 rounded-lg overflow-hidden relative">
+              <div 
+                className={`h-full ${ratingColors[rating].bg} ${ratingColors[rating].text} flex items-center justify-between px-3 transition-all duration-500`}
+                style={{ width: `${widthPercentage}%`, minWidth: count > 0 ? '80px' : '0' }}
+              >
+                {count > 0 && (
+                  <>
+                    <span className="text-xs font-medium truncate">{ratingColors[rating].label}</span>
+                    <span className="font-bold">{count}</span>
+                  </>
+                )}
+              </div>
+              {count === 0 && (
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">0</span>
+              )}
+            </div>
+            <div className="w-14 text-right text-sm text-gray-500">{percentage}%</div>
+          </div>
+        )
+      })}
+      
+      {/* Average Rating */}
+      {total > 0 && (
+        <div className="mt-4 pt-4 border-t text-center">
+          <span className="text-gray-500 text-sm">Average Rating: </span>
+          <span className="text-2xl font-bold text-indigo-600">
+            {(Object.entries(ratingDistribution).reduce((sum, [r, c]) => sum + (parseInt(r) * c), 0) / total).toFixed(1)}
+          </span>
+          <span className="text-yellow-500 ml-1">★</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
-  const [activeTab, setActiveTab] = useState<'utm' | 'analytics'>('utm')
+  const [activeTab, setActiveTab] = useState<'utm' | 'analytics' | 'ratings'>('utm')
   
   // UTM State
   const [campaigns, setCampaigns] = useState<UTMCampaign[]>([])
@@ -198,10 +294,25 @@ export default function AdminPage() {
     thisMonth: 0
   })
   
-  // New state for dropdown options and chart data
   const [utmSourceOptions, setUtmSourceOptions] = useState<string[]>([])
   const [utmCampaignOptions, setUtmCampaignOptions] = useState<string[]>([])
   const [dailyRegistrations, setDailyRegistrations] = useState<DailyCount[]>([])
+
+  // Ratings Analytics State
+  const [ratings, setRatings] = useState<WebinarRating[]>([])
+  const [ratingsLoading, setRatingsLoading] = useState(false)
+  const [totalRegistrationsCount, setTotalRegistrationsCount] = useState(0)
+  const [ratingDistribution, setRatingDistribution] = useState<{ [key: number]: number }>({})
+  const [ratingsSearch, setRatingsSearch] = useState('')
+  const [ratingsFilters, setRatingsFilters] = useState({
+    rating: '',
+    courseName: '',
+    dateFrom: '',
+    dateTo: ''
+  })
+  const [ratingsSortBy, setRatingsSortBy] = useState<string>('rated_at')
+  const [ratingsSortOrder, setRatingsSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [courseNameOptions, setCourseNameOptions] = useState<string[]>([])
 
   // Check auth on mount
   useEffect(() => {
@@ -211,6 +322,7 @@ export default function AdminPage() {
       fetchCampaigns()
       fetchRegistrations()
       fetchUTMOptions()
+      fetchRatings()
     }
   }, [])
 
@@ -223,6 +335,7 @@ export default function AdminPage() {
       fetchCampaigns()
       fetchRegistrations()
       fetchUTMOptions()
+      fetchRatings()
     } else {
       setLoginError('Invalid credentials')
     }
@@ -247,10 +360,8 @@ export default function AdminPage() {
     }
   }
 
-  // Fetch unique UTM sources and campaigns for dropdowns
   async function fetchUTMOptions() {
     try {
-      // Fetch unique UTM sources from registrations
       const { data: sourceData, error: sourceError } = await supabase
         .from('qr_landing_registrations')
         .select('utm_source')
@@ -262,7 +373,6 @@ export default function AdminPage() {
         setUtmSourceOptions(uniqueSources.sort())
       }
 
-      // Fetch unique UTM campaigns from registrations
       const { data: campaignData, error: campaignError } = await supabase
         .from('qr_landing_registrations')
         .select('utm_campaign')
@@ -274,7 +384,6 @@ export default function AdminPage() {
         setUtmCampaignOptions(uniqueCampaigns.sort())
       }
 
-      // Also fetch from UTM campaigns table and merge
       const { data: utmTableData, error: utmTableError } = await supabase
         .from('qr_utm_campaigns')
         .select('utm_source, utm_campaign')
@@ -324,7 +433,6 @@ export default function AdminPage() {
       if (error) throw error
       setRegistrations(data || [])
 
-      // Calculate stats
       const now = new Date()
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
       const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
@@ -338,7 +446,6 @@ export default function AdminPage() {
         thisMonth: allData.filter(r => new Date(r.registered_at) >= monthAgo).length
       })
 
-      // Calculate daily registrations for chart
       calculateDailyRegistrations(allData)
     } catch (error) {
       console.error('Error fetching registrations:', error)
@@ -353,7 +460,6 @@ export default function AdminPage() {
       return
     }
 
-    // Group by date
     const dateMap: { [key: string]: number } = {}
     
     data.forEach(reg => {
@@ -361,12 +467,9 @@ export default function AdminPage() {
       dateMap[date] = (dateMap[date] || 0) + 1
     })
 
-    // Get date range (last 14 days or from data range)
-    const dates = Object.keys(dateMap).sort()
     const endDate = new Date()
-    const startDate = new Date(endDate.getTime() - 13 * 24 * 60 * 60 * 1000) // Last 14 days
+    const startDate = new Date(endDate.getTime() - 13 * 24 * 60 * 60 * 1000)
 
-    // Fill in missing dates with 0
     const dailyData: DailyCount[] = []
     const currentDate = new Date(startDate)
     
@@ -381,6 +484,105 @@ export default function AdminPage() {
 
     setDailyRegistrations(dailyData)
   }
+
+  // Fetch Ratings
+  async function fetchRatings() {
+    setRatingsLoading(true)
+    try {
+      // Get total registrations count
+      const { count: regCount } = await supabase
+        .from('qr_landing_registrations')
+        .select('*', { count: 'exact', head: true })
+      
+      setTotalRegistrationsCount(regCount || 0)
+
+      // Get ratings
+      let query = supabase
+        .from('webinar_ratings')
+        .select('*')
+        .order(ratingsSortBy, { ascending: ratingsSortOrder === 'asc' })
+        .limit(500)
+
+      if (ratingsFilters.rating) {
+        query = query.eq('rating', parseInt(ratingsFilters.rating))
+      }
+      if (ratingsFilters.courseName) {
+        query = query.eq('course_name', ratingsFilters.courseName)
+      }
+      if (ratingsFilters.dateFrom) {
+        query = query.gte('rated_at', ratingsFilters.dateFrom)
+      }
+      if (ratingsFilters.dateTo) {
+        query = query.lte('rated_at', ratingsFilters.dateTo + 'T23:59:59')
+      }
+
+      const { data, error } = await query
+
+      if (error) throw error
+      
+      let filteredData = data || []
+      
+      // Apply search filter (client-side for name/email/mobile)
+      if (ratingsSearch.trim()) {
+        const searchLower = ratingsSearch.toLowerCase()
+        filteredData = filteredData.filter(r => 
+          (r.full_name && r.full_name.toLowerCase().includes(searchLower)) ||
+          (r.email && r.email.toLowerCase().includes(searchLower)) ||
+          (r.mobile && r.mobile.includes(ratingsSearch))
+        )
+      }
+
+      setRatings(filteredData)
+
+      // Calculate rating distribution from all ratings (not filtered)
+      const { data: allRatings } = await supabase
+        .from('webinar_ratings')
+        .select('rating')
+      
+      if (allRatings) {
+        const distribution: { [key: number]: number } = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+        allRatings.forEach(r => {
+          if (r.rating >= 1 && r.rating <= 5) {
+            distribution[r.rating]++
+          }
+        })
+        setRatingDistribution(distribution)
+      }
+
+      // Get unique course names for filter
+      const { data: courseData } = await supabase
+        .from('webinar_ratings')
+        .select('course_name')
+        .not('course_name', 'is', null)
+      
+      if (courseData) {
+        const uniqueCourses = [...new Set(courseData.map(d => d.course_name).filter(Boolean))]
+        setCourseNameOptions(uniqueCourses.sort())
+      }
+
+    } catch (error) {
+      console.error('Error fetching ratings:', error)
+    } finally {
+      setRatingsLoading(false)
+    }
+  }
+
+  // Sort ratings
+  function handleRatingsSort(column: string) {
+    if (ratingsSortBy === column) {
+      setRatingsSortOrder(ratingsSortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setRatingsSortBy(column)
+      setRatingsSortOrder('asc')
+    }
+  }
+
+  // Effect to refetch ratings when sort changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchRatings()
+    }
+  }, [ratingsSortBy, ratingsSortOrder])
 
   async function saveCampaign(e: React.FormEvent) {
     e.preventDefault()
@@ -410,7 +612,7 @@ export default function AdminPage() {
       setEditingCampaign(null)
       resetCampaignForm()
       fetchCampaigns()
-      fetchUTMOptions() // Refresh dropdown options
+      fetchUTMOptions()
     } catch (error) {
       console.error('Error saving campaign:', error)
     }
@@ -457,7 +659,7 @@ export default function AdminPage() {
         .eq('id', id)
       if (error) throw error
       fetchCampaigns()
-      fetchUTMOptions() // Refresh dropdown options
+      fetchUTMOptions()
     } catch (error) {
       console.error('Error deleting campaign:', error)
     }
@@ -493,6 +695,29 @@ export default function AdminPage() {
     a.click()
   }
 
+  function exportRatingsToCSV() {
+    if (ratings.length === 0) return
+
+    const headers = ['Name', 'Email', 'Mobile', 'Course', 'Rating', 'Feedback', 'Rated At']
+    const rows = ratings.map(r => [
+      r.full_name || '',
+      r.email,
+      r.mobile || '',
+      r.course_name || '',
+      r.rating.toString(),
+      r.feedback || '',
+      new Date(r.rated_at).toLocaleString('en-IN')
+    ])
+
+    const csvContent = [headers, ...rows].map(row => row.map(cell => `"${cell?.replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `webinar_ratings_${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+  }
+
   function clearFilters() {
     setFilters({
       dateFrom: '',
@@ -502,6 +727,24 @@ export default function AdminPage() {
       courseId: '',
       profession: ''
     })
+  }
+
+  function clearRatingsFilters() {
+    setRatingsSearch('')
+    setRatingsFilters({
+      rating: '',
+      courseName: '',
+      dateFrom: '',
+      dateTo: ''
+    })
+  }
+
+  // Sort icon component
+  function SortIcon({ column }: { column: string }) {
+    if (ratingsSortBy !== column) {
+      return <span className="text-gray-300 ml-1">↕</span>
+    }
+    return <span className="text-indigo-600 ml-1">{ratingsSortOrder === 'asc' ? '↑' : '↓'}</span>
   }
 
   // Login Screen
@@ -573,13 +816,19 @@ export default function AdminPage() {
                 onClick={() => setActiveTab('utm')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'utm' ? 'bg-white shadow text-indigo-600' : 'text-gray-600'}`}
               >
-                📊 UTM Campaigns
+                📊 UTM
               </button>
               <button
                 onClick={() => setActiveTab('analytics')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'analytics' ? 'bg-white shadow text-indigo-600' : 'text-gray-600'}`}
               >
-                📈 Analytics
+                📈 Registrations
+              </button>
+              <button
+                onClick={() => { setActiveTab('ratings'); fetchRatings(); }}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'ratings' ? 'bg-white shadow text-indigo-600' : 'text-gray-600'}`}
+              >
+                ⭐ Ratings
               </button>
             </div>
             <button
@@ -958,6 +1207,205 @@ export default function AdminPage() {
                   </table>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Ratings Analytics Tab */}
+        {activeTab === 'ratings' && (
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">⭐ Ratings & Feedback Analytics</h2>
+              <button
+                onClick={exportRatingsToCSV}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+              >
+                📥 Export CSV
+              </button>
+            </div>
+
+            {/* Funnel & TreeMap Charts */}
+            <div className="grid grid-cols-2 gap-6 mb-6">
+              {/* Funnel Chart */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">📊 Registration → Rating Funnel</h3>
+                <FunnelChart 
+                  totalRegistrations={totalRegistrationsCount} 
+                  totalRated={Object.values(ratingDistribution).reduce((a, b) => a + b, 0)} 
+                />
+              </div>
+
+              {/* Rating TreeMap */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">⭐ Rating Distribution</h3>
+                <RatingTreeMap ratingDistribution={ratingDistribution} />
+              </div>
+            </div>
+
+            {/* Search & Filters */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border mb-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-700">🔍 Search & Filter</h3>
+                <button
+                  onClick={clearRatingsFilters}
+                  className="text-xs text-indigo-600 hover:underline"
+                >
+                  Clear All
+                </button>
+              </div>
+              <div className="grid grid-cols-6 gap-3">
+                {/* Search Bar */}
+                <div className="col-span-2">
+                  <label className="block text-xs text-gray-500 mb-1">Search (Name, Email, Mobile)</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-1.5 border rounded text-sm"
+                    placeholder="🔍 Search..."
+                    value={ratingsSearch}
+                    onChange={(e) => setRatingsSearch(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Rating</label>
+                  <select
+                    className="w-full px-2 py-1.5 border rounded text-sm"
+                    value={ratingsFilters.rating}
+                    onChange={(e) => setRatingsFilters({...ratingsFilters, rating: e.target.value})}
+                  >
+                    <option value="">All Ratings</option>
+                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                    <option value="4">⭐⭐⭐⭐ (4)</option>
+                    <option value="3">⭐⭐⭐ (3)</option>
+                    <option value="2">⭐⭐ (2)</option>
+                    <option value="1">⭐ (1)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Course</label>
+                  <select
+                    className="w-full px-2 py-1.5 border rounded text-sm"
+                    value={ratingsFilters.courseName}
+                    onChange={(e) => setRatingsFilters({...ratingsFilters, courseName: e.target.value})}
+                  >
+                    <option value="">All Courses</option>
+                    {courseNameOptions.map((course) => (
+                      <option key={course} value={course}>{course}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Date From</label>
+                  <input
+                    type="date"
+                    className="w-full px-2 py-1.5 border rounded text-sm"
+                    value={ratingsFilters.dateFrom}
+                    onChange={(e) => setRatingsFilters({...ratingsFilters, dateFrom: e.target.value})}
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={fetchRatings}
+                    className="w-full py-1.5 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Ratings Table */}
+            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+              {ratingsLoading ? (
+                <div className="p-8 text-center text-gray-500">Loading...</div>
+              ) : ratings.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">No ratings found</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                        <th 
+                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleRatingsSort('full_name')}
+                        >
+                          Name <SortIcon column="full_name" />
+                        </th>
+                        <th 
+                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleRatingsSort('email')}
+                        >
+                          Email <SortIcon column="email" />
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mobile</th>
+                        <th 
+                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleRatingsSort('course_name')}
+                        >
+                          Course <SortIcon column="course_name" />
+                        </th>
+                        <th 
+                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleRatingsSort('rating')}
+                        >
+                          Rating <SortIcon column="rating" />
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Feedback</th>
+                        <th 
+                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleRatingsSort('rated_at')}
+                        >
+                          Rated At <SortIcon column="rated_at" />
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {ratings.map((r, idx) => (
+                        <tr key={r.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-gray-500">{idx + 1}</td>
+                          <td className="px-4 py-3 font-medium text-gray-900">{r.full_name || '-'}</td>
+                          <td className="px-4 py-3 text-gray-600">{r.email}</td>
+                          <td className="px-4 py-3 text-gray-600">{r.mobile || '-'}</td>
+                          <td className="px-4 py-3">
+                            {r.course_name ? (
+                              <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs truncate max-w-[150px] block">
+                                {r.course_name}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1">
+                              <span className="text-yellow-500">{'★'.repeat(r.rating)}</span>
+                              <span className="text-gray-300">{'★'.repeat(5 - r.rating)}</span>
+                              <span className="ml-1 text-xs text-gray-500">({r.rating})</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600 max-w-[200px]">
+                            {r.feedback ? (
+                              <span className="truncate block" title={r.feedback}>
+                                {r.feedback.length > 50 ? r.feedback.substring(0, 50) + '...' : r.feedback}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                            {new Date(r.rated_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Summary Stats */}
+            <div className="mt-4 text-center text-sm text-gray-500">
+              Showing {ratings.length} rating{ratings.length !== 1 ? 's' : ''}
+              {ratingsSearch && ` matching "${ratingsSearch}"`}
             </div>
           </div>
         )}
