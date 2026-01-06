@@ -59,7 +59,7 @@ interface FormData {
   subCategory: string
   currentRole: string
   skills: string[]
-  Url: string
+  linkedinUrl: string
   portfolioUrl: string
   preferredLocations: string
   openToRemote: string
@@ -78,7 +78,7 @@ export default function ResumePage() {
     subCategory: '',
     currentRole: '',
     skills: [],
-    Url: '',
+    linkedinUrl: '',
     portfolioUrl: '',
     preferredLocations: '',
     openToRemote: '',
@@ -221,7 +221,7 @@ export default function ResumePage() {
           sub_category: formData.subCategory,
           designation: formData.currentRole.trim(),
           skills: formData.skills,
-          _url: formData.Url.trim() || null,
+          linkedin_url: formData.linkedinUrl.trim() || null,
           portfolio_url: formData.portfolioUrl.trim() || null,
           preferred_locations: formData.preferredLocations.trim() || null,
           open_to_remote: formData.openToRemote || null,
@@ -295,7 +295,7 @@ export default function ResumePage() {
               <div className="text-4xl mb-3">🚀</div>
               <h3 className="text-xl font-bold text-amber-900 mb-2">Boost Your Career with AI Skills!</h3>
               <p className="text-amber-800 text-sm mb-4">
-                Add <strong>AI & Agentic AI certifications</strong> to your resume and . 
+                Add <strong>AI & Agentic AI certifications</strong> to your resume and LinkedIn. 
                 Stand out in the era of AI-first hiring and command <strong>30-50% higher salaries</strong>.
               </p>
               <a
