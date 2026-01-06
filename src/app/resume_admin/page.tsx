@@ -129,7 +129,7 @@ export default function ResumeAdminPage() {
           r.email?.toLowerCase().includes(searchLower) ||
           r.mobile?.includes(search) ||
           r.designation?.toLowerCase().includes(searchLower) ||
-          r.skills?.some(s => s.toLowerCase().includes(searchLower))
+          r.skills?.some((s: string) => s.toLowerCase().includes(searchLower))
         )
       }
 
