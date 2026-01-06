@@ -40,12 +40,193 @@ const EXPERIENCE_OPTIONS = [
 ]
 
 const SKILL_SUGGESTIONS = [
-  'Python', 'JavaScript', 'React', 'Node.js', 'SQL', 'Excel', 'Power BI', 'Tableau',
-  'Machine Learning', 'Data Analysis', 'Project Management', 'Agile', 'Scrum',
-  'Cloud (AWS/Azure/GCP)', 'Sales', 'Marketing', 'Digital Marketing', 'SEO',
-  'Content Writing', 'Communication', 'Leadership', 'Team Management',
-  'Financial Analysis', 'Accounting', 'HR Management', 'Recruitment',
-  'AI/ChatGPT', 'Prompt Engineering', 'Automation', 'No-Code Tools'
+  // Tech Skills
+  'Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Ruby', 'PHP', 'Swift', 'Kotlin',
+  'React', 'Angular', 'Vue.js', 'Next.js', 'Node.js', 'Express.js', 'Django', 'Flask', 'Spring Boot', 'FastAPI',
+  'HTML', 'CSS', 'Tailwind CSS', 'Bootstrap', 'SASS', 'Material UI',
+  'SQL', 'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'Elasticsearch', 'Oracle', 'SQL Server', 'Firebase',
+  'AWS', 'Azure', 'Google Cloud', 'GCP', 'Docker', 'Kubernetes', 'Terraform', 'Jenkins', 'CI/CD', 'DevOps',
+  'Git', 'GitHub', 'GitLab', 'Bitbucket', 'Linux', 'Unix', 'Shell Scripting', 'Bash',
+  'Machine Learning', 'Deep Learning', 'NLP', 'Computer Vision', 'TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn',
+  'Data Science', 'Data Analysis', 'Data Engineering', 'ETL', 'Data Warehousing', 'Big Data', 'Spark', 'Hadoop',
+  'Pandas', 'NumPy', 'Matplotlib', 'Seaborn', 'Jupyter', 'R Programming',
+  'AI', 'Artificial Intelligence', 'ChatGPT', 'Prompt Engineering', 'LangChain', 'LLMs', 'Generative AI',
+  'API Development', 'REST API', 'GraphQL', 'Microservices', 'System Design', 'Software Architecture',
+  'Cybersecurity', 'Network Security', 'Penetration Testing', 'OWASP', 'Encryption',
+  'Mobile Development', 'Android', 'iOS', 'React Native', 'Flutter', 'Xamarin',
+  'QA', 'Testing', 'Selenium', 'Jest', 'Cypress', 'Unit Testing', 'Automation Testing',
+  'Blockchain', 'Web3', 'Solidity', 'Smart Contracts', 'Cryptocurrency',
+  
+  // Business & Analytics
+  'Excel', 'Advanced Excel', 'VBA', 'Macros', 'Google Sheets',
+  'Power BI', 'Tableau', 'Looker', 'QlikView', 'Data Visualization', 'Business Intelligence',
+  'SAP', 'Salesforce', 'HubSpot', 'Zoho', 'ServiceNow', 'Workday',
+  'Financial Analysis', 'Financial Modeling', 'Accounting', 'Budgeting', 'Forecasting', 'Valuation',
+  'Business Analysis', 'Requirements Gathering', 'Process Improvement', 'Six Sigma', 'Lean',
+  
+  // Management & Soft Skills
+  'Project Management', 'Agile', 'Scrum', 'Kanban', 'JIRA', 'Trello', 'Asana', 'Monday.com',
+  'Product Management', 'Product Strategy', 'Roadmapping', 'User Research', 'A/B Testing',
+  'Team Management', 'Team Leadership', 'People Management', 'Mentoring', 'Coaching',
+  'Communication', 'Presentation Skills', 'Public Speaking', 'Negotiation', 'Stakeholder Management',
+  'Problem Solving', 'Critical Thinking', 'Decision Making', 'Strategic Thinking', 'Analytical Skills',
+  'Time Management', 'Multitasking', 'Prioritization', 'Organization',
+  
+  // Sales & Marketing
+  'Sales', 'B2B Sales', 'B2C Sales', 'Inside Sales', 'Field Sales', 'Account Management',
+  'Lead Generation', 'CRM', 'Sales Strategy', 'Pipeline Management', 'Cold Calling',
+  'Marketing', 'Digital Marketing', 'Content Marketing', 'Social Media Marketing', 'Email Marketing',
+  'SEO', 'SEM', 'Google Ads', 'Facebook Ads', 'LinkedIn Ads', 'PPC', 'Performance Marketing',
+  'Brand Management', 'Market Research', 'Competitive Analysis', 'Marketing Strategy',
+  'Copywriting', 'Content Writing', 'Technical Writing', 'Blogging', 'Editing',
+  'Graphic Design', 'Adobe Photoshop', 'Adobe Illustrator', 'Canva', 'Figma', 'Sketch', 'UI/UX Design',
+  'Video Editing', 'Adobe Premiere', 'Final Cut Pro', 'After Effects', 'Motion Graphics',
+  
+  // HR & Admin
+  'Recruitment', 'Talent Acquisition', 'Sourcing', 'Interviewing', 'Onboarding',
+  'HR Management', 'Employee Relations', 'Performance Management', 'HRIS', 'Payroll',
+  'Training & Development', 'Learning & Development', 'Instructional Design',
+  'Office Administration', 'Executive Assistant', 'Calendar Management', 'Travel Coordination',
+  
+  // Operations & Supply Chain
+  'Operations Management', 'Supply Chain', 'Logistics', 'Procurement', 'Vendor Management',
+  'Inventory Management', 'Warehouse Management', 'Distribution', 'Shipping',
+  'Quality Control', 'Quality Assurance', 'ISO', 'Compliance', 'Audit',
+  
+  // Legal & Finance
+  'Contract Management', 'Legal Research', 'Corporate Law', 'Intellectual Property', 'Compliance',
+  'Risk Management', 'Internal Audit', 'Due Diligence', 'Regulatory Compliance',
+  'Investment Banking', 'Equity Research', 'Portfolio Management', 'Trading', 'Derivatives',
+  
+  // Industry Specific
+  'Healthcare', 'Pharma', 'Clinical Research', 'Medical Writing', 'Regulatory Affairs',
+  'Banking', 'Insurance', 'Fintech', 'Payments', 'Lending',
+  'E-commerce', 'Retail', 'FMCG', 'Consumer Goods',
+  'Manufacturing', 'Automotive', 'Aerospace', 'Electronics',
+  'Real Estate', 'Construction', 'Infrastructure',
+  'Media', 'Entertainment', 'Gaming', 'EdTech',
+  
+  // Tools & Platforms
+  'Microsoft Office', 'Microsoft 365', 'SharePoint', 'Power Automate', 'Power Apps',
+  'Slack', 'Microsoft Teams', 'Zoom', 'Google Workspace', 'Notion', 'Confluence',
+  'WordPress', 'Shopify', 'Magento', 'WooCommerce',
+  'Zapier', 'Make.com', 'n8n', 'Airtable', 'Automation'
+]
+
+const LOCATION_SUGGESTIONS = [
+  // India - Major Cities
+  'Mumbai, India', 'Delhi, India', 'Bangalore, India', 'Bengaluru, India', 'Hyderabad, India',
+  'Chennai, India', 'Kolkata, India', 'Pune, India', 'Ahmedabad, India', 'Jaipur, India',
+  'Surat, India', 'Lucknow, India', 'Kanpur, India', 'Nagpur, India', 'Indore, India',
+  'Thane, India', 'Bhopal, India', 'Visakhapatnam, India', 'Patna, India', 'Vadodara, India',
+  'Ghaziabad, India', 'Ludhiana, India', 'Agra, India', 'Nashik, India', 'Faridabad, India',
+  'Meerut, India', 'Rajkot, India', 'Varanasi, India', 'Srinagar, India', 'Aurangabad, India',
+  'Dhanbad, India', 'Amritsar, India', 'Navi Mumbai, India', 'Allahabad, India', 'Ranchi, India',
+  'Howrah, India', 'Coimbatore, India', 'Jabalpur, India', 'Gwalior, India', 'Vijayawada, India',
+  'Jodhpur, India', 'Madurai, India', 'Raipur, India', 'Kota, India', 'Chandigarh, India',
+  'Guwahati, India', 'Solapur, India', 'Hubli, India', 'Mysore, India', 'Tiruchirappalli, India',
+  'Bareilly, India', 'Aligarh, India', 'Tiruppur, India', 'Moradabad, India', 'Jalandhar, India',
+  'Bhubaneswar, India', 'Salem, India', 'Warangal, India', 'Guntur, India', 'Bhiwandi, India',
+  'Saharanpur, India', 'Gorakhpur, India', 'Bikaner, India', 'Amravati, India', 'Noida, India',
+  'Jamshedpur, India', 'Bhilai, India', 'Cuttack, India', 'Firozabad, India', 'Kochi, India',
+  'Nellore, India', 'Bhavnagar, India', 'Dehradun, India', 'Durgapur, India', 'Asansol, India',
+  'Rourkela, India', 'Nanded, India', 'Kolhapur, India', 'Ajmer, India', 'Akola, India',
+  'Gulbarga, India', 'Jamnagar, India', 'Ujjain, India', 'Loni, India', 'Siliguri, India',
+  'Jhansi, India', 'Ulhasnagar, India', 'Jammu, India', 'Sangli, India', 'Mangalore, India',
+  'Erode, India', 'Belgaum, India', 'Ambattur, India', 'Tirunelveli, India', 'Malegaon, India',
+  'Gaya, India', 'Jalgaon, India', 'Udaipur, India', 'Maheshtala, India', 'Davanagere, India',
+  'Kozhikode, India', 'Kurnool, India', 'Rajpur Sonarpur, India', 'Rajahmundry, India',
+  'Bokaro, India', 'South Dumdum, India', 'Bellary, India', 'Patiala, India', 'Gopalpur, India',
+  'Agartala, India', 'Bhagalpur, India', 'Muzaffarnagar, India', 'Bhatpara, India', 'Panihati, India',
+  'Latur, India', 'Dhule, India', 'Rohtak, India', 'Korba, India', 'Bhilwara, India',
+  'Berhampur, India', 'Muzaffarpur, India', 'Ahmednagar, India', 'Mathura, India', 'Kollam, India',
+  'Avadi, India', 'Kadapa, India', 'Kamarhati, India', 'Sambalpur, India', 'Bilaspur, India',
+  'Shahjahanpur, India', 'Satara, India', 'Bijapur, India', 'Rampur, India', 'Shivamogga, India',
+  'Chandrapur, India', 'Junagadh, India', 'Thrissur, India', 'Alwar, India', 'Bardhaman, India',
+  'Kulti, India', 'Kakinada, India', 'Nizamabad, India', 'Parbhani, India', 'Tumkur, India',
+  'Hisar, India', 'Ozhukarai, India', 'Bihar Sharif, India', 'Panipat, India', 'Darbhanga, India',
+  'Bally, India', 'Aizawl, India', 'Dewas, India', 'Ichalkaranji, India', 'Karnal, India',
+  'Bathinda, India', 'Jalna, India', 'Eluru, India', 'Barasat, India', 'Kirari Suleman Nagar, India',
+  'Purnia, India', 'Satna, India', 'Mau, India', 'Sonipat, India', 'Farrukhabad, India',
+  'Puducherry, India', 'Imphal, India', 'Ratlam, India', 'Hapur, India', 'Arrah, India',
+  'Karimnagar, India', 'Anantapur, India', 'Etawah, India', 'Ambernath, India', 'Gandhinagar, India',
+  'Secunderabad, India', 'Gurugram, India', 'Gurgaon, India', 'Greater Noida, India',
+  
+  // USA - Major Cities
+  'New York, USA', 'Los Angeles, USA', 'Chicago, USA', 'Houston, USA', 'Phoenix, USA',
+  'Philadelphia, USA', 'San Antonio, USA', 'San Diego, USA', 'Dallas, USA', 'San Jose, USA',
+  'Austin, USA', 'Jacksonville, USA', 'Fort Worth, USA', 'Columbus, USA', 'Charlotte, USA',
+  'San Francisco, USA', 'Indianapolis, USA', 'Seattle, USA', 'Denver, USA', 'Boston, USA',
+  'Washington DC, USA', 'Nashville, USA', 'Detroit, USA', 'Portland, USA', 'Las Vegas, USA',
+  'Memphis, USA', 'Louisville, USA', 'Baltimore, USA', 'Milwaukee, USA', 'Albuquerque, USA',
+  'Tucson, USA', 'Fresno, USA', 'Sacramento, USA', 'Atlanta, USA', 'Kansas City, USA',
+  'Miami, USA', 'Oakland, USA', 'Minneapolis, USA', 'Cleveland, USA', 'Raleigh, USA',
+  'Tampa, USA', 'Pittsburgh, USA', 'Cincinnati, USA', 'Orlando, USA', 'St. Louis, USA',
+  
+  // Canada
+  'Toronto, Canada', 'Montreal, Canada', 'Vancouver, Canada', 'Calgary, Canada', 'Edmonton, Canada',
+  'Ottawa, Canada', 'Winnipeg, Canada', 'Quebec City, Canada', 'Hamilton, Canada', 'Kitchener, Canada',
+  'London, Canada', 'Victoria, Canada', 'Halifax, Canada', 'Oshawa, Canada', 'Windsor, Canada',
+  'Saskatoon, Canada', 'Regina, Canada', 'Barrie, Canada', 'St. John\'s, Canada', 'Kelowna, Canada',
+  
+  // UK
+  'London, UK', 'Birmingham, UK', 'Manchester, UK', 'Leeds, UK', 'Glasgow, UK',
+  'Liverpool, UK', 'Newcastle, UK', 'Sheffield, UK', 'Bristol, UK', 'Edinburgh, UK',
+  'Leicester, UK', 'Coventry, UK', 'Bradford, UK', 'Cardiff, UK', 'Belfast, UK',
+  'Nottingham, UK', 'Kingston upon Hull, UK', 'Stoke-on-Trent, UK', 'Southampton, UK', 'Derby, UK',
+  'Cambridge, UK', 'Oxford, UK', 'Reading, UK', 'Aberdeen, UK', 'Brighton, UK',
+  
+  // Europe
+  'Berlin, Germany', 'Munich, Germany', 'Frankfurt, Germany', 'Hamburg, Germany', 'Cologne, Germany',
+  'Paris, France', 'Lyon, France', 'Marseille, France', 'Toulouse, France', 'Nice, France',
+  'Amsterdam, Netherlands', 'Rotterdam, Netherlands', 'The Hague, Netherlands', 'Utrecht, Netherlands',
+  'Dublin, Ireland', 'Cork, Ireland', 'Galway, Ireland', 'Limerick, Ireland',
+  'Zurich, Switzerland', 'Geneva, Switzerland', 'Basel, Switzerland', 'Bern, Switzerland',
+  'Stockholm, Sweden', 'Gothenburg, Sweden', 'Malmö, Sweden',
+  'Oslo, Norway', 'Bergen, Norway', 'Copenhagen, Denmark', 'Aarhus, Denmark',
+  'Helsinki, Finland', 'Espoo, Finland', 'Vienna, Austria', 'Salzburg, Austria',
+  'Brussels, Belgium', 'Antwerp, Belgium', 'Lisbon, Portugal', 'Porto, Portugal',
+  'Madrid, Spain', 'Barcelona, Spain', 'Valencia, Spain', 'Seville, Spain',
+  'Milan, Italy', 'Rome, Italy', 'Naples, Italy', 'Turin, Italy', 'Florence, Italy',
+  'Warsaw, Poland', 'Krakow, Poland', 'Prague, Czech Republic', 'Brno, Czech Republic',
+  'Budapest, Hungary', 'Bucharest, Romania', 'Athens, Greece', 'Thessaloniki, Greece',
+  
+  // Middle East
+  'Dubai, UAE', 'Abu Dhabi, UAE', 'Sharjah, UAE', 'Ajman, UAE',
+  'Riyadh, Saudi Arabia', 'Jeddah, Saudi Arabia', 'Dammam, Saudi Arabia', 'Mecca, Saudi Arabia',
+  'Doha, Qatar', 'Kuwait City, Kuwait', 'Manama, Bahrain', 'Muscat, Oman',
+  'Tel Aviv, Israel', 'Jerusalem, Israel', 'Haifa, Israel',
+  'Amman, Jordan', 'Beirut, Lebanon', 'Cairo, Egypt', 'Alexandria, Egypt',
+  
+  // Asia Pacific
+  'Singapore', 'Hong Kong', 'Tokyo, Japan', 'Osaka, Japan', 'Yokohama, Japan', 'Nagoya, Japan',
+  'Seoul, South Korea', 'Busan, South Korea', 'Incheon, South Korea',
+  'Beijing, China', 'Shanghai, China', 'Shenzhen, China', 'Guangzhou, China', 'Hangzhou, China',
+  'Taipei, Taiwan', 'Kaohsiung, Taiwan',
+  'Bangkok, Thailand', 'Chiang Mai, Thailand', 'Phuket, Thailand',
+  'Kuala Lumpur, Malaysia', 'Penang, Malaysia', 'Johor Bahru, Malaysia',
+  'Jakarta, Indonesia', 'Surabaya, Indonesia', 'Bandung, Indonesia', 'Bali, Indonesia',
+  'Manila, Philippines', 'Cebu, Philippines', 'Davao, Philippines', 'Quezon City, Philippines',
+  'Ho Chi Minh City, Vietnam', 'Hanoi, Vietnam', 'Da Nang, Vietnam',
+  
+  // Australia & New Zealand
+  'Sydney, Australia', 'Melbourne, Australia', 'Brisbane, Australia', 'Perth, Australia',
+  'Adelaide, Australia', 'Gold Coast, Australia', 'Canberra, Australia', 'Newcastle, Australia',
+  'Auckland, New Zealand', 'Wellington, New Zealand', 'Christchurch, New Zealand',
+  
+  // Africa
+  'Johannesburg, South Africa', 'Cape Town, South Africa', 'Durban, South Africa', 'Pretoria, South Africa',
+  'Lagos, Nigeria', 'Abuja, Nigeria', 'Nairobi, Kenya', 'Mombasa, Kenya',
+  'Accra, Ghana', 'Casablanca, Morocco', 'Tunis, Tunisia',
+  
+  // South America
+  'São Paulo, Brazil', 'Rio de Janeiro, Brazil', 'Brasília, Brazil', 'Salvador, Brazil',
+  'Buenos Aires, Argentina', 'Córdoba, Argentina', 'Rosario, Argentina',
+  'Santiago, Chile', 'Lima, Peru', 'Bogotá, Colombia', 'Medellín, Colombia',
+  'Caracas, Venezuela', 'Montevideo, Uruguay', 'Quito, Ecuador',
+  
+  // Remote
+  'Remote', 'Work from Home', 'Remote - India', 'Remote - USA', 'Remote - Europe', 'Remote - Global'
 ]
 
 interface FormData {
@@ -87,10 +268,17 @@ export default function ResumePage() {
   
   const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [skillInput, setSkillInput] = useState('')
+  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false)
+  const [filteredSkills, setFilteredSkills] = useState<string[]>([])
+  const [locationInput, setLocationInput] = useState('')
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false)
+  const [filteredLocations, setFilteredLocations] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const skillInputRef = useRef<HTMLInputElement>(null)
+  const locationInputRef = useRef<HTMLInputElement>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target
@@ -129,6 +317,8 @@ export default function ResumePage() {
     if (trimmedSkill && !formData.skills.includes(trimmedSkill) && formData.skills.length < 15) {
       setFormData(prev => ({ ...prev, skills: [...prev.skills, trimmedSkill] }))
       setSkillInput('')
+      setShowSkillSuggestions(false)
+      setFilteredSkills([])
     }
   }
 
@@ -136,11 +326,54 @@ export default function ResumePage() {
     setFormData(prev => ({ ...prev, skills: prev.skills.filter(s => s !== skillToRemove) }))
   }
 
-  const handleSkillKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault()
-      addSkill(skillInput)
+  const handleSkillInputChange = (value: string) => {
+    setSkillInput(value)
+    if (value.trim().length > 0) {
+      const filtered = SKILL_SUGGESTIONS.filter(skill =>
+        skill.toLowerCase().includes(value.toLowerCase()) &&
+        !formData.skills.includes(skill)
+      ).slice(0, 8)
+      setFilteredSkills(filtered)
+      setShowSkillSuggestions(true)
+    } else {
+      setFilteredSkills([])
+      setShowSkillSuggestions(false)
     }
+  }
+
+  const handleSkillKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (filteredSkills.length > 0) {
+        addSkill(filteredSkills[0])
+      } else if (skillInput.trim()) {
+        addSkill(skillInput)
+      }
+    } else if (e.key === 'Escape') {
+      setShowSkillSuggestions(false)
+    }
+  }
+
+  const handleLocationInputChange = (value: string) => {
+    setLocationInput(value)
+    setFormData(prev => ({ ...prev, location: value }))
+    if (value.trim().length > 0) {
+      const filtered = LOCATION_SUGGESTIONS.filter(loc =>
+        loc.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 8)
+      setFilteredLocations(filtered)
+      setShowLocationSuggestions(true)
+    } else {
+      setFilteredLocations([])
+      setShowLocationSuggestions(false)
+    }
+  }
+
+  const selectLocation = (location: string) => {
+    setLocationInput(location)
+    setFormData(prev => ({ ...prev, location }))
+    setShowLocationSuggestions(false)
+    setFilteredLocations([])
   }
 
   const scrollToForm = () => {
@@ -485,14 +718,38 @@ export default function ResumePage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Current Location *</label>
-                    <input
-                      type="text"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      placeholder="Mumbai, India"
-                    />
+                    <div className="relative">
+                      <input
+                        ref={locationInputRef}
+                        type="text"
+                        value={locationInput}
+                        onChange={(e) => handleLocationInputChange(e.target.value)}
+                        onFocus={() => {
+                          if (locationInput.trim().length > 0 && filteredLocations.length > 0) {
+                            setShowLocationSuggestions(true)
+                          }
+                        }}
+                        onBlur={() => setTimeout(() => setShowLocationSuggestions(false), 200)}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="Start typing city name..."
+                      />
+                      {/* Location Suggestions Dropdown */}
+                      {showLocationSuggestions && filteredLocations.length > 0 && (
+                        <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                          {filteredLocations.map((loc, index) => (
+                            <button
+                              key={index}
+                              type="button"
+                              onClick={() => selectLocation(loc)}
+                              className="w-full px-4 py-2.5 text-left hover:bg-indigo-50 flex items-center gap-2 text-sm border-b border-gray-100 last:border-b-0"
+                            >
+                              <span className="text-gray-400">📍</span>
+                              <span>{loc}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -601,27 +858,62 @@ export default function ResumePage() {
                   </div>
                   <div className="relative">
                     <input
+                      ref={skillInputRef}
                       type="text"
                       value={skillInput}
-                      onChange={(e) => setSkillInput(e.target.value)}
+                      onChange={(e) => handleSkillInputChange(e.target.value)}
                       onKeyDown={handleSkillKeyDown}
+                      onFocus={() => {
+                        if (skillInput.trim().length > 0 && filteredSkills.length > 0) {
+                          setShowSkillSuggestions(true)
+                        }
+                      }}
+                      onBlur={() => setTimeout(() => setShowSkillSuggestions(false), 200)}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      placeholder="Type a skill and press Enter"
+                      placeholder="Start typing a skill (e.g., Python, Excel, Sales)..."
                     />
+                    {/* Skills Suggestions Dropdown */}
+                    {showSkillSuggestions && filteredSkills.length > 0 && (
+                      <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                        {filteredSkills.map((skill, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => addSkill(skill)}
+                            className="w-full px-4 py-2.5 text-left hover:bg-indigo-50 flex items-center gap-2 text-sm border-b border-gray-100 last:border-b-0"
+                          >
+                            <span className="text-indigo-500">+</span>
+                            <span>{skill}</span>
+                          </button>
+                        ))}
+                        {/* Option to add custom skill */}
+                        {skillInput.trim() && !filteredSkills.includes(skillInput.trim()) && (
+                          <button
+                            type="button"
+                            onClick={() => addSkill(skillInput)}
+                            className="w-full px-4 py-2.5 text-left hover:bg-green-50 flex items-center gap-2 text-sm bg-green-50/50 text-green-700"
+                          >
+                            <span>✓</span>
+                            <span>Add "{skillInput.trim()}" as custom skill</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {/* Show add custom option when no matches */}
+                    {showSkillSuggestions && filteredSkills.length === 0 && skillInput.trim() && (
+                      <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg">
+                        <button
+                          type="button"
+                          onClick={() => addSkill(skillInput)}
+                          className="w-full px-4 py-2.5 text-left hover:bg-green-50 flex items-center gap-2 text-sm text-green-700"
+                        >
+                          <span>✓</span>
+                          <span>Add "{skillInput.trim()}" as custom skill</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    <span className="text-xs text-gray-500">Suggestions:</span>
-                    {SKILL_SUGGESTIONS.slice(0, 8).map(skill => (
-                      <button
-                        key={skill}
-                        type="button"
-                        onClick={() => addSkill(skill)}
-                        className="text-xs text-indigo-600 hover:underline"
-                      >
-                        +{skill}
-                      </button>
-                    ))}
-                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Type to search skills or add your own. Press Enter to add.</p>
                 </div>
               </div>
 
