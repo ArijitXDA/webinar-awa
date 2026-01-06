@@ -59,7 +59,7 @@ interface FormData {
   subCategory: string
   currentRole: string
   skills: string[]
-  linkedinUrl: string
+  Url: string
   portfolioUrl: string
   preferredLocations: string
   openToRemote: string
@@ -78,7 +78,7 @@ export default function ResumePage() {
     subCategory: '',
     currentRole: '',
     skills: [],
-    linkedinUrl: '',
+    Url: '',
     portfolioUrl: '',
     preferredLocations: '',
     openToRemote: '',
@@ -221,7 +221,7 @@ export default function ResumePage() {
           sub_category: formData.subCategory,
           designation: formData.currentRole.trim(),
           skills: formData.skills,
-          linkedin_url: formData.linkedinUrl.trim() || null,
+          _url: formData.Url.trim() || null,
           portfolio_url: formData.portfolioUrl.trim() || null,
           preferred_locations: formData.preferredLocations.trim() || null,
           open_to_remote: formData.openToRemote || null,
@@ -295,7 +295,7 @@ export default function ResumePage() {
               <div className="text-4xl mb-3">🚀</div>
               <h3 className="text-xl font-bold text-amber-900 mb-2">Boost Your Career with AI Skills!</h3>
               <p className="text-amber-800 text-sm mb-4">
-                Add <strong>AI & Agentic AI certifications</strong> to your resume and LinkedIn. 
+                Add <strong>AI & Agentic AI certifications</strong> to your resume and . 
                 Stand out in the era of AI-first hiring and command <strong>30-50% higher salaries</strong>.
               </p>
               <a
@@ -318,7 +318,7 @@ export default function ResumePage() {
                 🌐 AIwithArijit.com
               </a>
               <a
-                href="https://linkedin.com/in/ArijitWDA"
+                href="https://www.linkedin.com/in/arijit-chowdhury-86020b19/"
                 target="_blank"
                 className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors"
               >
@@ -814,7 +814,7 @@ export default function ResumePage() {
           </p>
           <div className="flex justify-center gap-4 mt-4">
             <a href="https://AIwithArijit.com" className="text-indigo-400 hover:text-white text-sm">Website</a>
-            <a href="https://linkedin.com/in/ArijitWDA" className="text-indigo-400 hover:text-white text-sm">LinkedIn</a>
+            <a href="https://www.linkedin.com/in/arijit-chowdhury-86020b19/" className="text-indigo-400 hover:text-white text-sm">LinkedIn</a>
           </div>
         </div>
       </footer>
