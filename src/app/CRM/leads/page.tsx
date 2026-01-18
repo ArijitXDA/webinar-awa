@@ -562,9 +562,11 @@ export default function LeadsPage() {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                           </svg>
-                          {lead.interaction_count > 0 && (
-                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-slate-900 text-[10px] font-bold rounded-full flex items-center justify-center">{lead.interaction_count}</span>
-                          )}
+                          {(lead.interaction_count ?? 0) > 0 && (
+  <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-slate-900 text-[10px] font-bold rounded-full flex items-center justify-center">
+    {lead.interaction_count ?? 0}
+  </span>
+)}
                         </button>
                         <button onClick={() => router.push(`/CRM/leads/${lead.id}`)} className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-600 rounded-lg" title="Edit">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
