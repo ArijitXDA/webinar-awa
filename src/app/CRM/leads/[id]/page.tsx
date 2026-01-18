@@ -71,7 +71,7 @@ export default function LeadFormPage() {
   const router = useRouter()
   const params = useParams()
   const leadId = params?.id as string
-  const isEditMode = leadId && leadId !== 'new'
+  const isEditMode = Boolean(leadId && leadId !== 'new')
 
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [employees, setEmployees] = useState<Employee[]>([])
