@@ -345,11 +345,11 @@ export default function FollowupsPage() {
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(lead.lead_status)}`}>
                         {LEAD_STATUSES.find(s => s.value === lead.lead_status)?.label}
                       </span>
-                      {lead.days_overdue > 0 && (
-                        <span className="text-red-400 text-xs font-medium">
-                          {lead.days_overdue} day{lead.days_overdue > 1 ? 's' : ''} overdue
-                        </span>
-                      )}
+                      {(lead.days_overdue ?? 0) > 0 && (
+  <span className="text-red-400 text-xs font-medium">
+    {lead.days_overdue ?? 0} day{(lead.days_overdue ?? 0) > 1 ? 's' : ''} overdue
+  </span>
+)}
                     </div>
                     <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400">
                       <span>{lead.country_code} {lead.mobile}</span>
