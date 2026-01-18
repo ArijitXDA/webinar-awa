@@ -310,11 +310,11 @@ export default function LeadAssignmentPage() {
                         <p className="text-slate-500 text-xs capitalize">{emp.job_role.replace(/_/g, ' ')}</p>
                       </div>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        emp.lead_count > 50 ? 'bg-red-500/20 text-red-400' :
-                        emp.lead_count > 20 ? 'bg-amber-500/20 text-amber-400' :
-                        'bg-green-500/20 text-green-400'
+                        (emp.lead_count ?? 0) > 50 ? 'bg-red-500/20 text-red-400' :
+(emp.lead_count ?? 0) > 20 ? 'bg-amber-500/20 text-amber-400' :
+'bg-green-500/20 text-green-400'
                       }`}>
-                        {emp.lead_count}
+                        {emp.lead_count ?? 0}
                       </span>
                     </div>
                   </div>
