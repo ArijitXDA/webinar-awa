@@ -45,6 +45,13 @@ interface Employee {
   dob: string
   doj: string
   gender: string
+  pan_number: string
+  aadhaar_number: string
+  bank_account_number: string
+  bank_ifsc_code: string
+  bank_name: string
+  emergency_contact_name: string
+  emergency_contact_number: string
   job_role: string
   hierarchy_level: number
   compensation_type: string
@@ -86,6 +93,13 @@ export default function EmployeesPage() {
     dob: '',
     doj: new Date().toISOString().split('T')[0],
     gender: '',
+    pan_number: '',
+    aadhaar_number: '',
+    bank_account_number: '',
+    bank_ifsc_code: '',
+    bank_name: '',
+    emergency_contact_name: '',
+    emergency_contact_number: '',
     job_role: 'front_executive',
     compensation_type: 'full_time',
     comp_monthly: 0,
@@ -212,6 +226,13 @@ export default function EmployeesPage() {
       dob: '',
       doj: new Date().toISOString().split('T')[0],
       gender: '',
+      pan_number: '',
+      aadhaar_number: '',
+      bank_account_number: '',
+      bank_ifsc_code: '',
+      bank_name: '',
+      emergency_contact_name: '',
+      emergency_contact_number: '',
       job_role: 'front_executive',
       compensation_type: 'full_time',
       comp_monthly: 0,
@@ -238,6 +259,13 @@ export default function EmployeesPage() {
       dob: emp.dob || '',
       doj: emp.doj || '',
       gender: emp.gender || '',
+      pan_number: emp.pan_number || '',
+      aadhaar_number: emp.aadhaar_number || '',
+      bank_account_number: emp.bank_account_number || '',
+      bank_ifsc_code: emp.bank_ifsc_code || '',
+      bank_name: emp.bank_name || '',
+      emergency_contact_name: emp.emergency_contact_name || '',
+      emergency_contact_number: emp.emergency_contact_number || '',
       job_role: emp.job_role,
       compensation_type: emp.compensation_type || 'full_time',
       comp_monthly: emp.comp_monthly || 0,
@@ -302,6 +330,13 @@ export default function EmployeesPage() {
             dob: formData.dob || null,
             doj: formData.doj || null,
             gender: formData.gender || null,
+            pan_number: formData.pan_number.trim() || null,
+            aadhaar_number: formData.aadhaar_number.trim() || null,
+            bank_account_number: formData.bank_account_number.trim() || null,
+            bank_ifsc_code: formData.bank_ifsc_code.trim() || null,
+            bank_name: formData.bank_name.trim() || null,
+            emergency_contact_name: formData.emergency_contact_name.trim() || null,
+            emergency_contact_number: formData.emergency_contact_number.trim() || null,
             job_role: formData.job_role,
             hierarchy_level: hierarchyLevel,
             compensation_type: formData.compensation_type,
@@ -331,6 +366,9 @@ export default function EmployeesPage() {
 
       } else {
         // Create new employee with hashed passcode
+        // NOTE: The RPC function 'create_employee_with_passcode' only accepts basic fields.
+        // For full functionality including compensation, ID docs, and bank details,
+        // either update the RPC function in the database or rely on the fallback below.
         const { data: newEmp, error: createError } = await supabase.rpc('create_employee_with_passcode', {
           p_emp_id: formData.emp_id.toUpperCase(),
           p_full_name: formData.full_name.trim(),
@@ -344,7 +382,7 @@ export default function EmployeesPage() {
         })
 
         if (createError) {
-          // Fallback: direct insert if RPC doesn't exist
+          // Fallback: direct insert with ALL fields (this will be used if RPC doesn't exist or fails)
           const { error: insertError } = await supabase
             .from('crm_employees')
             .insert({
@@ -358,6 +396,13 @@ export default function EmployeesPage() {
               dob: formData.dob || null,
               doj: formData.doj || null,
               gender: formData.gender || null,
+              pan_number: formData.pan_number.trim() || null,
+              aadhaar_number: formData.aadhaar_number.trim() || null,
+              bank_account_number: formData.bank_account_number.trim() || null,
+              bank_ifsc_code: formData.bank_ifsc_code.trim() || null,
+              bank_name: formData.bank_name.trim() || null,
+              emergency_contact_name: formData.emergency_contact_name.trim() || null,
+              emergency_contact_number: formData.emergency_contact_number.trim() || null,
               job_role: formData.job_role,
               hierarchy_level: hierarchyLevel,
               compensation_type: formData.compensation_type,
@@ -864,6 +909,91 @@ export default function EmployeesPage() {
                       value={formData.country}
                       onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                       className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ID Documents & Bank Details */}
+              <div>
+                <h3 className="text-sm font-medium text-slate-400 mb-3">ID Documents & Bank Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-1">PAN Number</label>
+                    <input
+                      type="text"
+                      value={formData.pan_number}
+                      onChange={(e) => setFormData({ ...formData, pan_number: e.target.value.toUpperCase() })}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 uppercase"
+                      placeholder="ABCDE1234F"
+                      maxLength={10}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-1">Aadhaar Number</label>
+                    <input
+                      type="text"
+                      value={formData.aadhaar_number}
+                      onChange={(e) => setFormData({ ...formData, aadhaar_number: e.target.value.replace(/\D/g, '') })}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      placeholder="1234 5678 9012"
+                      maxLength={12}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-1">Bank Account Number</label>
+                    <input
+                      type="text"
+                      value={formData.bank_account_number}
+                      onChange={(e) => setFormData({ ...formData, bank_account_number: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-1">IFSC Code</label>
+                    <input
+                      type="text"
+                      value={formData.bank_ifsc_code}
+                      onChange={(e) => setFormData({ ...formData, bank_ifsc_code: e.target.value.toUpperCase() })}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 uppercase"
+                      placeholder="SBIN0001234"
+                      maxLength={11}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm text-slate-300 mb-1">Bank Name</label>
+                    <input
+                      type="text"
+                      value={formData.bank_name}
+                      onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      placeholder="State Bank of India"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Emergency Contact */}
+              <div>
+                <h3 className="text-sm font-medium text-slate-400 mb-3">Emergency Contact</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-1">Contact Name</label>
+                    <input
+                      type="text"
+                      value={formData.emergency_contact_name}
+                      onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-1">Contact Number</label>
+                    <input
+                      type="tel"
+                      value={formData.emergency_contact_number}
+                      onChange={(e) => setFormData({ ...formData, emergency_contact_number: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      placeholder="+91..."
                     />
                   </div>
                 </div>
