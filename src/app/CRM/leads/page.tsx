@@ -67,6 +67,15 @@ interface Employee {
   job_role: string
 }
 
+interface WhatsAppTemplate {
+  id: string
+  template_name: string
+  template_content: string
+  category: string
+  is_active: boolean
+  created_by: string
+}
+
 export default function LeadsPage() {
   const router = useRouter()
   const [currentUser, setCurrentUser] = useState<any>(null)
@@ -99,6 +108,12 @@ export default function LeadsPage() {
   const [savingInteraction, setSavingInteraction] = useState(false)
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false)
+  const [whatsappTemplates, setWhatsappTemplates] = useState<WhatsAppTemplate[]>([])
+  const [selectedWhatsAppLead, setSelectedWhatsAppLead] = useState<Lead | null>(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('')
+  const [dynamicFields, setDynamicFields] = useState<Record<string, string>>({})
+  const [loadingTemplates, setLoadingTemplates] = useState(false)
 
   const ITEMS_PER_PAGE = 20
 
@@ -186,6 +201,24 @@ export default function LeadsPage() {
       setEmployees(data || [])
     } catch (err) {
       console.error('Error loading employees:', err)
+    }
+  }
+
+  async function loadWhatsAppTemplates() {
+    setLoadingTemplates(true)
+    try {
+      const { data, error } = await supabase
+        .from('crm_whatsapp_templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('template_name')
+
+      if (error) throw error
+      setWhatsappTemplates(data || [])
+    } catch (err) {
+      console.error('Error loading WhatsApp templates:', err)
+    } finally {
+      setLoadingTemplates(false)
     }
   }
 
@@ -317,9 +350,67 @@ export default function LeadsPage() {
   }
 
   function sendWhatsApp(lead: Lead) {
-    const phone = lead.country_code.replace('+', '') + lead.mobile
-    const msg = `Hi ${lead.full_name}! This is from AIwithArijit.com. How can I assist you today?`
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank')
+    setSelectedWhatsAppLead(lead)
+    setSelectedTemplate('')
+    setDynamicFields({})
+    loadWhatsAppTemplates()
+    setShowWhatsAppModal(true)
+  }
+
+  function extractPlaceholders(templateContent: string): string[] {
+    const regex = /\{\{([^}]+)\}\}/g
+    const placeholders: string[] = []
+    let match
+    while ((match = regex.exec(templateContent)) !== null) {
+      if (!placeholders.includes(match[1])) {
+        placeholders.push(match[1])
+      }
+    }
+    return placeholders
+  }
+
+  function getPlaceholderValue(placeholder: string, lead: Lead): string {
+    switch (placeholder) {
+      case 'lead.full_name':
+        return lead.full_name
+      case 'lead.course':
+        return lead.course || ''
+      case 'lead.mobile':
+        return lead.country_code + lead.mobile
+      case 'lead.email':
+        return lead.email || ''
+      case 'employee.full_name':
+        return currentUser?.full_name || ''
+      case 'company.name':
+        return 'AIwithArijit'
+      default:
+        return dynamicFields[placeholder] || `{{${placeholder}}}`
+    }
+  }
+
+  function composeMessage(templateContent: string, lead: Lead): string {
+    let message = templateContent
+    const placeholders = extractPlaceholders(templateContent)
+
+    placeholders.forEach(placeholder => {
+      const value = getPlaceholderValue(placeholder, lead)
+      message = message.replace(new RegExp(`\\{\\{${placeholder}\\}\\}`, 'g'), value)
+    })
+
+    return message
+  }
+
+  function sendWhatsAppMessage() {
+    if (!selectedWhatsAppLead || !selectedTemplate) return
+
+    const template = whatsappTemplates.find(t => t.id === selectedTemplate)
+    if (!template) return
+
+    const message = composeMessage(template.template_content, selectedWhatsAppLead)
+    const phone = selectedWhatsAppLead.country_code.replace('+', '') + selectedWhatsAppLead.mobile
+
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank')
+    setShowWhatsAppModal(false)
   }
 
   function makeCall(lead: Lead) {
@@ -689,6 +780,131 @@ export default function LeadsPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* WhatsApp Template Modal */}
+      {showWhatsAppModal && selectedWhatsAppLead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between shrink-0">
+              <div>
+                <h2 className="text-xl font-bold text-white">Send WhatsApp Message</h2>
+                <p className="text-slate-400 text-sm">{selectedWhatsAppLead.full_name} • {selectedWhatsAppLead.country_code} {selectedWhatsAppLead.mobile}</p>
+              </div>
+              <button onClick={() => setShowWhatsAppModal(false)} className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              {loadingTemplates ? (
+                <div className="text-center py-12">
+                  <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <p className="text-slate-400 mt-4">Loading templates...</p>
+                </div>
+              ) : whatsappTemplates.length === 0 ? (
+                <div className="text-center py-12">
+                  <svg className="w-16 h-16 mx-auto text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <p className="text-slate-400 mb-4">No active WhatsApp templates found</p>
+                  <button onClick={() => router.push('/CRM/whatsapp-templates')} className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold rounded-lg">
+                    Create Templates
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-2">Select Template *</label>
+                    <select
+                      value={selectedTemplate}
+                      onChange={(e) => {
+                        setSelectedTemplate(e.target.value)
+                        setDynamicFields({})
+                      }}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white"
+                    >
+                      <option value="">Choose a template...</option>
+                      {whatsappTemplates.map(template => (
+                        <option key={template.id} value={template.id}>
+                          {template.template_name} ({template.category})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {selectedTemplate && (() => {
+                    const template = whatsappTemplates.find(t => t.id === selectedTemplate)
+                    if (!template) return null
+
+                    const placeholders = extractPlaceholders(template.template_content)
+                    const customPlaceholders = placeholders.filter(p =>
+                      !['lead.full_name', 'lead.course', 'lead.mobile', 'lead.email', 'employee.full_name', 'company.name'].includes(p)
+                    )
+
+                    return (
+                      <>
+                        {customPlaceholders.length > 0 && (
+                          <div className="bg-slate-900 rounded-lg p-4 space-y-3">
+                            <p className="text-sm text-slate-300 font-medium">Fill Custom Fields:</p>
+                            {customPlaceholders.map(placeholder => (
+                              <div key={placeholder}>
+                                <label className="block text-xs text-slate-400 mb-1">
+                                  {placeholder.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={dynamicFields[placeholder] || ''}
+                                  onChange={(e) => setDynamicFields({ ...dynamicFields, [placeholder]: e.target.value })}
+                                  className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                                  placeholder={`Enter ${placeholder}`}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div>
+                          <label className="block text-sm text-slate-300 mb-2">Message Preview</label>
+                          <div className="bg-green-900/20 border border-green-800 rounded-lg p-4">
+                            <p className="text-green-200 text-sm whitespace-pre-wrap">
+                              {composeMessage(template.template_content, selectedWhatsAppLead)}
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    )
+                  })()}
+                </>
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-700 flex justify-end gap-3 shrink-0">
+              <button
+                onClick={() => setShowWhatsAppModal(false)}
+                className="px-4 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={sendWhatsAppMessage}
+                disabled={!selectedTemplate}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold ${
+                  selectedTemplate
+                    ? 'bg-green-600 hover:bg-green-700 text-white'
+                    : 'bg-green-600/50 text-green-200 cursor-not-allowed'
+                }`}
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+                Send via WhatsApp
+              </button>
             </div>
           </div>
         </div>
