@@ -319,7 +319,9 @@ export default function EmployeesPage() {
 
       if (editingEmployee) {
         // Update existing employee
-        const { error: updateError } = await supabase
+        console.log('Updating employee:', editingEmployee.id, formData)
+
+        const { data: updateData, error: updateError } = await supabase
           .from('crm_employees')
           .update({
             full_name: formData.full_name.trim(),
@@ -350,8 +352,14 @@ export default function EmployeesPage() {
             updated_by: currentUser.id
           })
           .eq('id', editingEmployee.id)
+          .select()
 
-        if (updateError) throw updateError
+        console.log('Update result:', { updateData, updateError })
+
+        if (updateError) {
+          console.error('Update error details:', updateError)
+          throw updateError
+        }
 
         // Log action
         await supabase.from('crm_audit_log').insert({
