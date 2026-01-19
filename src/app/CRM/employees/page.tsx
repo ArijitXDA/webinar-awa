@@ -318,40 +318,44 @@ export default function EmployeesPage() {
       const hierarchyLevel = roleInfo?.level || 5
 
       if (editingEmployee) {
-        // Update existing employee
-        const { error: updateError } = await supabase
-          .from('crm_employees')
-          .update({
-            full_name: formData.full_name.trim(),
-            mobile: formData.mobile.trim(),
-            email: formData.email.trim() || null,
-            location: formData.location.trim() || null,
-            city: formData.city.trim() || null,
-            country: formData.country.trim() || null,
-            dob: formData.dob || null,
-            doj: formData.doj || null,
-            gender: formData.gender || null,
-            pan_number: formData.pan_number.trim() || null,
-            aadhaar_number: formData.aadhaar_number.trim() || null,
-            bank_account_number: formData.bank_account_number.trim() || null,
-            bank_ifsc_code: formData.bank_ifsc_code.trim() || null,
-            bank_name: formData.bank_name.trim() || null,
-            emergency_contact_name: formData.emergency_contact_name.trim() || null,
-            emergency_contact_number: formData.emergency_contact_number.trim() || null,
-            job_role: formData.job_role,
-            hierarchy_level: hierarchyLevel,
-            compensation_type: formData.compensation_type,
-            comp_monthly: formData.comp_monthly,
-            comp_per_lead: formData.comp_per_lead,
-            comp_per_conversion: formData.comp_per_conversion,
-            comp_per_cross_sell: formData.comp_per_cross_sell,
-            reports_to: formData.reports_to || null,
-            updated_at: new Date().toISOString(),
-            updated_by: currentUser.id
-          })
-          .eq('id', editingEmployee.id)
+        // Update existing employee using RPC function
+        console.log('Updating employee:', editingEmployee.id, formData)
 
-        if (updateError) throw updateError
+        const { data: updateData, error: updateError } = await supabase.rpc('update_employee_record', {
+          p_employee_id: editingEmployee.id,
+          p_full_name: formData.full_name.trim(),
+          p_mobile: formData.mobile.trim(),
+          p_email: formData.email.trim() || null,
+          p_location: formData.location.trim() || null,
+          p_city: formData.city.trim() || null,
+          p_country: formData.country.trim() || null,
+          p_dob: formData.dob || null,
+          p_doj: formData.doj || null,
+          p_gender: formData.gender || null,
+          p_pan_number: formData.pan_number.trim() || null,
+          p_aadhaar_number: formData.aadhaar_number.trim() || null,
+          p_bank_account_number: formData.bank_account_number.trim() || null,
+          p_bank_ifsc_code: formData.bank_ifsc_code.trim() || null,
+          p_bank_name: formData.bank_name.trim() || null,
+          p_emergency_contact_name: formData.emergency_contact_name.trim() || null,
+          p_emergency_contact_number: formData.emergency_contact_number.trim() || null,
+          p_job_role: formData.job_role,
+          p_hierarchy_level: hierarchyLevel,
+          p_compensation_type: formData.compensation_type,
+          p_comp_monthly: formData.comp_monthly,
+          p_comp_per_lead: formData.comp_per_lead,
+          p_comp_per_conversion: formData.comp_per_conversion,
+          p_comp_per_cross_sell: formData.comp_per_cross_sell,
+          p_reports_to: formData.reports_to || null,
+          p_updated_by: currentUser.id
+        })
+
+        console.log('Update result:', { updateData, updateError })
+
+        if (updateError) {
+          console.error('Update error details:', updateError)
+          throw updateError
+        }
 
         // Log action
         await supabase.from('crm_audit_log').insert({
