@@ -76,6 +76,7 @@ export default function EmployeesPage() {
   const [filterRole, setFilterRole] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [showModal, setShowModal] = useState(false)
+  const [showOrgStructure, setShowOrgStructure] = useState(false)
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -539,6 +540,23 @@ export default function EmployeesPage() {
     })
   }
 
+  // Build organizational tree structure
+  function buildOrgTree() {
+    // Find root employees (those who don't report to anyone)
+    const roots = employees.filter(e => !e.reports_to)
+
+    // Recursive function to build tree
+    function buildNode(emp: Employee): any {
+      const subordinates = employees.filter(e => e.reports_to === emp.id)
+      return {
+        ...emp,
+        subordinates: subordinates.map(buildNode)
+      }
+    }
+
+    return roots.map(buildNode)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
@@ -571,15 +589,26 @@ export default function EmployeesPage() {
               </div>
             </div>
 
-            <button
-              onClick={openAddModal}
-              className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold rounded-lg transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Add Employee
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowOrgStructure(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Org Structure
+              </button>
+              <button
+                onClick={openAddModal}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Add Employee
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -1121,6 +1150,150 @@ export default function EmployeesPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Organizational Structure Modal */}
+      {showOrgStructure && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-slate-800 px-6 py-4 border-b border-slate-700 flex items-center justify-between z-10">
+              <h2 className="text-xl font-bold text-white">Organizational Structure</h2>
+              <button
+                onClick={() => setShowOrgStructure(false)}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              {buildOrgTree().map((rootEmployee) => (
+                <OrgTreeNode key={rootEmployee.id} employee={rootEmployee} isRoot={true} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Recursive component to render org tree node
+function OrgTreeNode({ employee, isRoot = false }: { employee: any; isRoot?: boolean }) {
+  const [isExpanded, setIsExpanded] = useState(true)
+  const hasSubordinates = employee.subordinates && employee.subordinates.length > 0
+
+  return (
+    <div className={`${!isRoot ? 'ml-8' : ''}`}>
+      {/* Employee Card */}
+      <div className="mb-3">
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 hover:border-amber-500/50 transition-colors">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-4 flex-1">
+              {/* Avatar */}
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg flex-shrink-0 ${
+                employee.job_role === 'owner' ? 'bg-amber-500' :
+                employee.hierarchy_level <= 2 ? 'bg-purple-500' :
+                employee.hierarchy_level === 3 ? 'bg-blue-500' :
+                employee.hierarchy_level === 4 ? 'bg-green-500' :
+                'bg-slate-600'
+              }`}>
+                {employee.full_name.charAt(0)}
+              </div>
+
+              {/* Employee Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-white font-semibold text-lg">{employee.full_name}</h3>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    employee.job_role === 'owner' ? 'bg-amber-500/20 text-amber-400' :
+                    employee.hierarchy_level <= 2 ? 'bg-purple-500/20 text-purple-400' :
+                    employee.hierarchy_level === 3 ? 'bg-blue-500/20 text-blue-400' :
+                    employee.hierarchy_level === 4 ? 'bg-green-500/20 text-green-400' :
+                    'bg-slate-500/20 text-slate-400'
+                  }`}>
+                    {JOB_ROLE_DISPLAY[employee.job_role] || employee.job_role}
+                  </span>
+                  {!employee.is_active && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400">
+                      Inactive
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                  {employee.location && (
+                    <div className="flex items-center gap-2 text-slate-300">
+                      <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="truncate">{employee.location}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <span>{employee.mobile}</span>
+                  </div>
+                  {employee.email && (
+                    <div className="flex items-center gap-2 text-slate-300">
+                      <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      <span className="truncate">{employee.email}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Expand/Collapse Button */}
+            {hasSubordinates && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="ml-4 p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors flex-shrink-0"
+                title={isExpanded ? 'Collapse' : 'Expand'}
+              >
+                <svg className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Subordinate Count */}
+          {hasSubordinates && (
+            <div className="mt-3 pt-3 border-t border-slate-700">
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>
+                  {employee.subordinates.length} direct report{employee.subordinates.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Subordinates */}
+      {hasSubordinates && isExpanded && (
+        <div className="relative ml-4 pl-4 border-l-2 border-slate-700">
+          {employee.subordinates.map((subordinate: any, index: number) => (
+            <div key={subordinate.id} className="relative">
+              {/* Connection line */}
+              <div className="absolute left-0 top-6 w-4 border-t-2 border-slate-700"></div>
+              <OrgTreeNode employee={subordinate} />
+            </div>
+          ))}
         </div>
       )}
     </div>
