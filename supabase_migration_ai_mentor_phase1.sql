@@ -11,7 +11,7 @@
 
 CREATE TABLE IF NOT EXISTS crm_ai_mentor_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  lead_id VARCHAR(50) NOT NULL,
+  lead_id INTEGER NOT NULL,
   employee_id UUID NOT NULL REFERENCES crm_employees(id),
   session_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
@@ -98,7 +98,7 @@ COMMENT ON TABLE crm_ai_mentor_analytics IS 'Track accuracy and ROI of AI recomm
 -- SECURITY: This function can ONLY READ, never write
 -- ============================================================================
 
-CREATE OR REPLACE FUNCTION get_lead_ai_context(p_lead_id VARCHAR)
+CREATE OR REPLACE FUNCTION get_lead_ai_context(p_lead_id INTEGER)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -361,7 +361,7 @@ DROP TABLE IF EXISTS crm_ai_mentor_analytics CASCADE;
 DROP TABLE IF EXISTS crm_ai_mentor_sessions CASCADE;
 
 -- Drop function
-DROP FUNCTION IF EXISTS get_lead_ai_context(VARCHAR);
+DROP FUNCTION IF EXISTS get_lead_ai_context(INTEGER);
 */
 
 -- ============================================================================

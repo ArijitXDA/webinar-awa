@@ -49,7 +49,7 @@ Important Guidelines:
 - Focus on customer success and value creation`
 
 interface AnalyzeRequest {
-  leadId: string
+  leadId: number
   employeeId: string
   whatsappTranscript?: string
   callTranscript?: string
