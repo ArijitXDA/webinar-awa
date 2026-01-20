@@ -1160,9 +1160,9 @@ export default function EmployeesPage() {
       {/* Organizational Structure Modal */}
       {showOrgStructure && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] flex flex-col">
             {/* Modal Header */}
-            <div className="sticky top-0 bg-slate-800 px-6 py-4 border-b border-slate-700 flex items-center justify-between z-10">
+            <div className="bg-slate-800 px-6 py-4 border-b border-slate-700 flex items-center justify-between flex-shrink-0">
               <h2 className="text-xl font-bold text-white">Organizational Structure</h2>
               <button
                 onClick={() => setShowOrgStructure(false)}
@@ -1174,11 +1174,13 @@ export default function EmployeesPage() {
               </button>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-6">
-              {buildOrgTree().map((rootEmployee) => (
-                <OrgTreeNode key={rootEmployee.id} employee={rootEmployee} isRoot={true} />
-              ))}
+            {/* Modal Body - Scrollable Tree */}
+            <div className="flex-1 overflow-auto p-8">
+              <div className="flex flex-col items-center min-w-max">
+                {buildOrgTree().map((rootEmployee) => (
+                  <OrgTreeNode key={rootEmployee.id} employee={rootEmployee} />
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -1187,117 +1189,93 @@ export default function EmployeesPage() {
   )
 }
 
-// Recursive component to render org tree node
-function OrgTreeNode({ employee, isRoot = false }: { employee: any; isRoot?: boolean }) {
+// Recursive component to render org tree node (Vertical Tree Structure)
+function OrgTreeNode({ employee }: { employee: any }) {
   const [isExpanded, setIsExpanded] = useState(true)
   const hasSubordinates = employee.subordinates && employee.subordinates.length > 0
 
   return (
-    <div className={`${!isRoot ? 'ml-8' : ''}`}>
-      {/* Employee Card */}
-      <div className="mb-3">
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 hover:border-amber-500/50 transition-colors">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-4 flex-1">
-              {/* Avatar */}
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg flex-shrink-0 ${
-                employee.job_role === 'owner' ? 'bg-amber-500' :
-                employee.hierarchy_level <= 2 ? 'bg-purple-500' :
-                employee.hierarchy_level === 3 ? 'bg-blue-500' :
-                employee.hierarchy_level === 4 ? 'bg-green-500' :
-                'bg-slate-600'
-              }`}>
-                {employee.full_name.charAt(0)}
-              </div>
+    <div className="flex flex-col items-center">
+      {/* Employee Card - Compact Design */}
+      <div className="relative">
+        <div className={`bg-gradient-to-br ${
+          employee.job_role === 'owner' ? 'from-amber-500 to-amber-600' :
+          employee.hierarchy_level <= 2 ? 'from-purple-500 to-purple-600' :
+          employee.hierarchy_level === 3 ? 'from-blue-500 to-blue-600' :
+          employee.hierarchy_level === 4 ? 'from-green-500 to-green-600' :
+          'from-slate-600 to-slate-700'
+        } rounded-lg shadow-lg p-4 min-w-[200px] max-w-[220px] hover:scale-105 transition-transform cursor-pointer`}>
+          {/* Name */}
+          <h3 className="text-white font-bold text-center text-sm mb-1 truncate">
+            {employee.full_name}
+          </h3>
 
-              {/* Employee Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-white font-semibold text-lg">{employee.full_name}</h3>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    employee.job_role === 'owner' ? 'bg-amber-500/20 text-amber-400' :
-                    employee.hierarchy_level <= 2 ? 'bg-purple-500/20 text-purple-400' :
-                    employee.hierarchy_level === 3 ? 'bg-blue-500/20 text-blue-400' :
-                    employee.hierarchy_level === 4 ? 'bg-green-500/20 text-green-400' :
-                    'bg-slate-500/20 text-slate-400'
-                  }`}>
-                    {JOB_ROLE_DISPLAY[employee.job_role] || employee.job_role}
-                  </span>
-                  {!employee.is_active && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400">
-                      Inactive
-                    </span>
-                  )}
-                </div>
+          {/* Designation */}
+          <p className="text-white/90 text-xs text-center mb-2 font-medium">
+            {JOB_ROLE_DISPLAY[employee.job_role] || employee.job_role}
+          </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                  {employee.location && (
-                    <div className="flex items-center gap-2 text-slate-300">
-                      <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span className="truncate">{employee.location}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    <span>{employee.mobile}</span>
-                  </div>
-                  {employee.email && (
-                    <div className="flex items-center gap-2 text-slate-300">
-                      <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                      <span className="truncate">{employee.email}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+          {/* Location */}
+          {employee.location && (
+            <div className="flex items-center justify-center gap-1 text-white/80 text-xs">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span className="truncate">{employee.location}</span>
             </div>
+          )}
 
-            {/* Expand/Collapse Button */}
-            {hasSubordinates && (
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="ml-4 p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors flex-shrink-0"
-                title={isExpanded ? 'Collapse' : 'Expand'}
-              >
-                <svg className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-            )}
-          </div>
-
-          {/* Subordinate Count */}
-          {hasSubordinates && (
-            <div className="mt-3 pt-3 border-t border-slate-700">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <span>
-                  {employee.subordinates.length} direct report{employee.subordinates.length !== 1 ? 's' : ''}
-                </span>
-              </div>
+          {/* Inactive Badge */}
+          {!employee.is_active && (
+            <div className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">
+              Inactive
             </div>
           )}
         </div>
+
+        {/* Expand/Collapse Button */}
+        {hasSubordinates && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-slate-700 hover:bg-slate-600 border-2 border-slate-800 rounded-full flex items-center justify-center transition-colors z-10"
+            title={isExpanded ? 'Collapse' : 'Expand'}
+          >
+            <svg className={`w-3 h-3 text-white transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        )}
       </div>
 
-      {/* Subordinates */}
+      {/* Vertical Connection Line */}
       {hasSubordinates && isExpanded && (
-        <div className="relative ml-4 pl-4 border-l-2 border-slate-700">
-          {employee.subordinates.map((subordinate: any, index: number) => (
-            <div key={subordinate.id} className="relative">
-              {/* Connection line */}
-              <div className="absolute left-0 top-6 w-4 border-t-2 border-slate-700"></div>
-              <OrgTreeNode employee={subordinate} />
-            </div>
-          ))}
+        <div className="w-0.5 h-8 bg-slate-600"></div>
+      )}
+
+      {/* Subordinates Container */}
+      {hasSubordinates && isExpanded && (
+        <div className="flex flex-col items-center">
+          {/* Horizontal Line */}
+          <div className="relative flex items-start justify-center gap-8">
+            {/* Connecting Lines */}
+            {employee.subordinates.length > 1 && (
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-slate-600" style={{
+                width: `${(employee.subordinates.length - 1) * 230}px`,
+                left: '50%',
+                transform: 'translateX(-50%)'
+              }}></div>
+            )}
+
+            {/* Subordinate Nodes */}
+            {employee.subordinates.map((subordinate: any, index: number) => (
+              <div key={subordinate.id} className="relative flex flex-col items-center">
+                {/* Vertical connector from horizontal line to card */}
+                <div className="w-0.5 h-8 bg-slate-600"></div>
+                <OrgTreeNode employee={subordinate} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
