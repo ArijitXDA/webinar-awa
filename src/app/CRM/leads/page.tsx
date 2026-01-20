@@ -1165,7 +1165,7 @@ export default function LeadsPage() {
                           </svg>
                           ⏰ Best Time to Reach Out
                         </h3>
-                        <p className="text-white">{aiRecommendations.timing}</p>
+                        <p className="text-white">{String(aiRecommendations.timing ?? '')}</p>
                       </div>
 
                       {/* Communication Mode */}
@@ -1176,9 +1176,9 @@ export default function LeadsPage() {
                           </svg>
                           📱 Communication Mode
                         </h3>
-                        <p className="text-white mb-2">{aiRecommendations.communication_mode}</p>
+                        <p className="text-white mb-2">{String(aiRecommendations.communication_mode ?? '')}</p>
                         {aiRecommendations.location_if_meeting && (
-                          <p className="text-green-200 text-sm">📍 Suggested Location: {aiRecommendations.location_if_meeting}</p>
+                          <p className="text-green-200 text-sm">📍 Suggested Location: {String(aiRecommendations.location_if_meeting)}</p>
                         )}
                       </div>
 
@@ -1190,9 +1190,9 @@ export default function LeadsPage() {
                           </svg>
                           🎯 Product & Pitch
                         </h3>
-                        <p className="text-blue-200 font-medium mb-2">Recommended: {aiRecommendations.product}</p>
-                        <p className="text-white mb-2">{aiRecommendations.pitch}</p>
-                        <p className="text-blue-200 text-sm">💬 Tone: {aiRecommendations.tone}</p>
+                        <p className="text-blue-200 font-medium mb-2">Recommended: {String(aiRecommendations.product ?? '')}</p>
+                        <p className="text-white mb-2">{String(aiRecommendations.pitch ?? '')}</p>
+                        <p className="text-blue-200 text-sm">💬 Tone: {String(aiRecommendations.tone ?? '')}</p>
                       </div>
 
                       {/* Success Prediction */}
@@ -1205,15 +1205,15 @@ export default function LeadsPage() {
                         </h3>
                         <div className="grid grid-cols-3 gap-4 text-center">
                           <div>
-                            <div className="text-3xl font-bold text-purple-400 mb-1">{aiRecommendations.success_probability}%</div>
+                            <div className="text-3xl font-bold text-purple-400 mb-1">{aiRecommendations.success_probability ?? 0}%</div>
                             <div className="text-slate-300 text-xs">Success Rate</div>
                           </div>
                           <div>
-                            <div className="text-3xl font-bold text-purple-400 mb-1">{aiRecommendations.meetings_required}</div>
+                            <div className="text-3xl font-bold text-purple-400 mb-1">{aiRecommendations.meetings_required ?? 0}</div>
                             <div className="text-slate-300 text-xs">Meetings Needed</div>
                           </div>
                           <div>
-                            <div className="text-sm font-bold text-purple-400 mb-1">{aiRecommendations.probable_conversion_date}</div>
+                            <div className="text-sm font-bold text-purple-400 mb-1">{String(aiRecommendations.probable_conversion_date ?? '')}</div>
                             <div className="text-slate-300 text-xs">Target Date</div>
                           </div>
                         </div>
@@ -1222,19 +1222,45 @@ export default function LeadsPage() {
                       {/* Objection Handling */}
                       <div className="bg-slate-700 rounded-xl p-4">
                         <h3 className="text-white font-semibold mb-2">🛡️ Objection Handling</h3>
-                        <p className="text-slate-300 text-sm">{aiRecommendations.objection_handling}</p>
+                        {typeof aiRecommendations.objection_handling === 'object' ? (
+                          <div className="space-y-2">
+                            {Object.entries(aiRecommendations.objection_handling).map(([key, value]) => (
+                              <div key={key}>
+                                <p className="text-slate-200 font-medium text-sm">{key}:</p>
+                                <p className="text-slate-300 text-sm ml-3">{String(value)}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-slate-300 text-sm">{aiRecommendations.objection_handling}</p>
+                        )}
                       </div>
 
                       {/* Referral Strategy */}
                       <div className="bg-slate-700 rounded-xl p-4">
                         <h3 className="text-white font-semibold mb-2">🤝 Referral Strategy</h3>
-                        <p className="text-slate-300 text-sm">{aiRecommendations.referral_strategy}</p>
+                        {typeof aiRecommendations.referral_strategy === 'object' ? (
+                          <div className="space-y-2">
+                            {Object.entries(aiRecommendations.referral_strategy).map(([key, value]) => (
+                              <div key={key}>
+                                <p className="text-slate-200 font-medium text-sm">{key}:</p>
+                                <p className="text-slate-300 text-sm ml-3">{String(value)}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-slate-300 text-sm">{aiRecommendations.referral_strategy}</p>
+                        )}
                       </div>
 
                       {/* Reasoning */}
                       <div className="bg-slate-700 rounded-xl p-4">
                         <h3 className="text-white font-semibold mb-2">💡 AI Analysis</h3>
-                        <p className="text-slate-300 text-sm">{aiRecommendations.reasoning}</p>
+                        <p className="text-slate-300 text-sm">
+                          {typeof aiRecommendations.reasoning === 'object'
+                            ? JSON.stringify(aiRecommendations.reasoning, null, 2)
+                            : aiRecommendations.reasoning}
+                        </p>
                       </div>
                     </>
                   )}
