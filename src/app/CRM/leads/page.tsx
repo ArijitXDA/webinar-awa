@@ -115,6 +115,17 @@ export default function LeadsPage() {
   const [dynamicFields, setDynamicFields] = useState<Record<string, string>>({})
   const [loadingTemplates, setLoadingTemplates] = useState(false)
 
+  // AI Mentor state
+  const [showAIMentorModal, setShowAIMentorModal] = useState(false)
+  const [selectedAILead, setSelectedAILead] = useState<Lead | null>(null)
+  const [aiRecommendations, setAIRecommendations] = useState<any>(null)
+  const [loadingAI, setLoadingAI] = useState(false)
+  const [aiError, setAIError] = useState('')
+  const [whatsappTranscript, setWhatsappTranscript] = useState('')
+  const [callTranscript, setCallTranscript] = useState('')
+  const [aiSessionId, setAISessionId] = useState<string | null>(null)
+  const [aiRating, setAIRating] = useState(0)
+
   const ITEMS_PER_PAGE = 20
 
   useEffect(() => {
@@ -355,6 +366,95 @@ export default function LeadsPage() {
     setDynamicFields({})
     loadWhatsAppTemplates()
     setShowWhatsAppModal(true)
+  }
+
+  // AI Mentor functions
+  function openAIMentorModal(lead: Lead) {
+    setSelectedAILead(lead)
+    setShowAIMentorModal(true)
+    setAIRecommendations(null)
+    setAIError('')
+    setWhatsappTranscript('')
+    setCallTranscript('')
+    setAIRating(0)
+    setAISessionId(null)
+  }
+
+  async function getAIRecommendations() {
+    if (!selectedAILead || !currentUser) return
+
+    setLoadingAI(true)
+    setAIError('')
+
+    try {
+      const response = await fetch('/api/ai-mentor/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          leadId: selectedAILead.lead_id,
+          employeeId: currentUser.id,
+          whatsappTranscript: whatsappTranscript || undefined,
+          callTranscript: callTranscript || undefined
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get AI recommendations')
+      }
+
+      setAIRecommendations(data.recommendations)
+      setAISessionId(data.session_id)
+      setSuccess('AI recommendations generated successfully!')
+      setTimeout(() => setSuccess(''), 3000)
+
+    } catch (err: any) {
+      console.error('AI Mentor error:', err)
+      setAIError(err.message || 'Failed to generate recommendations')
+    } finally {
+      setLoadingAI(false)
+    }
+  }
+
+  async function saveAIRating(rating: number) {
+    if (!aiSessionId) return
+
+    try {
+      const { error } = await supabase
+        .from('crm_ai_mentor_sessions')
+        .update({
+          employee_rating: rating,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', aiSessionId)
+
+      if (error) throw error
+
+      setAIRating(rating)
+      setSuccess(`Thank you for rating the AI recommendations!`)
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err: any) {
+      console.error('Error saving rating:', err)
+    }
+  }
+
+  function handleTranscriptFileUpload(event: React.ChangeEvent<HTMLInputElement>, type: 'whatsapp' | 'call') {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const text = e.target?.result as string
+      if (type === 'whatsapp') {
+        setWhatsappTranscript(text)
+      } else {
+        setCallTranscript(text)
+      }
+    }
+    reader.readAsText(file)
   }
 
   function extractPlaceholders(templateContent: string): string[] {
@@ -659,6 +759,11 @@ export default function LeadsPage() {
   </span>
 )}
                         </button>
+                        <button onClick={() => openAIMentorModal(lead)} className="p-1.5 text-slate-400 hover:text-purple-400 hover:bg-slate-600 rounded-lg" title="AI Mentor">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                          </svg>
+                        </button>
                         <button onClick={() => router.push(`/CRM/leads/${lead.id}`)} className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-600 rounded-lg" title="Edit">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -905,6 +1010,265 @@ export default function LeadsPage() {
                 </svg>
                 Send via WhatsApp
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Mentor Modal */}
+      {showAIMentorModal && selectedAILead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 flex items-center justify-between shrink-0 rounded-t-2xl">
+              <div>
+                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  AI Mentor: How to Convert {selectedAILead.full_name}
+                </h2>
+                <p className="text-purple-100 text-sm mt-1">
+                  Lead Score: {selectedAILead.lead_score}★ | Status: {selectedAILead.lead_status}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAIMentorModal(false)}
+                className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {aiError && (
+                <div className="mb-4 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {aiError}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column: Upload Transcripts */}
+                <div className="space-y-4">
+                  <div className="bg-slate-700 rounded-xl p-4">
+                    <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      Upload Context
+                    </h3>
+
+                    {/* WhatsApp Upload */}
+                    <div className="mb-4">
+                      <label className="block text-sm text-slate-300 mb-2">WhatsApp Chat (.txt)</label>
+                      <input
+                        type="file"
+                        accept=".txt"
+                        onChange={(e) => handleTranscriptFileUpload(e, 'whatsapp')}
+                        className="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 cursor-pointer"
+                      />
+                      {whatsappTranscript && (
+                        <p className="text-xs text-green-400 mt-1">✓ Uploaded ({whatsappTranscript.length} characters)</p>
+                      )}
+                    </div>
+
+                    {/* Call Transcript Upload */}
+                    <div className="mb-4">
+                      <label className="block text-sm text-slate-300 mb-2">Call/Meeting Notes (.txt)</label>
+                      <input
+                        type="file"
+                        accept=".txt"
+                        onChange={(e) => handleTranscriptFileUpload(e, 'call')}
+                        className="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"
+                      />
+                      {callTranscript && (
+                        <p className="text-xs text-green-400 mt-1">✓ Uploaded ({callTranscript.length} characters)</p>
+                      )}
+                    </div>
+
+                    {/* Manual Paste */}
+                    <div>
+                      <label className="block text-sm text-slate-300 mb-2">Or paste manually:</label>
+                      <textarea
+                        rows={4}
+                        placeholder="Paste conversation transcript here..."
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                        value={whatsappTranscript || callTranscript}
+                        onChange={(e) => setWhatsappTranscript(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Lead Summary */}
+                  <div className="bg-slate-700 rounded-xl p-4">
+                    <h3 className="text-white font-semibold mb-3">Lead Summary</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Course:</span>
+                        <span className="text-white font-medium">{selectedAILead.course}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">For Whom:</span>
+                        <span className="text-white">{selectedAILead.for_whom}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Source:</span>
+                        <span className="text-white">{selectedAILead.lead_source}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Interactions:</span>
+                        <span className="text-white">{selectedAILead.interaction_count ?? 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: AI Recommendations */}
+                <div className="lg:col-span-2 space-y-4">
+                  {!aiRecommendations && !loadingAI && (
+                    <div className="bg-slate-700 rounded-xl p-8 text-center">
+                      <svg className="w-16 h-16 mx-auto mb-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      <h3 className="text-white text-xl font-bold mb-2">Ready to Get AI Recommendations?</h3>
+                      <p className="text-slate-300 mb-6">Click below to analyze this lead and get personalized conversion strategies</p>
+                      <button
+                        onClick={getAIRecommendations}
+                        className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg transition-all transform hover:scale-105"
+                      >
+                        Get AI Recommendations
+                      </button>
+                    </div>
+                  )}
+
+                  {loadingAI && (
+                    <div className="bg-slate-700 rounded-xl p-8 text-center">
+                      <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                      <h3 className="text-white text-xl font-bold mb-2">AI Mentor is Thinking...</h3>
+                      <p className="text-slate-300">Analyzing lead data and generating personalized recommendations</p>
+                    </div>
+                  )}
+
+                  {aiRecommendations && (
+                    <>
+                      {/* Timing Recommendation */}
+                      <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl p-4">
+                        <h3 className="text-amber-400 font-semibold flex items-center gap-2 mb-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          ⏰ Best Time to Reach Out
+                        </h3>
+                        <p className="text-white">{aiRecommendations.timing}</p>
+                      </div>
+
+                      {/* Communication Mode */}
+                      <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-4">
+                        <h3 className="text-green-400 font-semibold flex items-center gap-2 mb-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                          📱 Communication Mode
+                        </h3>
+                        <p className="text-white mb-2">{aiRecommendations.communication_mode}</p>
+                        {aiRecommendations.location_if_meeting && (
+                          <p className="text-green-200 text-sm">📍 Suggested Location: {aiRecommendations.location_if_meeting}</p>
+                        )}
+                      </div>
+
+                      {/* Product & Pitch */}
+                      <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-xl p-4">
+                        <h3 className="text-blue-400 font-semibold flex items-center gap-2 mb-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                          </svg>
+                          🎯 Product & Pitch
+                        </h3>
+                        <p className="text-blue-200 font-medium mb-2">Recommended: {aiRecommendations.product}</p>
+                        <p className="text-white mb-2">{aiRecommendations.pitch}</p>
+                        <p className="text-blue-200 text-sm">💬 Tone: {aiRecommendations.tone}</p>
+                      </div>
+
+                      {/* Success Prediction */}
+                      <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4">
+                        <h3 className="text-purple-400 font-semibold flex items-center gap-2 mb-3">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          📊 Success Prediction
+                        </h3>
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          <div>
+                            <div className="text-3xl font-bold text-purple-400 mb-1">{aiRecommendations.success_probability}%</div>
+                            <div className="text-slate-300 text-xs">Success Rate</div>
+                          </div>
+                          <div>
+                            <div className="text-3xl font-bold text-purple-400 mb-1">{aiRecommendations.meetings_required}</div>
+                            <div className="text-slate-300 text-xs">Meetings Needed</div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-purple-400 mb-1">{aiRecommendations.probable_conversion_date}</div>
+                            <div className="text-slate-300 text-xs">Target Date</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Objection Handling */}
+                      <div className="bg-slate-700 rounded-xl p-4">
+                        <h3 className="text-white font-semibold mb-2">🛡️ Objection Handling</h3>
+                        <p className="text-slate-300 text-sm">{aiRecommendations.objection_handling}</p>
+                      </div>
+
+                      {/* Referral Strategy */}
+                      <div className="bg-slate-700 rounded-xl p-4">
+                        <h3 className="text-white font-semibold mb-2">🤝 Referral Strategy</h3>
+                        <p className="text-slate-300 text-sm">{aiRecommendations.referral_strategy}</p>
+                      </div>
+
+                      {/* Reasoning */}
+                      <div className="bg-slate-700 rounded-xl p-4">
+                        <h3 className="text-white font-semibold mb-2">💡 AI Analysis</h3>
+                        <p className="text-slate-300 text-sm">{aiRecommendations.reasoning}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-slate-700 flex items-center justify-between shrink-0">
+              {aiRecommendations && (
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-300 text-sm">Rate this AI recommendation:</span>
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <button
+                      key={rating}
+                      onClick={() => saveAIRating(rating)}
+                      className={`text-2xl transition-colors ${
+                        aiRating >= rating ? 'text-amber-400' : 'text-slate-600 hover:text-amber-300'
+                      }`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                  {aiRating > 0 && <span className="text-green-400 text-sm ml-2">Thanks for your feedback!</span>}
+                </div>
+              )}
+              <div className="flex gap-3 ml-auto">
+                <button
+                  onClick={() => setShowAIMentorModal(false)}
+                  className="px-4 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
