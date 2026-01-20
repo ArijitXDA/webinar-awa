@@ -2,16 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { createClient } from '@supabase/supabase-js'
 
-// Initialize OpenAI client
-const openai = new OpenAI({
+// Initialize OpenAI client (only if API key is available)
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
-})
+}) : null
 
 // Initialize Supabase client with service role for backend operations
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  : null
 
 // System prompt for AI Mentor
 const SALES_MENTOR_SYSTEM_PROMPT = `You are "oStaran AI Mentor", an expert sales assistant helping employees convert leads into customers for AI training programs and courses.
@@ -72,6 +74,22 @@ interface AIRecommendations {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if OpenAI client is initialized
+    if (!openai) {
+      return NextResponse.json(
+        { error: 'OpenAI API key not configured' },
+        { status: 500 }
+      )
+    }
+
+    // Check if Supabase client is initialized
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Supabase not configured' },
+        { status: 500 }
+      )
+    }
+
     // Parse request body
     const body: AnalyzeRequest = await request.json()
     const { leadId, employeeId, whatsappTranscript, callTranscript } = body
