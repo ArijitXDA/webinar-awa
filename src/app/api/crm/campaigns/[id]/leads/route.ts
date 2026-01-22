@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 // Add leads to campaign
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { leadIds, addedBy } = await request.json()
@@ -16,6 +16,7 @@ export async function POST(
       )
     }
 
+    const params = await context.params
     const campaignId = params.id
 
     // Prepare campaign_leads records
@@ -61,7 +62,7 @@ export async function POST(
 // Remove leads from campaign
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { leadIds } = await request.json()
@@ -73,6 +74,7 @@ export async function DELETE(
       )
     }
 
+    const params = await context.params
     const campaignId = params.id
 
     const { error } = await supabase
