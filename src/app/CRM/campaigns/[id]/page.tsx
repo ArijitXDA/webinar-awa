@@ -25,6 +25,7 @@ interface Campaign {
   actual_revenue: number
   roi_percentage: number
   channels_used: string[]
+  campaign_owner_id: string | null
   campaign_owner_name: string | null
   status?: string
 }
