@@ -582,7 +582,21 @@ export default function LeadsPage() {
   }
 
   function clearFilters() {
-    setFilters({ status: '', source: '', forWhom: '', score: '', assignedTo: '', followupFrom: '', followupTo: '' })
+    setFilters({
+      status: '',
+      source: '',
+      forWhom: '',
+      score: '',
+      assignedTo: '',
+      followupFrom: '',
+      followupTo: '',
+      pipelineStage: '',
+      priority: '',
+      temperature: '',
+      tag: '',
+      dealSize: '',
+      industry: ''
+    })
     setSearch('')
   }
 
