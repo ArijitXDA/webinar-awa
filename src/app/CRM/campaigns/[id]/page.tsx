@@ -73,7 +73,7 @@ export default function CampaignDetailsPage() {
   async function fetchCampaignDetails() {
     try {
       const { data, error } = await supabase
-        .from('vw_campaign_performance')
+        .from('crm_campaigns')
         .select('*')
         .eq('id', campaignId)
         .single()
