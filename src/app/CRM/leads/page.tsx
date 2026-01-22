@@ -58,6 +58,16 @@ interface Lead {
   created_at: string
   updated_at: string
   interaction_count?: number
+  // Enterprise fields
+  tags: string[]
+  pipeline_stage: string
+  priority: string
+  lead_temperature: string
+  company_name: string
+  industry: string
+  expected_value: number | null
+  deal_size_category: string
+  customer_segment: string
 }
 
 interface Employee {
@@ -90,7 +100,14 @@ export default function LeadsPage() {
     score: '',
     assignedTo: '',
     followupFrom: '',
-    followupTo: ''
+    followupTo: '',
+    // Enterprise filters
+    pipelineStage: '',
+    priority: '',
+    temperature: '',
+    tag: '',
+    dealSize: '',
+    industry: ''
   })
   const [page, setPage] = useState(1)
   const [showFilters, setShowFilters] = useState(false)
@@ -260,10 +277,12 @@ export default function LeadsPage() {
         l.full_name.toLowerCase().includes(s) ||
         l.mobile.includes(search) ||
         l.email?.toLowerCase().includes(s) ||
-        l.lead_id.toString().includes(search)
+        l.lead_id.toString().includes(search) ||
+        l.company_name?.toLowerCase().includes(s)
       )
     }
 
+    // Basic filters
     if (filters.status) filtered = filtered.filter(l => l.lead_status === filters.status)
     if (filters.source) filtered = filtered.filter(l => l.lead_source === filters.source)
     if (filters.forWhom) filtered = filtered.filter(l => l.for_whom === filters.forWhom)
@@ -271,6 +290,14 @@ export default function LeadsPage() {
     if (filters.assignedTo) filtered = filtered.filter(l => l.assigned_to === filters.assignedTo)
     if (filters.followupFrom) filtered = filtered.filter(l => l.next_followup_date >= filters.followupFrom)
     if (filters.followupTo) filtered = filtered.filter(l => l.next_followup_date <= filters.followupTo)
+
+    // Enterprise filters
+    if (filters.pipelineStage) filtered = filtered.filter(l => l.pipeline_stage === filters.pipelineStage)
+    if (filters.priority) filtered = filtered.filter(l => l.priority === filters.priority)
+    if (filters.temperature) filtered = filtered.filter(l => l.lead_temperature === filters.temperature)
+    if (filters.dealSize) filtered = filtered.filter(l => l.deal_size_category === filters.dealSize)
+    if (filters.industry) filtered = filtered.filter(l => l.industry?.toLowerCase().includes(filters.industry.toLowerCase()))
+    if (filters.tag) filtered = filtered.filter(l => l.tags?.some(t => t.includes(filters.tag.toLowerCase())))
 
     return filtered
   }
@@ -650,30 +677,94 @@ export default function LeadsPage() {
           </div>
 
           {showFilters && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-slate-700">
-              <select value={filters.status} onChange={(e) => { setFilters({ ...filters, status: e.target.value }); setPage(1) }} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
-                <option value="">All Status</option>
-                {LEAD_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </select>
-              <select value={filters.source} onChange={(e) => { setFilters({ ...filters, source: e.target.value }); setPage(1) }} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
-                <option value="">All Sources</option>
-                {LEAD_SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </select>
-              <select value={filters.score} onChange={(e) => { setFilters({ ...filters, score: e.target.value }); setPage(1) }} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
-                <option value="">All Scores</option>
-                {[5, 4, 3, 2, 1].map(s => <option key={s} value={s}>{s} Star{s > 1 ? 's' : ''}</option>)}
-              </select>
-              <select value={filters.assignedTo} onChange={(e) => { setFilters({ ...filters, assignedTo: e.target.value }); setPage(1) }} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
-                <option value="">All Assignees</option>
-                {employees.map(e => <option key={e.id} value={e.id}>{e.full_name}</option>)}
-              </select>
-              <div>
-                <label className="block text-xs text-slate-500 mb-1">Follow-up From</label>
-                <input type="date" value={filters.followupFrom} onChange={(e) => { setFilters({ ...filters, followupFrom: e.target.value }); setPage(1) }} className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm" />
+            <div className="mt-4 pt-4 border-t border-slate-700">
+              {/* Basic Filters */}
+              <div className="mb-4">
+                <h3 className="text-slate-400 text-xs font-medium mb-3">Basic Filters</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <select value={filters.status} onChange={(e) => { setFilters({ ...filters, status: e.target.value }); setPage(1) }} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
+                    <option value="">All Status</option>
+                    {LEAD_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  </select>
+                  <select value={filters.source} onChange={(e) => { setFilters({ ...filters, source: e.target.value }); setPage(1) }} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
+                    <option value="">All Sources</option>
+                    {LEAD_SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  </select>
+                  <select value={filters.score} onChange={(e) => { setFilters({ ...filters, score: e.target.value }); setPage(1) }} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
+                    <option value="">All Scores</option>
+                    {[5, 4, 3, 2, 1].map(s => <option key={s} value={s}>{s} Star{s > 1 ? 's' : ''}</option>)}
+                  </select>
+                  <select value={filters.assignedTo} onChange={(e) => { setFilters({ ...filters, assignedTo: e.target.value }); setPage(1) }} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
+                    <option value="">All Assignees</option>
+                    {employees.map(e => <option key={e.id} value={e.id}>{e.full_name}</option>)}
+                  </select>
+                </div>
               </div>
+
+              {/* Enterprise Filters */}
+              <div className="mb-4">
+                <h3 className="text-slate-400 text-xs font-medium mb-3">Enterprise Filters</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <select value={filters.pipelineStage} onChange={(e) => { setFilters({ ...filters, pipelineStage: e.target.value }); setPage(1) }} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
+                    <option value="">All Pipeline Stages</option>
+                    <option value="new">New</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="qualified">Qualified</option>
+                    <option value="proposal">Proposal</option>
+                    <option value="negotiation">Negotiation</option>
+                    <option value="closed_won">Closed Won</option>
+                    <option value="closed_lost">Closed Lost</option>
+                  </select>
+                  <select value={filters.priority} onChange={(e) => { setFilters({ ...filters, priority: e.target.value }); setPage(1) }} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
+                    <option value="">All Priorities</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                  <select value={filters.temperature} onChange={(e) => { setFilters({ ...filters, temperature: e.target.value }); setPage(1) }} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
+                    <option value="">All Temperatures</option>
+                    <option value="cold">❄️ Cold</option>
+                    <option value="warm">🌤️ Warm</option>
+                    <option value="hot">🔥 Hot</option>
+                  </select>
+                  <select value={filters.dealSize} onChange={(e) => { setFilters({ ...filters, dealSize: e.target.value }); setPage(1) }} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
+                    <option value="">All Deal Sizes</option>
+                    <option value="individual">Individual</option>
+                    <option value="small-business">Small Business</option>
+                    <option value="mid-market">Mid-Market</option>
+                    <option value="enterprise">Enterprise</option>
+                  </select>
+                  <input
+                    type="text"
+                    value={filters.tag}
+                    onChange={(e) => { setFilters({ ...filters, tag: e.target.value }); setPage(1) }}
+                    placeholder="Search by tag..."
+                    className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500"
+                  />
+                  <input
+                    type="text"
+                    value={filters.industry}
+                    onChange={(e) => { setFilters({ ...filters, industry: e.target.value }); setPage(1) }}
+                    placeholder="Search by industry..."
+                    className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500"
+                  />
+                </div>
+              </div>
+
+              {/* Date Filters */}
               <div>
-                <label className="block text-xs text-slate-500 mb-1">Follow-up To</label>
-                <input type="date" value={filters.followupTo} onChange={(e) => { setFilters({ ...filters, followupTo: e.target.value }); setPage(1) }} className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm" />
+                <h3 className="text-slate-400 text-xs font-medium mb-3">Follow-up Date Range</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-xs text-slate-500 mb-1">From</label>
+                    <input type="date" value={filters.followupFrom} onChange={(e) => { setFilters({ ...filters, followupFrom: e.target.value }); setPage(1) }} className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500 mb-1">To</label>
+                    <input type="date" value={filters.followupTo} onChange={(e) => { setFilters({ ...filters, followupTo: e.target.value }); setPage(1) }} className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm" />
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -701,8 +792,24 @@ export default function LeadsPage() {
                   <tr key={lead.id} className="hover:bg-slate-700/50">
                     <td className="px-4 py-3 text-slate-500 text-sm">{lead.lead_id}</td>
                     <td className="px-4 py-3">
-                      <p className="text-white font-medium">{lead.full_name}</p>
-                      <p className="text-slate-400 text-xs">{lead.course || '-'}</p>
+                      <div>
+                        <p className="text-white font-medium">{lead.full_name}</p>
+                        <p className="text-slate-400 text-xs">{lead.course || lead.company_name || '-'}</p>
+                        {lead.tags && lead.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {lead.tags.slice(0, 2).map(tag => (
+                              <span key={tag} className="inline-flex px-1.5 py-0.5 bg-green-500/20 text-green-400 text-[10px] rounded">
+                                {tag}
+                              </span>
+                            ))}
+                            {lead.tags.length > 2 && (
+                              <span className="inline-flex px-1.5 py-0.5 bg-slate-600 text-slate-300 text-[10px] rounded">
+                                +{lead.tags.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <p className="text-white text-sm">{lead.country_code} {lead.mobile}</p>
@@ -710,9 +817,18 @@ export default function LeadsPage() {
                     </td>
                     <td className="px-4 py-3 text-slate-300 text-sm capitalize">{lead.lead_source.replace('_', ' ')}</td>
                     <td className="px-4 py-3">
-                      <span className={`text-sm ${lead.lead_score >= 4 ? 'text-green-400' : lead.lead_score >= 3 ? 'text-amber-400' : 'text-red-400'}`}>
-                        {getScoreStars(lead.lead_score)}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className={`text-sm ${lead.lead_score >= 4 ? 'text-green-400' : lead.lead_score >= 3 ? 'text-amber-400' : 'text-red-400'}`}>
+                          {getScoreStars(lead.lead_score)}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          {lead.lead_temperature === 'hot' && <span className="text-[10px]" title="Hot Lead">🔥</span>}
+                          {lead.lead_temperature === 'warm' && <span className="text-[10px]" title="Warm Lead">🌤️</span>}
+                          {lead.lead_temperature === 'cold' && <span className="text-[10px]" title="Cold Lead">❄️</span>}
+                          {lead.priority === 'urgent' && <span className="px-1 py-0.5 bg-red-500/20 text-red-400 text-[9px] rounded font-medium">URGENT</span>}
+                          {lead.priority === 'high' && <span className="px-1 py-0.5 bg-orange-500/20 text-orange-400 text-[9px] rounded font-medium">HIGH</span>}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(lead.lead_status)}`}>
