@@ -828,10 +828,10 @@ export default function NewLeadPage() {
                     onChange={(e) => handleInputChange('deal_size_category', e.target.value)}
                     className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:border-green-500 focus:outline-none"
                   >
-                    <option value="individual">Individual (< ₹1L)</option>
+                    <option value="individual">Individual (&lt; ₹1L)</option>
                     <option value="small-business">Small Business (₹1L - ₹10L)</option>
                     <option value="mid-market">Mid-Market (₹10L - ₹1Cr)</option>
-                    <option value="enterprise">Enterprise (> ₹1Cr)</option>
+                    <option value="enterprise">Enterprise (&gt; ₹1Cr)</option>
                   </select>
                 </div>
               </div>
