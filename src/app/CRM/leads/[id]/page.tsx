@@ -94,7 +94,10 @@ export default function LeadFormPage() {
     lead_generation_date: new Date().toISOString().split('T')[0],
     next_followup_date: '',
     target_conversion_date: '',
-    assigned_to: ''
+    assigned_to: '',
+    priority: 'medium',
+    lead_temperature: 'warm',
+    pipeline_stage: 'awareness'
   })
 
   useEffect(() => {
@@ -181,7 +184,10 @@ export default function LeadFormPage() {
           lead_generation_date: data.lead_generation_date || '',
           next_followup_date: data.next_followup_date || '',
           target_conversion_date: data.target_conversion_date || '',
-          assigned_to: data.assigned_to || ''
+          assigned_to: data.assigned_to || '',
+          priority: data.priority || 'medium',
+          lead_temperature: data.lead_temperature || 'warm',
+          pipeline_stage: data.pipeline_stage || 'awareness'
         })
       }
     } catch (err) {
@@ -226,6 +232,9 @@ export default function LeadFormPage() {
             next_followup_date: form.next_followup_date || null,
             target_conversion_date: form.target_conversion_date || null,
             assigned_to: form.assigned_to || currentUser.id,
+            priority: form.priority,
+            lead_temperature: form.lead_temperature,
+            pipeline_stage: form.pipeline_stage,
             is_converted: form.lead_status === 'converted',
             conversion_date: form.lead_status === 'converted' ? new Date().toISOString().split('T')[0] : null,
             updated_at: new Date().toISOString()
@@ -278,6 +287,9 @@ export default function LeadFormPage() {
             next_followup_date: form.next_followup_date || null,
             target_conversion_date: form.target_conversion_date || null,
             assigned_to: form.assigned_to || currentUser.id,
+            priority: form.priority,
+            lead_temperature: form.lead_temperature,
+            pipeline_stage: form.pipeline_stage,
             generated_by: currentUser.id
           })
           .select()
@@ -520,6 +532,57 @@ export default function LeadFormPage() {
                   />
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Enterprise Fields */}
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-white mb-4">Enterprise Classification</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">Priority</label>
+                <select
+                  value={form.priority}
+                  onChange={(e) => setForm({ ...form, priority: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">Lead Temperature</label>
+                <select
+                  value={form.lead_temperature}
+                  onChange={(e) => setForm({ ...form, lead_temperature: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  <option value="cold">❄️ Cold</option>
+                  <option value="warm">🌤️ Warm</option>
+                  <option value="hot">🔥 Hot</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">Pipeline Stage</label>
+                <select
+                  value={form.pipeline_stage}
+                  onChange={(e) => setForm({ ...form, pipeline_stage: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  <option value="awareness">Awareness</option>
+                  <option value="interest">Interest</option>
+                  <option value="consideration">Consideration</option>
+                  <option value="intent">Intent</option>
+                  <option value="evaluation">Evaluation</option>
+                  <option value="purchase">Purchase</option>
+                  <option value="retention">Retention</option>
+                  <option value="advocacy">Advocacy</option>
+                </select>
+              </div>
             </div>
           </div>
 
