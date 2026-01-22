@@ -25,6 +25,7 @@ interface Campaign {
   actual_revenue: number
   roi_percentage: number
   channels_used: string[]
+  campaign_owner_id: string | null
   campaign_owner_name: string | null
   status?: string
 }
@@ -55,6 +56,14 @@ export default function CampaignDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'analytics'>('overview')
 
+  // Add Leads Modal
+  const [showAddLeadsModal, setShowAddLeadsModal] = useState(false)
+  const [availableLeads, setAvailableLeads] = useState<any[]>([])
+  const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([])
+  const [assignTo, setAssignTo] = useState<string>('')
+  const [teamMembers, setTeamMembers] = useState<any[]>([])
+  const [addingLeads, setAddingLeads] = useState(false)
+
   useEffect(() => {
     if (campaignId) {
       fetchCampaignDetails()
@@ -65,7 +74,7 @@ export default function CampaignDetailsPage() {
   async function fetchCampaignDetails() {
     try {
       const { data, error } = await supabase
-        .from('vw_campaign_performance')
+        .from('crm_campaigns')
         .select('*')
         .eq('id', campaignId)
         .single()
@@ -127,6 +136,95 @@ export default function CampaignDetailsPage() {
       alert(campaign.is_active ? 'Campaign paused' : 'Campaign activated')
     } catch (error: any) {
       alert(error.message || 'Failed to update campaign status')
+    }
+  }
+
+  async function openAddLeadsModal() {
+    setShowAddLeadsModal(true)
+    setSelectedLeadIds([])
+    setAssignTo(campaign?.campaign_owner_id || '')
+
+    // Fetch available leads not in this campaign
+    const { data: allLeads } = await supabase
+      .from('crm_leads')
+      .select('id, lead_id, full_name, mobile, email, lead_score, lead_status, assigned_to')
+      .eq('is_converted', false)
+      .order('created_at', { ascending: false })
+      .limit(100)
+
+    // Get leads already in campaign
+    const leadsInCampaign = campaignLeads.map(cl => cl.lead_id)
+
+    // Filter out leads already in campaign
+    const available = (allLeads || []).filter(lead => !leadsInCampaign.includes(lead.id))
+    setAvailableLeads(available)
+
+    // Fetch campaign owner and their team
+    if (campaign?.campaign_owner_id) {
+      const { data: owner } = await supabase
+        .from('crm_employees')
+        .select('id, full_name, job_role')
+        .eq('id', campaign.campaign_owner_id)
+        .single()
+
+      const { data: team } = await supabase
+        .from('crm_employees')
+        .select('id, full_name, job_role')
+        .eq('reports_to', campaign.campaign_owner_id)
+        .eq('is_active', true)
+
+      const members = [owner, ...(team || [])].filter(Boolean)
+      setTeamMembers(members)
+    }
+  }
+
+  async function handleAddLeadsToCampaign() {
+    if (selectedLeadIds.length === 0) {
+      alert('Please select at least one lead')
+      return
+    }
+
+    if (!assignTo) {
+      alert('Please select who to assign the leads to')
+      return
+    }
+
+    try {
+      setAddingLeads(true)
+
+      // Add leads to campaign
+      const { data, error } = await supabase
+        .from('crm_campaign_leads')
+        .insert(
+          selectedLeadIds.map(leadId => ({
+            campaign_id: campaignId,
+            lead_id: leadId,
+            response_status: 'pending'
+          }))
+        )
+
+      if (error) throw error
+
+      // Assign leads to selected team member
+      const { error: assignError } = await supabase
+        .from('crm_leads')
+        .update({
+          assigned_to: assignTo,
+          primary_campaign_id: campaignId
+        })
+        .in('id', selectedLeadIds)
+
+      if (assignError) throw assignError
+
+      alert(`Successfully added ${selectedLeadIds.length} leads to campaign and assigned to team member`)
+      setShowAddLeadsModal(false)
+      setSelectedLeadIds([])
+      fetchCampaignLeads()
+    } catch (error: any) {
+      console.error('Error adding leads:', error)
+      alert(error.message || 'Failed to add leads to campaign')
+    } finally {
+      setAddingLeads(false)
     }
   }
 
@@ -212,7 +310,7 @@ export default function CampaignDetailsPage() {
                 {campaign.is_active ? 'Pause Campaign' : 'Activate Campaign'}
               </button>
               <button
-                onClick={() => router.push(`/CRM/leads?campaign_id=${campaignId}`)}
+                onClick={openAddLeadsModal}
                 className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium"
               >
                 Add Leads
@@ -600,6 +698,189 @@ export default function CampaignDetailsPage() {
           </div>
         )}
       </main>
+
+      {/* Add Leads Modal */}
+      {showAddLeadsModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-xl border border-slate-700 max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-white">Add Leads to Campaign</h3>
+              <button
+                onClick={() => setShowAddLeadsModal(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="mb-6 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-blue-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-blue-300 font-medium text-sm">Leads will be automatically assigned</p>
+                    <p className="text-blue-200/70 text-xs mt-1">Select leads and choose a team member to assign them to when adding to the campaign</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Assign To Dropdown */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Assign Leads To <span className="text-red-400">*</span>
+                </label>
+                <select
+                  value={assignTo}
+                  onChange={(e) => setAssignTo(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                >
+                  <option value="">Select team member...</option>
+                  {teamMembers.map(member => (
+                    <option key={member.id} value={member.id}>
+                      {member.full_name} - {member.job_role}
+                      {member.id === campaign?.campaign_owner_id && ' (Campaign Owner)'}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-400 mt-1">Campaign owner and their team members</p>
+              </div>
+
+              {/* Select All / Clear */}
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm text-slate-300">
+                  {selectedLeadIds.length} of {availableLeads.length} leads selected
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedLeadIds(availableLeads.map(l => l.id))}
+                    className="text-xs px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={() => setSelectedLeadIds([])}
+                    className="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              {/* Leads List */}
+              {availableLeads.length === 0 ? (
+                <div className="text-center py-8">
+                  <svg className="w-16 h-16 mx-auto mb-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  </svg>
+                  <p className="text-slate-400">No available leads to add</p>
+                  <p className="text-slate-500 text-sm mt-1">All recent leads are already in this campaign</p>
+                </div>
+              ) : (
+                <div className="bg-slate-900 rounded-lg border border-slate-700 overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-slate-800/50">
+                      <tr>
+                        <th className="px-4 py-2 text-left">
+                          <input
+                            type="checkbox"
+                            checked={selectedLeadIds.length === availableLeads.length && availableLeads.length > 0}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedLeadIds(availableLeads.map(l => l.id))
+                              } else {
+                                setSelectedLeadIds([])
+                              }
+                            }}
+                            className="w-4 h-4 bg-slate-700 border-slate-600 rounded"
+                          />
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase">Lead</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase">Contact</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase">Score</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase">Status</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase">Current Owner</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-700">
+                      {availableLeads.map(lead => (
+                        <tr key={lead.id} className="hover:bg-slate-800/50">
+                          <td className="px-4 py-3">
+                            <input
+                              type="checkbox"
+                              checked={selectedLeadIds.includes(lead.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedLeadIds([...selectedLeadIds, lead.id])
+                                } else {
+                                  setSelectedLeadIds(selectedLeadIds.filter(id => id !== lead.id))
+                                }
+                              }}
+                              className="w-4 h-4 bg-slate-700 border-slate-600 rounded"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <p className="text-white font-medium text-sm">{lead.full_name}</p>
+                            <p className="text-slate-500 text-xs">ID: {lead.lead_id}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <p className="text-white text-sm">{lead.mobile}</p>
+                            {lead.email && <p className="text-slate-400 text-xs">{lead.email}</p>}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`text-sm font-medium ${
+                              lead.lead_score >= 4 ? 'text-green-400' :
+                              lead.lead_score === 3 ? 'text-yellow-400' : 'text-red-400'
+                            }`}>
+                              {'★'.repeat(lead.lead_score)}{'☆'.repeat(5 - lead.lead_score)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="text-xs px-2 py-1 bg-slate-700 text-slate-300 rounded capitalize">
+                              {lead.lead_status?.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-slate-400">
+                            {lead.assigned_to ? 'Assigned' : 'Unassigned'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-slate-700 flex items-center justify-between">
+              <div className="text-sm text-slate-400">
+                {selectedLeadIds.length} lead{selectedLeadIds.length !== 1 ? 's' : ''} selected
+                {assignTo && ` • Will be assigned to selected team member`}
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowAddLeadsModal(false)}
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddLeadsToCampaign}
+                  disabled={selectedLeadIds.length === 0 || !assignTo || addingLeads}
+                  className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {addingLeads ? 'Adding...' : `Add ${selectedLeadIds.length} Lead${selectedLeadIds.length !== 1 ? 's' : ''}`}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

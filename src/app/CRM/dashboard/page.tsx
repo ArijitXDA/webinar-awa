@@ -429,6 +429,15 @@ export default function DashboardPage() {
             <p className="text-white font-medium text-xs text-center">Analytics</p>
           </button>
 
+          <button onClick={() => router.push('/CRM/campaigns')} className="bg-slate-800 border border-slate-700 rounded-xl p-3 hover:border-amber-500/50 transition-all group">
+            <div className="w-10 h-10 bg-pink-500/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+              <svg className="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+            </div>
+            <p className="text-white font-medium text-xs text-center">Campaigns</p>
+          </button>
+
           <button onClick={() => router.push('/CRM/whatsapp-templates')} className="bg-slate-800 border border-slate-700 rounded-xl p-3 hover:border-amber-500/50 transition-all group">
             <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
               <svg className="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="currentColor">
