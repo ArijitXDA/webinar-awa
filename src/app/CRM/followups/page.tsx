@@ -19,6 +19,13 @@ interface Lead {
   assigned_to_name?: string
   last_interaction_at: string
   days_overdue?: number
+  // Enterprise fields
+  tags: string[]
+  pipeline_stage: string
+  priority: string
+  lead_temperature: string
+  company_name: string
+  industry: string
 }
 
 interface WhatsAppTemplate {
@@ -58,6 +65,15 @@ export default function FollowupsPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('')
   const [dynamicFields, setDynamicFields] = useState<Record<string, string>>({})
   const [loadingTemplates, setLoadingTemplates] = useState(false)
+  // Filters
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState({
+    priority: '',
+    temperature: '',
+    tag: '',
+    pipelineStage: ''
+  })
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     checkSessionAndLoad()
@@ -148,6 +164,31 @@ export default function FollowupsPage() {
     } catch (err) {
       console.error('Error loading followups:', err)
     }
+  }
+
+  function getFilteredLeads(leads: Lead[]) {
+    let filtered = [...leads]
+
+    if (search) {
+      const s = search.toLowerCase()
+      filtered = filtered.filter(l =>
+        l.full_name.toLowerCase().includes(s) ||
+        l.mobile.includes(search) ||
+        l.company_name?.toLowerCase().includes(s)
+      )
+    }
+
+    if (filters.priority) filtered = filtered.filter(l => l.priority === filters.priority)
+    if (filters.temperature) filtered = filtered.filter(l => l.lead_temperature === filters.temperature)
+    if (filters.pipelineStage) filtered = filtered.filter(l => l.pipeline_stage === filters.pipelineStage)
+    if (filters.tag) filtered = filtered.filter(l => l.tags?.some(t => t.includes(filters.tag.toLowerCase())))
+
+    return filtered
+  }
+
+  function clearFilters() {
+    setFilters({ priority: '', temperature: '', tag: '', pipelineStage: '' })
+    setSearch('')
   }
 
   function openQuickAction(lead: Lead) {
@@ -304,12 +345,14 @@ export default function FollowupsPage() {
   }
 
   function getActiveLeads() {
+    let leads: Lead[] = []
     switch (activeTab) {
-      case 'overdue': return overdueLeads
-      case 'today': return todayLeads
-      case 'upcoming': return upcomingLeads
-      default: return []
+      case 'overdue': leads = overdueLeads; break
+      case 'today': leads = todayLeads; break
+      case 'upcoming': leads = upcomingLeads; break
+      default: leads = []
     }
+    return getFilteredLeads(leads)
   }
 
   if (loading) {
@@ -420,10 +463,66 @@ export default function FollowupsPage() {
           </button>
         </div>
 
+        {/* Search and Filters */}
+        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search leads..."
+              className="flex-1 px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500"
+            />
+            <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-2 px-4 py-2 rounded-lg ${showFilters ? 'bg-amber-500 text-slate-900' : 'bg-slate-700 text-slate-300'}`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              Filters
+            </button>
+            {(search || Object.values(filters).some(v => v)) && (
+              <button onClick={clearFilters} className="px-4 py-2 text-amber-400 hover:text-amber-300">Clear</button>
+            )}
+          </div>
+
+          {showFilters && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-slate-700">
+              <select value={filters.priority} onChange={(e) => setFilters({ ...filters, priority: e.target.value })} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
+                <option value="">All Priorities</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+              <select value={filters.temperature} onChange={(e) => setFilters({ ...filters, temperature: e.target.value })} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
+                <option value="">All Temperatures</option>
+                <option value="cold">❄️ Cold</option>
+                <option value="warm">🌤️ Warm</option>
+                <option value="hot">🔥 Hot</option>
+              </select>
+              <select value={filters.pipelineStage} onChange={(e) => setFilters({ ...filters, pipelineStage: e.target.value })} className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm">
+                <option value="">All Pipeline Stages</option>
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                <option value="qualified">Qualified</option>
+                <option value="proposal">Proposal</option>
+                <option value="negotiation">Negotiation</option>
+              </select>
+              <input
+                type="text"
+                value={filters.tag}
+                onChange={(e) => setFilters({ ...filters, tag: e.target.value })}
+                placeholder="Search by tag..."
+                className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500"
+              />
+            </div>
+          )}
+        </div>
+
         {/* Leads List */}
         <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-700">
+          <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white capitalize">{activeTab} Follow-ups</h3>
+            <span className="text-slate-400 text-sm">{getActiveLeads().length} leads</span>
           </div>
 
           <div className="divide-y divide-slate-700">
@@ -442,11 +541,23 @@ export default function FollowupsPage() {
   </span>
 )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400">
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400 mb-2">
                       <span>{lead.country_code} {lead.mobile}</span>
                       {lead.course && <span>• {lead.course}</span>}
+                      {lead.company_name && <span>• {lead.company_name}</span>}
                       <span>• Assigned: {lead.assigned_to_name}</span>
                       <span>• Follow-up: {new Date(lead.next_followup_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {lead.lead_temperature === 'hot' && <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded">🔥 Hot</span>}
+                      {lead.lead_temperature === 'warm' && <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded">🌤️ Warm</span>}
+                      {lead.lead_temperature === 'cold' && <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded">❄️ Cold</span>}
+                      {lead.priority === 'urgent' && <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded font-medium">URGENT</span>}
+                      {lead.priority === 'high' && <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 text-xs rounded font-medium">HIGH</span>}
+                      {lead.tags && lead.tags.length > 0 && lead.tags.slice(0, 3).map(tag => (
+                        <span key={tag} className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded">{tag}</span>
+                      ))}
+                      {lead.tags && lead.tags.length > 3 && <span className="px-2 py-0.5 bg-slate-600 text-slate-300 text-xs rounded">+{lead.tags.length - 3}</span>}
                     </div>
                   </div>
 
