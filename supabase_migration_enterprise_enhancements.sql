@@ -546,7 +546,7 @@ SELECT
     WHEN c.is_active THEN 'active'
     ELSE 'paused'
   END as status,
-  EXTRACT(DAY FROM (COALESCE(c.end_date, CURRENT_DATE) - c.start_date)) as duration_days
+  (COALESCE(c.end_date, CURRENT_DATE)::DATE - c.start_date::DATE) as duration_days
 FROM crm_campaigns c
 LEFT JOIN crm_employees e ON c.campaign_owner_id = e.id;
 
