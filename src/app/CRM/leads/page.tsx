@@ -120,7 +120,10 @@ export default function LeadsPage() {
     interaction_type: 'call',
     lead_score: 3,
     lead_status: 'contacted',
-    next_followup_date: ''
+    next_followup_date: '',
+    priority: 'medium',
+    lead_temperature: 'warm',
+    pipeline_stage: 'awareness'
   })
   const [savingInteraction, setSavingInteraction] = useState(false)
   const [success, setSuccess] = useState('')
@@ -320,7 +323,10 @@ export default function LeadsPage() {
       interaction_type: 'call',
       lead_score: lead.lead_score,
       lead_status: lead.lead_status,
-      next_followup_date: lead.next_followup_date || ''
+      next_followup_date: lead.next_followup_date || '',
+      priority: lead.priority || 'medium',
+      lead_temperature: lead.lead_temperature || 'warm',
+      pipeline_stage: lead.pipeline_stage || 'awareness'
     })
     loadInteractions(lead.id)
     setShowInteractionModal(true)
@@ -347,6 +353,9 @@ export default function LeadsPage() {
         lead_score: interactionForm.lead_score,
         lead_status: interactionForm.lead_status,
         next_followup_date: interactionForm.next_followup_date || null,
+        priority: interactionForm.priority,
+        lead_temperature: interactionForm.lead_temperature,
+        pipeline_stage: interactionForm.pipeline_stage,
         is_converted: interactionForm.lead_status === 'converted',
         conversion_date: interactionForm.lead_status === 'converted' ? new Date().toISOString().split('T')[0] : null,
         last_interaction_at: new Date().toISOString()
@@ -373,7 +382,10 @@ export default function LeadsPage() {
         ...prev,
         lead_score: interactionForm.lead_score,
         lead_status: interactionForm.lead_status,
-        next_followup_date: interactionForm.next_followup_date
+        next_followup_date: interactionForm.next_followup_date,
+        priority: interactionForm.priority,
+        lead_temperature: interactionForm.lead_temperature,
+        pipeline_stage: interactionForm.pipeline_stage
       } : null)
 
       setSuccess('Interaction saved!')
@@ -926,16 +938,51 @@ export default function LeadsPage() {
       {showInteractionModal && selectedLead && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between shrink-0">
-              <div>
-                <h2 className="text-xl font-bold text-white">{selectedLead.full_name}</h2>
-                <p className="text-slate-400 text-sm">{selectedLead.country_code} {selectedLead.mobile}</p>
+            <div className="px-6 py-4 border-b border-slate-700 shrink-0">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h2 className="text-xl font-bold text-white">{selectedLead.full_name}</h2>
+                  <p className="text-slate-400 text-sm">
+                    {selectedLead.country_code} {selectedLead.mobile}
+                    {selectedLead.company_name && <span className="ml-2">• {selectedLead.company_name}</span>}
+                  </p>
+                </div>
+                <button onClick={() => setShowInteractionModal(false)} className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-              <button onClick={() => setShowInteractionModal(false)} className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                {selectedLead.lead_temperature === 'hot' && (
+                  <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded">🔥 Hot</span>
+                )}
+                {selectedLead.lead_temperature === 'warm' && (
+                  <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded">🌤️ Warm</span>
+                )}
+                {selectedLead.lead_temperature === 'cold' && (
+                  <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded">❄️ Cold</span>
+                )}
+                {selectedLead.priority === 'urgent' && (
+                  <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded font-medium">URGENT</span>
+                )}
+                {selectedLead.priority === 'high' && (
+                  <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 text-xs rounded">High Priority</span>
+                )}
+                {selectedLead.pipeline_stage && (
+                  <span className="px-2 py-0.5 bg-purple-500/20 text-purple-400 text-xs rounded capitalize">{selectedLead.pipeline_stage}</span>
+                )}
+                {selectedLead.tags && selectedLead.tags.length > 0 && (
+                  <>
+                    {selectedLead.tags.slice(0, 3).map(tag => (
+                      <span key={tag} className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded">{tag}</span>
+                    ))}
+                    {selectedLead.tags.length > 3 && (
+                      <span className="px-2 py-0.5 bg-slate-600 text-slate-300 text-xs rounded">+{selectedLead.tags.length - 3}</span>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
@@ -973,6 +1020,38 @@ export default function LeadsPage() {
                           {LEAD_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                         </select>
                       </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Priority</label>
+                        <select value={interactionForm.priority} onChange={(e) => setInteractionForm({ ...interactionForm, priority: e.target.value })} className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white">
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                          <option value="urgent">Urgent</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Temperature</label>
+                        <select value={interactionForm.lead_temperature} onChange={(e) => setInteractionForm({ ...interactionForm, lead_temperature: e.target.value })} className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white">
+                          <option value="cold">❄️ Cold</option>
+                          <option value="warm">🌤️ Warm</option>
+                          <option value="hot">🔥 Hot</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-300 mb-1">Pipeline Stage</label>
+                      <select value={interactionForm.pipeline_stage} onChange={(e) => setInteractionForm({ ...interactionForm, pipeline_stage: e.target.value })} className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white">
+                        <option value="awareness">Awareness</option>
+                        <option value="interest">Interest</option>
+                        <option value="consideration">Consideration</option>
+                        <option value="intent">Intent</option>
+                        <option value="evaluation">Evaluation</option>
+                        <option value="purchase">Purchase</option>
+                        <option value="retention">Retention</option>
+                        <option value="advocacy">Advocacy</option>
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm text-slate-300 mb-1">Next Follow-up</label>

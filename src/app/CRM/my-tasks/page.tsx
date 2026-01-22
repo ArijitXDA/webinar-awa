@@ -18,6 +18,13 @@ interface Lead {
   next_followup_date: string
   created_at: string
   last_interaction_at: string
+  // Enterprise fields
+  tags: string[]
+  pipeline_stage: string
+  priority: string
+  lead_temperature: string
+  company_name: string
+  industry: string
 }
 
 interface WhatsAppTemplate {
@@ -61,6 +68,15 @@ export default function MyTasksPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('')
   const [dynamicFields, setDynamicFields] = useState<Record<string, string>>({})
   const [loadingTemplates, setLoadingTemplates] = useState(false)
+  // Filters
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState({
+    priority: '',
+    temperature: '',
+    tag: '',
+    pipelineStage: ''
+  })
+  const [search, setSearch] = useState('')
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -187,6 +203,36 @@ export default function MyTasksPage() {
     } catch (err) {
       console.error('Error loading interactions:', err)
     }
+  }
+
+  function getFilteredLeads() {
+    let filtered = [...leads]
+
+    if (search) {
+      const s = search.toLowerCase()
+      filtered = filtered.filter(l =>
+        l.full_name.toLowerCase().includes(s) ||
+        l.mobile.includes(search) ||
+        l.company_name?.toLowerCase().includes(s)
+      )
+    }
+
+    if (filters.priority) filtered = filtered.filter(l => l.priority === filters.priority)
+    if (filters.temperature) filtered = filtered.filter(l => l.lead_temperature === filters.temperature)
+    if (filters.pipelineStage) filtered = filtered.filter(l => l.pipeline_stage === filters.pipelineStage)
+    if (filters.tag) filtered = filtered.filter(l => l.tags?.some(t => t.includes(filters.tag.toLowerCase())))
+
+    return filtered
+  }
+
+  function clearFilters() {
+    setFilters({
+      priority: '',
+      temperature: '',
+      tag: '',
+      pipelineStage: ''
+    })
+    setSearch('')
   }
 
   async function loadWhatsAppTemplates() {
@@ -398,6 +444,114 @@ export default function MyTasksPage() {
           </div>
         </div>
 
+        {/* Filters Section */}
+        <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="w-full px-6 py-3 flex items-center justify-between text-white hover:bg-slate-700/50 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <span className="font-medium">Filters & Search</span>
+              {(search || filters.priority || filters.temperature || filters.tag || filters.pipelineStage) && (
+                <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded-full">Active</span>
+              )}
+            </div>
+            <svg className={`w-5 h-5 transition-transform ${showFilters ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showFilters && (
+            <div className="px-6 py-4 border-t border-slate-700 space-y-4">
+              {/* Search Bar */}
+              <div>
+                <label className="block text-sm text-slate-300 mb-2">Search</label>
+                <input
+                  type="text"
+                  placeholder="Search by name, mobile, company..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500"
+                />
+              </div>
+
+              {/* Filter Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm text-slate-300 mb-2">Priority</label>
+                  <select
+                    value={filters.priority}
+                    onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white"
+                  >
+                    <option value="">All Priorities</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm text-slate-300 mb-2">Temperature</label>
+                  <select
+                    value={filters.temperature}
+                    onChange={(e) => setFilters({ ...filters, temperature: e.target.value })}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white"
+                  >
+                    <option value="">All Temperatures</option>
+                    <option value="hot">🔥 Hot</option>
+                    <option value="warm">🌤️ Warm</option>
+                    <option value="cold">❄️ Cold</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm text-slate-300 mb-2">Pipeline Stage</label>
+                  <select
+                    value={filters.pipelineStage}
+                    onChange={(e) => setFilters({ ...filters, pipelineStage: e.target.value })}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white"
+                  >
+                    <option value="">All Stages</option>
+                    <option value="awareness">Awareness</option>
+                    <option value="interest">Interest</option>
+                    <option value="consideration">Consideration</option>
+                    <option value="intent">Intent</option>
+                    <option value="evaluation">Evaluation</option>
+                    <option value="purchase">Purchase</option>
+                    <option value="retention">Retention</option>
+                    <option value="advocacy">Advocacy</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm text-slate-300 mb-2">Tag</label>
+                  <input
+                    type="text"
+                    placeholder="Filter by tag..."
+                    value={filters.tag}
+                    onChange={(e) => setFilters({ ...filters, tag: e.target.value })}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={clearFilters}
+                  className="px-4 py-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Lead List */}
@@ -410,12 +564,12 @@ export default function MyTasksPage() {
                   {activeTab === 'upcoming' && '📆 Upcoming Follow-ups'}
                   {activeTab === 'new' && '🆕 New Leads'}
                   {activeTab === 'all' && '📋 All My Leads'}
-                  <span className="text-slate-400 text-sm font-normal ml-2">({leads.length})</span>
+                  <span className="text-slate-400 text-sm font-normal ml-2">({getFilteredLeads().length})</span>
                 </h2>
               </div>
 
               <div className="divide-y divide-slate-700 max-h-[600px] overflow-y-auto">
-                {leads.map((lead) => (
+                {getFilteredLeads().map((lead) => (
                   <div key={lead.id} className="p-4 hover:bg-slate-700/50 transition-colors">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
@@ -425,11 +579,43 @@ export default function MyTasksPage() {
                             {getScoreStars(lead.lead_score)}
                           </span>
                         </div>
-                        <p className="text-slate-400 text-sm">{lead.country_code} {lead.mobile}</p>
-                        <div className="flex items-center gap-2 mt-2">
+                        <p className="text-slate-400 text-sm">
+                          {lead.country_code} {lead.mobile}
+                          {lead.company_name && <span className="ml-2 text-slate-500">• {lead.company_name}</span>}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
                           <span className={`px-2 py-0.5 rounded-full text-xs ${LEAD_STATUSES[lead.lead_status]?.color || 'bg-slate-500/20 text-slate-400'}`}>
                             {LEAD_STATUSES[lead.lead_status]?.label || lead.lead_status}
                           </span>
+                          {lead.lead_temperature === 'hot' && (
+                            <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded">🔥 Hot</span>
+                          )}
+                          {lead.lead_temperature === 'warm' && (
+                            <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded">🌤️ Warm</span>
+                          )}
+                          {lead.lead_temperature === 'cold' && (
+                            <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded">❄️ Cold</span>
+                          )}
+                          {lead.priority === 'urgent' && (
+                            <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded font-medium">URGENT</span>
+                          )}
+                          {lead.priority === 'high' && (
+                            <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 text-xs rounded">High</span>
+                          )}
+                          {lead.tags && lead.tags.length > 0 && (
+                            <>
+                              {lead.tags.slice(0, 3).map(tag => (
+                                <span key={tag} className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded">
+                                  {tag}
+                                </span>
+                              ))}
+                              {lead.tags.length > 3 && (
+                                <span className="px-2 py-0.5 bg-slate-600 text-slate-300 text-xs rounded">
+                                  +{lead.tags.length - 3}
+                                </span>
+                              )}
+                            </>
+                          )}
                           {lead.course && (
                             <span className="text-slate-500 text-xs">{lead.course}</span>
                           )}
@@ -487,16 +673,22 @@ export default function MyTasksPage() {
                   </div>
                 ))}
 
-                {leads.length === 0 && (
+                {getFilteredLeads().length === 0 && (
                   <div className="p-8 text-center text-slate-500">
                     <svg className="w-12 h-12 mx-auto mb-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                     </svg>
-                    {activeTab === 'today' && 'No follow-ups scheduled for today'}
-                    {activeTab === 'overdue' && 'No overdue follow-ups! 🎉'}
-                    {activeTab === 'upcoming' && 'No upcoming follow-ups'}
-                    {activeTab === 'new' && 'No new leads assigned'}
-                    {activeTab === 'all' && 'No leads assigned to you'}
+                    {leads.length === 0 ? (
+                      <>
+                        {activeTab === 'today' && 'No follow-ups scheduled for today'}
+                        {activeTab === 'overdue' && 'No overdue follow-ups! 🎉'}
+                        {activeTab === 'upcoming' && 'No upcoming follow-ups'}
+                        {activeTab === 'new' && 'No new leads assigned'}
+                        {activeTab === 'all' && 'No leads assigned to you'}
+                      </>
+                    ) : (
+                      'No leads match the current filters'
+                    )}
                   </div>
                 )}
               </div>
