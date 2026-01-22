@@ -55,7 +55,25 @@ export default function DashboardPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('')
   const [dynamicFields, setDynamicFields] = useState<Record<string, string>>({})
   const [loadingTemplates, setLoadingTemplates] = useState(false)
+  const [showIntegrationsModal, setShowIntegrationsModal] = useState(false)
+  const [activeIntegrationTab, setActiveIntegrationTab] = useState<'social' | 'communication' | 'automation' | 'mcp' | 'api'>('social')
+  const [integrations, setIntegrations] = useState({
+    facebook: { connected: false, accessToken: '', pageId: '' },
+    instagram: { connected: false, accessToken: '', businessAccountId: '' },
+    twitter: { connected: false, apiKey: '', apiSecret: '', accessToken: '', accessSecret: '' },
+    linkedin: { connected: false, clientId: '', clientSecret: '', accessToken: '' },
+    exotel: { connected: false, apiKey: '', apiToken: '', sid: '' },
+    twilio: { connected: false, accountSid: '', authToken: '', phoneNumber: '' },
+    aisensy: { connected: false, apiKey: '', instanceId: '' },
+    slack: { connected: false, botToken: '', webhookUrl: '' },
+    n8n: { connected: false, webhookUrl: '', apiKey: '' },
+    make: { connected: false, webhookUrl: '', apiKey: '' },
+    zapier: { connected: false, webhookUrl: '', apiKey: '' },
+    mcpConnector: { connected: false, serverUrl: '', apiKey: '' },
+    azureApi: { connected: false, clientId: '', clientSecret: '', tenantId: '', subscriptionId: '' }
+  })
 
+  const isOwner = currentUser?.job_role === 'owner'
   const isAdmin = currentUser && ['owner', 'ea_to_owner', 'director', 'ea_to_director'].includes(currentUser.job_role)
   const isManager = currentUser && ['owner', 'ea_to_owner', 'director', 'ea_to_director', 'pm_ai_spot', 'pm_b2c_btl', 'pm_stage_2', 'pm_stage_3'].includes(currentUser.job_role)
 
@@ -479,6 +497,18 @@ export default function DashboardPage() {
               <p className="text-white font-medium text-xs text-center">Team</p>
             </button>
           )}
+
+          {/* Owner Only - Integrations */}
+          {isOwner && (
+            <button onClick={() => setShowIntegrationsModal(true)} className="bg-slate-800 border border-slate-700 rounded-xl p-3 hover:border-amber-500/50 transition-all group">
+              <div className="w-10 h-10 bg-teal-500/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                <svg className="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                </svg>
+              </div>
+              <p className="text-white font-medium text-xs text-center">Integrations</p>
+            </button>
+          )}
         </div>
 
         {/* Admin Quick Links */}
@@ -679,6 +709,857 @@ export default function DashboardPage() {
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                 </svg>
                 Send via WhatsApp
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Integrations Modal */}
+      {showIntegrationsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between shrink-0">
+              <div>
+                <h2 className="text-xl font-bold text-white">CRM Integrations</h2>
+                <p className="text-slate-400 text-sm">Connect external platforms and services</p>
+              </div>
+              <button onClick={() => setShowIntegrationsModal(false)} className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="px-6 py-3 border-b border-slate-700 overflow-x-auto">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setActiveIntegrationTab('social')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${
+                    activeIntegrationTab === 'social'
+                      ? 'bg-amber-500 text-slate-900'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                >
+                  Social Media
+                </button>
+                <button
+                  onClick={() => setActiveIntegrationTab('communication')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${
+                    activeIntegrationTab === 'communication'
+                      ? 'bg-amber-500 text-slate-900'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                >
+                  Communication
+                </button>
+                <button
+                  onClick={() => setActiveIntegrationTab('automation')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${
+                    activeIntegrationTab === 'automation'
+                      ? 'bg-amber-500 text-slate-900'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                >
+                  Automation
+                </button>
+                <button
+                  onClick={() => setActiveIntegrationTab('mcp')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${
+                    activeIntegrationTab === 'mcp'
+                      ? 'bg-amber-500 text-slate-900'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                >
+                  CRM MCP
+                </button>
+                <button
+                  onClick={() => setActiveIntegrationTab('api')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${
+                    activeIntegrationTab === 'api'
+                      ? 'bg-amber-500 text-slate-900'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                >
+                  Azure & BI
+                </button>
+              </div>
+            </div>
+
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {/* Social Media Tab */}
+              {activeIntegrationTab === 'social' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">Social Media Lead Inflow</h3>
+
+                  {/* Facebook */}
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">📘</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">Facebook</h4>
+                          <p className="text-slate-400 text-xs">Connect Facebook Ads & Pages for lead capture</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.facebook.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.facebook.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Access Token</label>
+                        <input
+                          type="password"
+                          value={integrations.facebook.accessToken}
+                          onChange={(e) => setIntegrations({...integrations, facebook: {...integrations.facebook, accessToken: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter Facebook access token"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Page ID</label>
+                        <input
+                          type="text"
+                          value={integrations.facebook.pageId}
+                          onChange={(e) => setIntegrations({...integrations, facebook: {...integrations.facebook, pageId: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter page ID"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg">
+                        Sign in with Facebook
+                      </button>
+                      <button className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg">
+                        Save Credentials
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Instagram */}
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-pink-500/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">📷</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">Instagram</h4>
+                          <p className="text-slate-400 text-xs">Connect Instagram Business for lead generation</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.instagram.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.instagram.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Access Token</label>
+                        <input
+                          type="password"
+                          value={integrations.instagram.accessToken}
+                          onChange={(e) => setIntegrations({...integrations, instagram: {...integrations.instagram, accessToken: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter Instagram access token"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Business Account ID</label>
+                        <input
+                          type="text"
+                          value={integrations.instagram.businessAccountId}
+                          onChange={(e) => setIntegrations({...integrations, instagram: {...integrations.instagram, businessAccountId: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter business account ID"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm rounded-lg">
+                        Sign in with Instagram
+                      </button>
+                      <button className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg">
+                        Save Credentials
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* X (Twitter) */}
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-slate-600/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">𝕏</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">X (Twitter)</h4>
+                          <p className="text-slate-400 text-xs">Connect X for lead capture and engagement</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.twitter.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.twitter.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">API Key</label>
+                        <input
+                          type="password"
+                          value={integrations.twitter.apiKey}
+                          onChange={(e) => setIntegrations({...integrations, twitter: {...integrations.twitter, apiKey: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter API key"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">API Secret</label>
+                        <input
+                          type="password"
+                          value={integrations.twitter.apiSecret}
+                          onChange={(e) => setIntegrations({...integrations, twitter: {...integrations.twitter, apiSecret: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter API secret"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Access Token</label>
+                        <input
+                          type="password"
+                          value={integrations.twitter.accessToken}
+                          onChange={(e) => setIntegrations({...integrations, twitter: {...integrations.twitter, accessToken: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter access token"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Access Token Secret</label>
+                        <input
+                          type="password"
+                          value={integrations.twitter.accessSecret}
+                          onChange={(e) => setIntegrations({...integrations, twitter: {...integrations.twitter, accessSecret: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter access token secret"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white text-sm rounded-lg">
+                        Sign in with X
+                      </button>
+                      <button className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg">
+                        Save Credentials
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* LinkedIn */}
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">💼</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">LinkedIn</h4>
+                          <p className="text-slate-400 text-xs">Connect LinkedIn for B2B lead generation</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.linkedin.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.linkedin.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Client ID</label>
+                        <input
+                          type="text"
+                          value={integrations.linkedin.clientId}
+                          onChange={(e) => setIntegrations({...integrations, linkedin: {...integrations.linkedin, clientId: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter client ID"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Client Secret</label>
+                        <input
+                          type="password"
+                          value={integrations.linkedin.clientSecret}
+                          onChange={(e) => setIntegrations({...integrations, linkedin: {...integrations.linkedin, clientSecret: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter client secret"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm rounded-lg">
+                        Sign in with LinkedIn
+                      </button>
+                      <button className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg">
+                        Save Credentials
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Communication Tab */}
+              {activeIntegrationTab === 'communication' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">Communication Integration</h3>
+
+                  {/* Exotel */}
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">📞</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">Exotel</h4>
+                          <p className="text-slate-400 text-xs">Connect Exotel for call recordings & analytics</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.exotel.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.exotel.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">API Key</label>
+                        <input
+                          type="password"
+                          value={integrations.exotel.apiKey}
+                          onChange={(e) => setIntegrations({...integrations, exotel: {...integrations.exotel, apiKey: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter API key"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">API Token</label>
+                        <input
+                          type="password"
+                          value={integrations.exotel.apiToken}
+                          onChange={(e) => setIntegrations({...integrations, exotel: {...integrations.exotel, apiToken: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter API token"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">SID</label>
+                        <input
+                          type="text"
+                          value={integrations.exotel.sid}
+                          onChange={(e) => setIntegrations({...integrations, exotel: {...integrations.exotel, sid: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter SID"
+                        />
+                      </div>
+                    </div>
+                    <button className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-lg">
+                      Connect Exotel
+                    </button>
+                  </div>
+
+                  {/* Twilio */}
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">☎️</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">Twilio</h4>
+                          <p className="text-slate-400 text-xs">Connect Twilio for call recordings & SMS</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.twilio.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.twilio.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Account SID</label>
+                        <input
+                          type="text"
+                          value={integrations.twilio.accountSid}
+                          onChange={(e) => setIntegrations({...integrations, twilio: {...integrations.twilio, accountSid: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter account SID"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Auth Token</label>
+                        <input
+                          type="password"
+                          value={integrations.twilio.authToken}
+                          onChange={(e) => setIntegrations({...integrations, twilio: {...integrations.twilio, authToken: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter auth token"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Phone Number</label>
+                        <input
+                          type="text"
+                          value={integrations.twilio.phoneNumber}
+                          onChange={(e) => setIntegrations({...integrations, twilio: {...integrations.twilio, phoneNumber: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="+1234567890"
+                        />
+                      </div>
+                    </div>
+                    <button className="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg">
+                      Connect Twilio
+                    </button>
+                  </div>
+
+                  {/* AiSensy */}
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">💬</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">AiSensy</h4>
+                          <p className="text-slate-400 text-xs">WhatsApp Business API for automated messaging</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.aisensy.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.aisensy.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">API Key</label>
+                        <input
+                          type="password"
+                          value={integrations.aisensy.apiKey}
+                          onChange={(e) => setIntegrations({...integrations, aisensy: {...integrations.aisensy, apiKey: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter API key"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Instance ID</label>
+                        <input
+                          type="text"
+                          value={integrations.aisensy.instanceId}
+                          onChange={(e) => setIntegrations({...integrations, aisensy: {...integrations.aisensy, instanceId: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter instance ID"
+                        />
+                      </div>
+                    </div>
+                    <button className="mt-3 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg">
+                      Connect AiSensy
+                    </button>
+                  </div>
+
+                  {/* Slack */}
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">#️⃣</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">Slack</h4>
+                          <p className="text-slate-400 text-xs">Get real-time CRM notifications in Slack</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.slack.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.slack.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Bot Token</label>
+                        <input
+                          type="password"
+                          value={integrations.slack.botToken}
+                          onChange={(e) => setIntegrations({...integrations, slack: {...integrations.slack, botToken: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="xoxb-..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Webhook URL</label>
+                        <input
+                          type="text"
+                          value={integrations.slack.webhookUrl}
+                          onChange={(e) => setIntegrations({...integrations, slack: {...integrations.slack, webhookUrl: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="https://hooks.slack.com/..."
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg">
+                        Sign in with Slack
+                      </button>
+                      <button className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg">
+                        Save Credentials
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Automation Tab */}
+              {activeIntegrationTab === 'automation' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">External Automation Integrations</h3>
+
+                  {/* n8n */}
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-pink-500/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">🔗</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">n8n</h4>
+                          <p className="text-slate-400 text-xs">Workflow automation with n8n</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.n8n.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.n8n.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Webhook URL</label>
+                        <input
+                          type="text"
+                          value={integrations.n8n.webhookUrl}
+                          onChange={(e) => setIntegrations({...integrations, n8n: {...integrations.n8n, webhookUrl: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="https://your-n8n-instance.com/webhook/..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">API Key (Optional)</label>
+                        <input
+                          type="password"
+                          value={integrations.n8n.apiKey}
+                          onChange={(e) => setIntegrations({...integrations, n8n: {...integrations.n8n, apiKey: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter API key"
+                        />
+                      </div>
+                    </div>
+                    <button className="mt-3 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-sm rounded-lg">
+                      Connect n8n
+                    </button>
+                  </div>
+
+                  {/* Make.com */}
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">⚡</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">Make.com</h4>
+                          <p className="text-slate-400 text-xs">Visual workflow automation with Make</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.make.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.make.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Webhook URL</label>
+                        <input
+                          type="text"
+                          value={integrations.make.webhookUrl}
+                          onChange={(e) => setIntegrations({...integrations, make: {...integrations.make, webhookUrl: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="https://hook.integromat.com/..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">API Key (Optional)</label>
+                        <input
+                          type="password"
+                          value={integrations.make.apiKey}
+                          onChange={(e) => setIntegrations({...integrations, make: {...integrations.make, apiKey: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter API key"
+                        />
+                      </div>
+                    </div>
+                    <button className="mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg">
+                      Connect Make.com
+                    </button>
+                  </div>
+
+                  {/* Zapier */}
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">⚙️</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">Zapier</h4>
+                          <p className="text-slate-400 text-xs">Connect with 5000+ apps via Zapier</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.zapier.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.zapier.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Webhook URL</label>
+                        <input
+                          type="text"
+                          value={integrations.zapier.webhookUrl}
+                          onChange={(e) => setIntegrations({...integrations, zapier: {...integrations.zapier, webhookUrl: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="https://hooks.zapier.com/..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">API Key (Optional)</label>
+                        <input
+                          type="password"
+                          value={integrations.zapier.apiKey}
+                          onChange={(e) => setIntegrations({...integrations, zapier: {...integrations.zapier, apiKey: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter API key"
+                        />
+                      </div>
+                    </div>
+                    <button className="mt-3 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-lg">
+                      Connect Zapier
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* MCP Tab */}
+              {activeIntegrationTab === 'mcp' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">CRM MCP Connector for Claude</h3>
+
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">🤖</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">CRM MCP Server</h4>
+                          <p className="text-slate-400 text-xs">Model Context Protocol connector for Claude AI integration</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.mcpConnector.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.mcpConnector.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mb-4">
+                      <p className="text-amber-200 text-sm">
+                        <span className="font-semibold">About MCP:</span> Model Context Protocol allows Claude to directly access your CRM data, search leads, update records, and run analytics through natural language.
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">MCP Server URL</label>
+                        <input
+                          type="text"
+                          value={integrations.mcpConnector.serverUrl}
+                          onChange={(e) => setIntegrations({...integrations, mcpConnector: {...integrations.mcpConnector, serverUrl: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="http://localhost:3000/mcp"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">API Key</label>
+                        <input
+                          type="password"
+                          value={integrations.mcpConnector.apiKey}
+                          onChange={(e) => setIntegrations({...integrations, mcpConnector: {...integrations.mcpConnector, apiKey: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter API key for MCP server"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-4 bg-slate-800 rounded-lg p-3">
+                      <h5 className="text-white text-sm font-medium mb-2">Available MCP Tools:</h5>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-green-400">✓</span> search_leads
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-green-400">✓</span> get_lead_details
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-green-400">✓</span> update_lead
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-green-400">✓</span> add_interaction
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-green-400">✓</span> get_analytics
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-green-400">✓</span> bulk_operations
+                        </div>
+                      </div>
+                    </div>
+                    <button className="mt-4 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm rounded-lg">
+                      Connect MCP Server
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Azure & BI Tab */}
+              {activeIntegrationTab === 'api' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">Azure & Business Intelligence API</h3>
+
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl">☁️</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">Azure Data Integration</h4>
+                          <p className="text-slate-400 text-xs">Connect to Azure Data Factory, Data Lake & Power BI</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        integrations.azureApi.connected ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {integrations.azureApi.connected ? 'Connected' : 'Not Connected'}
+                      </div>
+                    </div>
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 mb-4">
+                      <p className="text-blue-200 text-sm">
+                        <span className="font-semibold">Integration Features:</span> Export CRM data to Azure Data Lake, trigger Data Factory pipelines, sync with Power BI dashboards, and enable advanced analytics.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Client ID</label>
+                        <input
+                          type="text"
+                          value={integrations.azureApi.clientId}
+                          onChange={(e) => setIntegrations({...integrations, azureApi: {...integrations.azureApi, clientId: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Azure AD Client ID"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Client Secret</label>
+                        <input
+                          type="password"
+                          value={integrations.azureApi.clientSecret}
+                          onChange={(e) => setIntegrations({...integrations, azureApi: {...integrations.azureApi, clientSecret: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Enter client secret"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Tenant ID</label>
+                        <input
+                          type="text"
+                          value={integrations.azureApi.tenantId}
+                          onChange={(e) => setIntegrations({...integrations, azureApi: {...integrations.azureApi, tenantId: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Azure AD Tenant ID"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Subscription ID</label>
+                        <input
+                          type="text"
+                          value={integrations.azureApi.subscriptionId}
+                          onChange={(e) => setIntegrations({...integrations, azureApi: {...integrations.azureApi, subscriptionId: e.target.value}})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          placeholder="Azure Subscription ID"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-4 bg-slate-800 rounded-lg p-3">
+                      <h5 className="text-white text-sm font-medium mb-2">Supported Services:</h5>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-blue-400">📊</span> Power BI Dashboards
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-blue-400">🏭</span> Data Factory
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-blue-400">💾</span> Data Lake Storage
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-blue-400">🔍</span> Synapse Analytics
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4 bg-slate-800 rounded-lg p-3">
+                      <h5 className="text-white text-sm font-medium mb-2">API Endpoints (JSON):</h5>
+                      <div className="bg-slate-900 rounded p-2 text-xs text-slate-300 font-mono overflow-x-auto">
+                        <pre>{JSON.stringify({
+                          "export_leads": "/api/export/leads",
+                          "sync_analytics": "/api/sync/analytics",
+                          "trigger_pipeline": "/api/trigger/pipeline",
+                          "webhook_url": "https://your-crm.com/api/azure/webhook"
+                        }, null, 2)}</pre>
+                      </div>
+                    </div>
+                    <button className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg">
+                      Connect Azure Services
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-700 flex justify-end gap-3 shrink-0">
+              <button
+                onClick={() => setShowIntegrationsModal(false)}
+                className="px-4 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg"
+              >
+                Close
               </button>
             </div>
           </div>
