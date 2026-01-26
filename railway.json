@@ -5,7 +5,7 @@
     "buildCommand": "npm run build:mcp"
   },
   "deploy": {
-    "startCommand": "npm run mcp:http",
+    "startCommand": "npm run mcp:railway",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",

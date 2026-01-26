@@ -9,7 +9,8 @@
     "lint": "next lint",
     "build:mcp": "tsc -p tsconfig.mcp.json",
     "mcp:server": "node dist/mcp/server.js",
-    "mcp:http": "HTTP_PORT=3000 node dist/mcp/server-http.js"
+    "mcp:http": "HTTP_PORT=3000 node dist/mcp/server-http.js",
+    "mcp:railway": "node dist/mcp/server-http.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.3",

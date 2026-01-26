@@ -190,9 +190,11 @@ async function startStdioMode() {
  * Start server in HTTP mode (for Vercel/serverless)
  */
 async function startHttpMode() {
-  const port = parseInt(process.env.HTTP_PORT || '3000')
+  // Railway provides PORT, fallback to HTTP_PORT for local dev, then 3000
+  const port = parseInt(process.env.PORT || process.env.HTTP_PORT || '3000')
 
   console.error('[MCP Server] Starting in HTTP/SSE mode...')
+  console.error(`[MCP Server] Port: ${port}`)
 
   const app = express()
 
@@ -260,10 +262,11 @@ async function startHttpMode() {
     })
   })
 
-  app.listen(port, () => {
-    console.error(`[MCP Server] HTTP server listening on port ${port}`)
-    console.error(`[MCP Server] SSE endpoint: http://localhost:${port}/sse`)
-    console.error(`[MCP Server] Health check: http://localhost:${port}/health`)
+  // Bind to 0.0.0.0 for Railway (required for external access)
+  app.listen(port, '0.0.0.0', () => {
+    console.error(`[MCP Server] HTTP server listening on 0.0.0.0:${port}`)
+    console.error(`[MCP Server] SSE endpoint: /sse`)
+    console.error(`[MCP Server] Health check: /health`)
     console.error(`[MCP Server] Available tools: ${tools.length}`)
   })
 }
@@ -273,7 +276,8 @@ async function startHttpMode() {
  */
 async function main() {
   // Determine mode based on environment
-  const useHttp = process.env.HTTP_PORT || process.env.USE_HTTP === 'true'
+  // Railway sets PORT, local dev might use HTTP_PORT or USE_HTTP
+  const useHttp = process.env.PORT || process.env.HTTP_PORT || process.env.USE_HTTP === 'true'
 
   if (useHttp) {
     await startHttpMode()
