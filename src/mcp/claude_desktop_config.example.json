@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "crm": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/webinar-awa/dist/mcp/server.js"
+      ],
+      "env": {
+        "NEXT_PUBLIC_SUPABASE_URL": "https://your-project.supabase.co",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY": "your-anon-key-here",
+        "MCP_USER_EMAIL": "your-email@example.com",
+        "MCP_API_KEY": "optional-api-key-here"
+      }
+    }
+  }
+}
