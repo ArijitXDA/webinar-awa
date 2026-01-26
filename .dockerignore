@@ -1,0 +1,35 @@
+# Node
+node_modules
+npm-debug.log
+.npm
+
+# Next.js
+.next
+out
+build
+
+# Git
+.git
+.gitignore
+
+# Docs and examples
+README.md
+*.md
+mcp-client-for-ostaran
+
+# Environment
+.env
+.env.local
+.env*.local
+
+# IDE
+.vscode
+.idea
+
+# Test files
+*.test.js
+*.test.ts
+
+# Misc
+.DS_Store
+*.log
