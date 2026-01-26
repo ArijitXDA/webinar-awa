@@ -102,8 +102,8 @@ export class CRMClient {
 
       // Create transport using server's stdout/stdin
       this.transport = new StdioClientTransport({
-        stdin: this.serverProcess.stdout!,
-        stdout: this.serverProcess.stdin!,
+        readable: this.serverProcess.stdout!,
+        writable: this.serverProcess.stdin!,
       });
 
       // Connect client to transport
