@@ -206,6 +206,17 @@ async function startHttpMode() {
 
   app.use(express.json())
 
+  // Root endpoint
+  app.get('/', (req, res) => {
+    res.json({
+      name: 'CRM MCP Server',
+      status: 'running',
+      version: '1.0.0',
+      endpoints: ['/health', '/tools', '/sse'],
+      tools: tools.length
+    })
+  })
+
   // Health check endpoint
   app.get('/health', (req, res) => {
     res.json({ status: 'ok', mode: 'http', tools: tools.length })
