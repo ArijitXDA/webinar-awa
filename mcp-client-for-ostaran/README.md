@@ -28,8 +28,8 @@ cd ..
 
 # Copy the client code to your project
 mkdir -p src/integrations/crm
-cp crm-mcp-server/src/mcp/client-example/crm-client.ts src/integrations/crm/
-cp crm-mcp-server/src/mcp/client-example/example-usage.ts src/integrations/crm/
+cp crm-mcp-server/mcp-client-for-ostaran/crm-client.ts src/integrations/crm/
+cp crm-mcp-server/mcp-client-for-ostaran/example-usage.ts src/integrations/crm/
 
 # Install MCP SDK in oStaran
 npm install @modelcontextprotocol/sdk
@@ -63,8 +63,8 @@ cd ../oStaran
 
 # Copy client code
 mkdir -p src/integrations/crm
-cp ../webinar-awa/src/mcp/client-example/crm-client.ts src/integrations/crm/
-cp ../webinar-awa/src/mcp/client-example/example-usage.ts src/integrations/crm/
+cp ../webinar-awa/mcp-client-for-ostaran/crm-client.ts src/integrations/crm/
+cp ../webinar-awa/mcp-client-for-ostaran/example-usage.ts src/integrations/crm/
 
 # Install MCP SDK
 npm install @modelcontextprotocol/sdk

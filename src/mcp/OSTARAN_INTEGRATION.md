@@ -64,7 +64,7 @@ npm run build:mcp
 
 ### Step 3: Create MCP Client Manager
 
-Create a file: `src/mcp/crm-client.ts` (or `.js`) in your oStaran project:
+Copy the client file from `mcp-client-for-ostaran/crm-client.ts` to your oStaran project at `src/integrations/crm/crm-client.ts`:
 
 ```typescript
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
