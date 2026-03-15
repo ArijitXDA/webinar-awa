@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 import { createClient } from '@supabase/supabase-js'
-import { buildEmail, EmailTemplateData } from '@/lib/email-templates'
+import { buildEmail, templateCategory } from '@/lib/email-templates'
 import { generateICS } from '@/lib/ics'
+import { TEMPLATE_CATALOGUE } from '@/lib/email-assets'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,31 +26,48 @@ export interface EmailRecipient {
   email: string
   mobile?: string
   course_name?: string
-  webinar_date?: string   // ISO date string e.g. "2025-01-18"
-  webinar_time?: string   // e.g. "11:00 AM IST"
+  webinar_date?: string
+  webinar_time?: string
   ref_type?: string
 }
 
 export interface SendEmailPayload {
   recipients: EmailRecipient[]
   subject: string
-  emailType: 'reminder' | 'confirmation' | 'custom'
-  // Template fields
+  templateKey: string
+  // Template content
   joining_link?: string
+  recording_link?: string
+  certificate_link?: string
+  discount_code?: string
+  discount_percent?: string
   custom_message?: string
   cta_label?: string
   cta_url?: string
-  // Duration for .ics (default 90 min)
+  // Visual options
+  showAIWALogo?: boolean
+  showOStaranLogo?: boolean
+  showTrainerPic?: boolean
+  techLogos?: string[]
+  emojiInBody?: boolean
   webinar_duration_minutes?: number
 }
 
-function formatDateForDisplay(dateStr?: string): string {
+function formatDate(dateStr?: string): string {
   if (!dateStr) return ''
   try {
     return new Date(dateStr).toLocaleDateString('en-IN', {
-      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     })
   } catch { return dateStr }
+}
+
+function applyVars(template: string, r: EmailRecipient, formattedDate: string): string {
+  return template
+    .replace(/\{\{name\}\}/g, r.name || '')
+    .replace(/\{\{course\}\}/g, r.course_name || '')
+    .replace(/\{\{webinar_date\}\}/g, formattedDate)
+    .replace(/\{\{webinar_time\}\}/g, r.webinar_time || '')
 }
 
 export async function POST(req: NextRequest) {
@@ -62,54 +80,66 @@ export async function POST(req: NextRequest) {
   const {
     recipients,
     subject,
-    emailType,
+    templateKey,
     joining_link,
+    recording_link,
+    certificate_link,
+    discount_code,
+    discount_percent,
     custom_message,
     cta_label,
     cta_url,
+    showAIWALogo = true,
+    showOStaranLogo = false,
+    showTrainerPic = false,
+    techLogos = [],
+    emojiInBody = true,
     webinar_duration_minutes = 90,
   } = body
 
-  if (!recipients?.length || !subject) {
+  if (!recipients?.length || !subject || !templateKey) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
+
+  const category = templateCategory(templateKey)
+  const hasICS = TEMPLATE_CATALOGUE[templateKey as keyof typeof TEMPLATE_CATALOGUE]?.hasICS ?? false
 
   let sent = 0
   let failed = 0
   const errors: { email: string; error: string }[] = []
 
   for (const recipient of recipients) {
-    const formattedDate = formatDateForDisplay(recipient.webinar_date)
+    const formattedDate = formatDate(recipient.webinar_date)
+    const personalizedSubject = applyVars(subject, recipient, formattedDate)
 
-    // Build personalized subject
-    const personalizedSubject = subject
-      .replace(/\{\{name\}\}/g, recipient.name || '')
-      .replace(/\{\{course\}\}/g, recipient.course_name || '')
-      .replace(/\{\{webinar_date\}\}/g, formattedDate)
-      .replace(/\{\{webinar_time\}\}/g, recipient.webinar_time || '')
+    const personalizedMessage = custom_message
+      ? applyVars(custom_message, recipient, formattedDate)
+      : undefined
 
-    // Build template data
-    const templateData: EmailTemplateData = {
+    // Build HTML
+    const htmlBody = buildEmail(templateKey, {
       name: recipient.name,
       course_name: recipient.course_name,
       webinar_date: formattedDate,
       webinar_time: recipient.webinar_time,
       joining_link,
-      custom_message: custom_message
-        ?.replace(/\{\{name\}\}/g, recipient.name || '')
-        .replace(/\{\{course\}\}/g, recipient.course_name || '')
-        .replace(/\{\{webinar_date\}\}/g, formattedDate)
-        .replace(/\{\{webinar_time\}\}/g, recipient.webinar_time || ''),
+      recording_link,
+      certificate_link,
+      discount_code,
+      discount_percent,
+      custom_message: personalizedMessage,
       cta_label,
       cta_url,
-    }
+      showAIWALogo,
+      showOStaranLogo,
+      showTrainerPic,
+      techLogos,
+      emojiInBody,
+    })
 
-    // Build HTML body from template
-    const htmlBody = buildEmail(emailType, templateData)
-
-    // Build .ics attachment for reminders (when we have date + time)
+    // Build .ics if template supports it and we have date+time
     const attachments: nodemailer.SendMailOptions['attachments'] = []
-    if (emailType === 'reminder' && recipient.webinar_date && recipient.webinar_time) {
+    if (hasICS && recipient.webinar_date && recipient.webinar_time) {
       const icsContent = generateICS({
         title: `AIwithArijit Webinar: ${recipient.course_name || 'AI Certification'}`,
         description: joining_link
@@ -143,11 +173,10 @@ export async function POST(req: NextRequest) {
         attachments,
       })
 
-      // Log success to awa_email_log
       await supabase.from('awa_email_log').insert({
         recipient_email: recipient.email,
         recipient_name: recipient.name,
-        template_name: emailType,
+        template_name: templateKey,
         subject: personalizedSubject,
         status: 'sent',
         sent_at: new Date().toISOString(),
@@ -155,36 +184,30 @@ export async function POST(req: NextRequest) {
         ref_type: recipient.ref_type || null,
       })
 
-      // Update flags on qr_landing_registrations
       if (recipient.ref_type === 'webinar_registrant' && recipient.id) {
-        const updateField = emailType === 'confirmation'
+        const flag = category === 'confirmation'
           ? { confirmation_email_sent: true }
-          : emailType === 'reminder'
+          : category === 'reminder'
           ? { reminder_email_sent: true }
           : null
-        if (updateField) {
-          await supabase
-            .from('qr_landing_registrations')
-            .update(updateField)
-            .eq('id', recipient.id)
+        if (flag) {
+          await supabase.from('qr_landing_registrations').update(flag).eq('id', recipient.id)
         }
       }
 
       sent++
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
-
       await supabase.from('awa_email_log').insert({
         recipient_email: recipient.email,
         recipient_name: recipient.name,
-        template_name: emailType,
+        template_name: templateKey,
         subject: personalizedSubject,
         status: 'failed',
         error_message: message,
         ref_id: recipient.id || null,
         ref_type: recipient.ref_type || null,
       })
-
       errors.push({ email: recipient.email, error: message })
       failed++
     }

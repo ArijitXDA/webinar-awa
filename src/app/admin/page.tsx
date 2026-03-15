@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { TEMPLATE_CATALOGUE, TECH_BADGES, type TemplateKey } from '@/lib/email-assets'
 
 // Admin credentials
 const ADMIN_USERNAME = 'arijitwith'
@@ -262,15 +263,27 @@ export default function AdminPage() {
   // Communications state
   const [commSubTab, setCommSubTab] = useState<'email' | 'whatsapp' | 'history'>('email')
   const [commSource, setCommSource] = useState<'registrants' | 'users'>('registrants')
-  const [emailType, setEmailType] = useState<'confirmation' | 'reminder' | 'custom'>('reminder')
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateKey>('webinar_reminder')
   const [commRecipients, setCommRecipients] = useState<any[]>([])
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set())
-  const [emailSubject, setEmailSubject] = useState('')
+  // Email content fields
+  const [emailSubject, setEmailSubject] = useState<string>(TEMPLATE_CATALOGUE['webinar_reminder'].defaultSubject)
   const [emailJoiningLink, setEmailJoiningLink] = useState('')
+  const [emailRecordingLink, setEmailRecordingLink] = useState('')
+  const [emailCertificateLink, setEmailCertificateLink] = useState('')
+  const [emailDiscountCode, setEmailDiscountCode] = useState('')
+  const [emailDiscountPercent, setEmailDiscountPercent] = useState('')
   const [emailCustomMessage, setEmailCustomMessage] = useState('')
   const [emailCtaLabel, setEmailCtaLabel] = useState('')
   const [emailCtaUrl, setEmailCtaUrl] = useState('')
+  // Visual options
+  const [emailShowAIWA, setEmailShowAIWA] = useState(true)
+  const [emailShowOStaran, setEmailShowOStaran] = useState(false)
+  const [emailShowTrainer, setEmailShowTrainer] = useState(false)
+  const [emailTechLogos, setEmailTechLogos] = useState<string[]>([])
+  const [emailBodyEmoji, setEmailBodyEmoji] = useState(true)
   const [emailPreviewOpen, setEmailPreviewOpen] = useState(false)
+  // WA fields
   const [waTemplateName, setWaTemplateName] = useState('')
   const [waTemplateParams, setWaTemplateParams] = useState<string[]>(['', '', '', '', ''])
   const [commLoading, setCommLoading] = useState(false)
@@ -771,6 +784,13 @@ export default function AdminPage() {
   // Communications helpers
   const ADMIN_SECRET = process.env.NEXT_PUBLIC_ADMIN_SECRET || ''
 
+  // Derive legacy emailType from selectedTemplate for the recipients API filter
+  const derivedEmailType = ['webinar_reminder', 'webinar_today'].includes(selectedTemplate)
+    ? 'reminder'
+    : selectedTemplate === 'registration_confirmation'
+    ? 'confirmation'
+    : 'custom'
+
   async function loadCommRecipients() {
     setCommLoading(true)
     setCommResult(null)
@@ -778,7 +798,7 @@ export default function AdminPage() {
     try {
       const params = new URLSearchParams({
         source: commSource,
-        emailType,
+        emailType: derivedEmailType,
         ...(commFilter.webinarDate && { webinarDate: commFilter.webinarDate }),
         ...(commFilter.status && { status: commFilter.status }),
         ...(commFilter.course && { course: commFilter.course }),
@@ -824,11 +844,20 @@ export default function AdminPage() {
         body: JSON.stringify({
           recipients,
           subject: emailSubject,
-          emailType,
+          templateKey: selectedTemplate,
           joining_link: emailJoiningLink || undefined,
+          recording_link: emailRecordingLink || undefined,
+          certificate_link: emailCertificateLink || undefined,
+          discount_code: emailDiscountCode || undefined,
+          discount_percent: emailDiscountPercent || undefined,
           custom_message: emailCustomMessage || undefined,
           cta_label: emailCtaLabel || undefined,
           cta_url: emailCtaUrl || undefined,
+          showAIWALogo: emailShowAIWA,
+          showOStaranLogo: emailShowOStaran,
+          showTrainerPic: emailShowTrainer,
+          techLogos: emailTechLogos,
+          emojiInBody: emailBodyEmoji,
         })
       })
       const data = await res.json()
@@ -1647,18 +1676,23 @@ export default function AdminPage() {
                     </select>
                   </div>
 
-                  {/* Email Type (only for email sub-tab) */}
+                  {/* Template selector (only for email sub-tab) */}
                   {commSubTab === 'email' && (
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Email Type</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Email Template</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg text-sm"
-                        value={emailType}
-                        onChange={e => setEmailType(e.target.value as any)}
+                        value={selectedTemplate}
+                        onChange={e => {
+                          const key = e.target.value as TemplateKey
+                          setSelectedTemplate(key)
+                          setEmailSubject(TEMPLATE_CATALOGUE[key].defaultSubject)
+                          setCommResult(null)
+                        }}
                       >
-                        <option value="reminder">Webinar Reminder</option>
-                        <option value="confirmation">Registration Confirmation</option>
-                        <option value="custom">Custom Broadcast</option>
+                        {(Object.entries(TEMPLATE_CATALOGUE) as [TemplateKey, typeof TEMPLATE_CATALOGUE[TemplateKey]][]).map(([key, cfg]) => (
+                          <option key={key} value={key}>{cfg.label}</option>
+                        ))}
                       </select>
                     </div>
                   )}
@@ -1778,203 +1812,268 @@ export default function AdminPage() {
             {/* EMAIL Composer — Rich Template Editor */}
             {commSubTab === 'email' && (
               <div className="bg-white rounded-xl border p-5 space-y-5">
+                {/* Template info banner */}
+                <div className={`p-3 rounded-lg text-xs border ${
+                  derivedEmailType === 'reminder' ? 'bg-blue-50 border-blue-100 text-blue-700' :
+                  derivedEmailType === 'confirmation' ? 'bg-green-50 border-green-100 text-green-700' :
+                  'bg-purple-50 border-purple-100 text-purple-700'
+                }`}>
+                  <strong>{TEMPLATE_CATALOGUE[selectedTemplate].label}</strong> — {TEMPLATE_CATALOGUE[selectedTemplate].description}
+                  {TEMPLATE_CATALOGUE[selectedTemplate].hasICS && <span className="ml-2 bg-white px-1.5 py-0.5 rounded font-semibold">📅 .ics included</span>}
+                </div>
 
-                {/* Header */}
+                {/* Header row: title + preview toggle */}
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold text-gray-800">Compose Email</h3>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      Variables supported in Subject &amp; Message:{' '}
+                      Variables:{' '}
                       {['{{name}}','{{course}}','{{webinar_date}}','{{webinar_time}}'].map(v => (
                         <code key={v} className="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-xs mx-0.5">{v}</code>
                       ))}
                     </p>
                   </div>
-                  <button
-                    onClick={() => setEmailPreviewOpen(p => !p)}
-                    className="text-sm text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors"
-                  >
-                    {emailPreviewOpen ? '✕ Close Preview' : '👁 Preview Email'}
+                  <button onClick={() => setEmailPreviewOpen(p => !p)}
+                    className="text-sm text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors">
+                    {emailPreviewOpen ? '✕ Close Preview' : '👁 Live Preview'}
                   </button>
                 </div>
 
-                <div className={`grid gap-5 ${emailPreviewOpen ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
-                  {/* LEFT: Form fields */}
+                <div className={`grid gap-6 ${emailPreviewOpen ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
+
+                  {/* ── LEFT: FORM ── */}
                   <div className="space-y-4">
 
                     {/* Subject */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Subject Line <span className="text-red-500">*</span></label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border rounded-lg text-sm"
-                        placeholder={
-                          emailType === 'reminder'     ? "Reminder: Your {{course}} webinar is tomorrow, {{name}}!" :
-                          emailType === 'confirmation' ? "✅ You're registered for {{course}}, {{name}}!" :
-                          "Important update from AIwithArijit"
-                        }
-                        value={emailSubject}
-                        onChange={e => setEmailSubject(e.target.value)}
-                      />
+                      <input type="text" className="w-full px-3 py-2 border rounded-lg text-sm"
+                        value={emailSubject} onChange={e => setEmailSubject(e.target.value)} />
                     </div>
 
-                    {/* Webinar joining link — for reminder + confirmation */}
-                    {(emailType === 'reminder' || emailType === 'confirmation') && (
+                    {/* Template-specific link fields */}
+                    {['webinar_reminder','webinar_today','registration_confirmation','course_launch'].includes(selectedTemplate) && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          🔗 Webinar Joining Link
-                          <span className="text-gray-400 font-normal ml-1">(Teams / Zoom / Meet URL)</span>
+                          🔗 Webinar Joining Link <span className="text-gray-400 font-normal">(Teams / Zoom / Meet)</span>
                         </label>
-                        <input
-                          type="url"
-                          className="w-full px-3 py-2 border rounded-lg text-sm"
-                          placeholder="https://teams.microsoft.com/l/meetup-join/..."
-                          value={emailJoiningLink}
-                          onChange={e => setEmailJoiningLink(e.target.value)}
-                        />
-                        {emailType === 'reminder' && emailJoiningLink && (
-                          <p className="text-xs text-green-600 mt-1">✅ A &ldquo;Join Webinar Now&rdquo; button + .ics calendar invite will be included automatically</p>
-                        )}
+                        <input type="url" className="w-full px-3 py-2 border rounded-lg text-sm"
+                          placeholder="https://teams.microsoft.com/..." value={emailJoiningLink}
+                          onChange={e => setEmailJoiningLink(e.target.value)} />
+                        {TEMPLATE_CATALOGUE[selectedTemplate].hasICS && emailJoiningLink &&
+                          <p className="text-xs text-green-600 mt-1">✅ "Join Now" button + .ics calendar invite will be auto-attached</p>}
+                      </div>
+                    )}
+                    {selectedTemplate === 'post_webinar_followup' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">🎬 Recording Link</label>
+                        <input type="url" className="w-full px-3 py-2 border rounded-lg text-sm"
+                          placeholder="https://..." value={emailRecordingLink}
+                          onChange={e => setEmailRecordingLink(e.target.value)} />
+                      </div>
+                    )}
+                    {selectedTemplate === 'certificate_ready' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">📜 Certificate Download Link</label>
+                        <input type="url" className="w-full px-3 py-2 border rounded-lg text-sm"
+                          placeholder="https://..." value={emailCertificateLink}
+                          onChange={e => setEmailCertificateLink(e.target.value)} />
+                      </div>
+                    )}
+                    {selectedTemplate === 'special_offer' && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">🎁 Discount Code</label>
+                          <input type="text" className="w-full px-3 py-2 border rounded-lg text-sm font-mono"
+                            placeholder="e.g. AILEARN30" value={emailDiscountCode}
+                            onChange={e => setEmailDiscountCode(e.target.value.toUpperCase())} />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">% Off</label>
+                          <input type="text" className="w-full px-3 py-2 border rounded-lg text-sm"
+                            placeholder="e.g. 30" value={emailDiscountPercent}
+                            onChange={e => setEmailDiscountPercent(e.target.value)} />
+                        </div>
                       </div>
                     )}
 
-                    {/* Custom message */}
+                    {/* Message */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {emailType === 'custom' ? 'Message Body' : 'Additional Message (optional)'}
+                        {selectedTemplate === 'custom_broadcast' ? 'Message Body' : 'Additional Message (optional)'}
                       </label>
-                      <textarea
-                        rows={emailType === 'custom' ? 10 : 4}
+                      <textarea rows={selectedTemplate === 'custom_broadcast' ? 8 : 3}
                         className="w-full px-3 py-2 border rounded-lg text-sm resize-y"
-                        placeholder={
-                          emailType === 'reminder'     ? "e.g. Come prepared with questions! We'll also be sharing a bonus resource." :
-                          emailType === 'confirmation' ? "e.g. We're excited to have you join us! Expect an amazing session." :
-                          "Write your message here. HTML is supported. Use {{name}}, {{course}} for personalization."
-                        }
-                        value={emailCustomMessage}
-                        onChange={e => setEmailCustomMessage(e.target.value)}
-                      />
+                        placeholder="Supports {{name}}, {{course}}, {{webinar_date}}, {{webinar_time}}. HTML allowed."
+                        value={emailCustomMessage} onChange={e => setEmailCustomMessage(e.target.value)} />
                     </div>
 
-                    {/* CTA button — custom only */}
-                    {emailType === 'custom' && (
+                    {/* CTA button (for templates that support it) */}
+                    {['post_webinar_followup','course_launch','special_offer','custom_broadcast'].includes(selectedTemplate) && (
                       <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 rounded-lg border border-dashed">
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">CTA Button Label (optional)</label>
-                          <input
-                            type="text"
-                            className="w-full px-3 py-2 border rounded-lg text-sm"
-                            placeholder="e.g. Register Now"
-                            value={emailCtaLabel}
-                            onChange={e => setEmailCtaLabel(e.target.value)}
-                          />
+                          <label className="block text-xs font-medium text-gray-600 mb-1">CTA Button Label</label>
+                          <input type="text" className="w-full px-3 py-2 border rounded-lg text-sm"
+                            placeholder="e.g. Enroll Now" value={emailCtaLabel}
+                            onChange={e => setEmailCtaLabel(e.target.value)} />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">CTA Button URL</label>
-                          <input
-                            type="url"
-                            className="w-full px-3 py-2 border rounded-lg text-sm"
-                            placeholder="https://..."
-                            value={emailCtaUrl}
-                            onChange={e => setEmailCtaUrl(e.target.value)}
-                          />
+                          <label className="block text-xs font-medium text-gray-600 mb-1">CTA URL</label>
+                          <input type="url" className="w-full px-3 py-2 border rounded-lg text-sm"
+                            placeholder="https://..." value={emailCtaUrl}
+                            onChange={e => setEmailCtaUrl(e.target.value)} />
                         </div>
                       </div>
                     )}
 
-                    {/* Template description */}
-                    <div className={`p-3 rounded-lg text-xs ${
-                      emailType === 'reminder'     ? 'bg-blue-50 border border-blue-100 text-blue-700' :
-                      emailType === 'confirmation' ? 'bg-green-50 border border-green-100 text-green-700' :
-                                                     'bg-purple-50 border border-purple-100 text-purple-700'
-                    }`}>
-                      {emailType === 'reminder' && <>
-                        <strong>📅 Reminder Template</strong> — Includes: personalized greeting, webinar details card (date/time/course),
-                        {emailJoiningLink ? ' "Join Webinar Now" button,' : ''} tip box, and a .ics calendar invite attachment.
-                      </>}
-                      {emailType === 'confirmation' && <>
-                        <strong>✅ Confirmation Template</strong> — Includes: registration confirmed badge, personalized greeting,
-                        webinar details card{emailJoiningLink ? ', and "Add to Calendar & Join" button' : ''}.
-                      </>}
-                      {emailType === 'custom' && <>
-                        <strong>📢 Custom Broadcast</strong> — Branded AIwithArijit header + footer with your message body.
-                        {emailCtaLabel && emailCtaUrl ? ' Includes your custom CTA button.' : ''}
-                      </>}
+                    {/* ── BRAND & VISUAL OPTIONS ── */}
+                    <div className="border rounded-xl p-4 space-y-4 bg-gray-50">
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Brand &amp; Visual Options</div>
+
+                      {/* Logo toggles */}
+                      <div>
+                        <div className="text-xs font-medium text-gray-600 mb-2">Logos in Header</div>
+                        <div className="flex flex-wrap gap-3">
+                          {[
+                            { key: 'aiwa', label: '🤖 AI WithArijit', state: emailShowAIWA, set: setEmailShowAIWA },
+                            { key: 'ostaran', label: '🌟 oStaran', state: emailShowOStaran, set: setEmailShowOStaran },
+                          ].map(({ key, label, state, set }) => (
+                            <button key={key} onClick={() => set(!state)}
+                              className={`px-3 py-1.5 rounded-lg text-sm border font-medium transition-colors ${state ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-300'}`}>
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Trainer pic toggle */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xs font-medium text-gray-600">Trainer Profile Card</div>
+                          <div className="text-xs text-gray-400">Shows Arijit's photo, name &amp; contact at the bottom</div>
+                        </div>
+                        <button onClick={() => setEmailShowTrainer(p => !p)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${emailShowTrainer ? 'bg-indigo-600' : 'bg-gray-200'}`}>
+                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${emailShowTrainer ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
+                      </div>
+
+                      {/* Emoji toggle */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xs font-medium text-gray-600">Emojis in Email Body</div>
+                          <div className="text-xs text-gray-400">Toggle off for a more formal tone</div>
+                        </div>
+                        <button onClick={() => setEmailBodyEmoji(p => !p)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${emailBodyEmoji ? 'bg-indigo-600' : 'bg-gray-200'}`}>
+                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${emailBodyEmoji ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
+                      </div>
+
+                      {/* Tech logos */}
+                      <div>
+                        <div className="text-xs font-medium text-gray-600 mb-2">Tech Subject Badges <span className="text-gray-400 font-normal">(shown in email body)</span></div>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(TECH_BADGES).map(([key, badge]) => {
+                            const active = emailTechLogos.includes(key)
+                            return (
+                              <button key={key} onClick={() => setEmailTechLogos(prev =>
+                                active ? prev.filter(k => k !== key) : [...prev, key]
+                              )}
+                                className="px-2.5 py-1 rounded-full text-xs font-semibold border transition-all"
+                                style={{
+                                  background: active ? badge.bg : '#f9fafb',
+                                  color: active ? badge.color : '#6b7280',
+                                  borderColor: active ? badge.bg : '#e5e7eb',
+                                }}>
+                                {badge.emoji} {badge.label}
+                              </button>
+                            )
+                          })}
+                        </div>
+                        {emailTechLogos.length > 0 && (
+                          <button onClick={() => setEmailTechLogos([])} className="mt-1 text-xs text-gray-400 hover:text-red-500">
+                            ✕ Clear all
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Send button */}
-                    <div className="flex items-center gap-4 pt-1">
-                      <button
-                        onClick={sendEmails}
+                    <div className="flex items-center gap-3 pt-1">
+                      <button onClick={sendEmails}
                         disabled={commSending || selectedRecipients.size === 0 || !emailSubject}
-                        className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-                      >
-                        {commSending
-                          ? '⏳ Sending…'
-                          : `✉️ Send to ${selectedRecipients.size} recipient${selectedRecipients.size !== 1 ? 's' : ''}`}
+                        className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors">
+                        {commSending ? '⏳ Sending…' : `✉️ Send to ${selectedRecipients.size} recipient${selectedRecipients.size !== 1 ? 's' : ''}`}
                       </button>
-                      {selectedRecipients.size === 0 && (
-                        <span className="text-xs text-amber-600">⚠ Load &amp; select recipients first</span>
-                      )}
+                      {selectedRecipients.size === 0 && <span className="text-xs text-amber-600">⚠ Select recipients above first</span>}
                     </div>
 
-                    {/* Result banner */}
                     {commResult && (
                       <div className={`p-4 rounded-lg text-sm ${commResult.failed === 0 ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
-                        <p className="font-semibold">
-                          ✅ Sent: {commResult.sent}
-                          {commResult.failed > 0 && <span className="ml-3 text-red-600">❌ Failed: {commResult.failed}</span>}
-                        </p>
+                        <p className="font-semibold">✅ Sent: {commResult.sent}{commResult.failed > 0 && <span className="ml-3 text-red-600">❌ Failed: {commResult.failed}</span>}</p>
                         {commResult.errors && commResult.errors.length > 0 && (
-                          <ul className="mt-2 space-y-1 text-xs text-red-600">
-                            {commResult.errors.slice(0, 5).map((e: any, i: number) => (
-                              <li key={i}>{e.email}: {e.error}</li>
-                            ))}
+                          <ul className="mt-2 space-y-0.5 text-xs text-red-600">
+                            {commResult.errors.slice(0, 5).map((e: any, i: number) => <li key={i}>{e.email}: {e.error}</li>)}
                           </ul>
                         )}
                       </div>
                     )}
                   </div>
 
-                  {/* RIGHT: Live Preview */}
+                  {/* ── RIGHT: LIVE PREVIEW ── */}
                   {emailPreviewOpen && (
-                    <div className="border rounded-xl overflow-hidden bg-gray-100">
-                      <div className="px-4 py-2 bg-gray-200 text-xs text-gray-500 font-medium flex items-center gap-2">
-                        <span>📧 Email Preview</span>
-                        <span className="text-gray-400">(sample data)</span>
+                    <div className="border rounded-xl overflow-hidden bg-gray-100 sticky top-4">
+                      <div className="px-4 py-2 bg-gray-200 text-xs text-gray-500 font-medium flex items-center justify-between">
+                        <span>📧 Live Preview <span className="text-gray-400">— {commRecipients[0]?.name || 'sample recipient'}</span></span>
+                        <span className="bg-gray-300 px-2 py-0.5 rounded text-gray-600">{selectedTemplate.replace(/_/g,' ')}</span>
                       </div>
-                      <iframe
-                        title="Email Preview"
-                        className="w-full border-0"
-                        style={{ height: 560 }}
+                      <iframe title="Email Preview" className="w-full border-0" style={{ height: 620 }}
                         srcDoc={(() => {
-                          // Build a preview with sample data
-                          const sampleRecipient = commRecipients[0]
-                          const buildEmailForPreview = () => {
-                            const templateData = {
-                              name: sampleRecipient?.name || 'Rahul Sharma',
-                              course_name: sampleRecipient?.course_name || 'AI Fundamentals',
-                              webinar_date: sampleRecipient?.webinar_date
-                                ? new Date(sampleRecipient.webinar_date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-                                : 'Saturday, 18 January 2025',
-                              webinar_time: sampleRecipient?.webinar_time || '11:00 AM IST',
-                              joining_link: emailJoiningLink || undefined,
-                              custom_message: emailCustomMessage || undefined,
-                              cta_label: emailCtaLabel || undefined,
-                              cta_url: emailCtaUrl || undefined,
-                            }
-                            // Inline a minimal template builder for preview
-                            const detailsRows = [
-                              templateData.course_name && `<tr><td style="color:#6b7280;font-size:13px;padding:6px 0;width:110px;">📚 Course</td><td style="color:#111827;font-size:13px;font-weight:600;padding:6px 0;">${templateData.course_name}</td></tr>`,
-                              templateData.webinar_date && `<tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">📅 Date</td><td style="color:#111827;font-size:13px;font-weight:600;padding:6px 0;">${templateData.webinar_date}</td></tr>`,
-                              templateData.webinar_time && `<tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">🕐 Time</td><td style="color:#111827;font-size:13px;font-weight:600;padding:6px 0;">${templateData.webinar_time}</td></tr>`,
-                            ].filter(Boolean).join('')
-                            const detailsCard = detailsRows ? `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f3ff;border:1.5px solid #e0e7ff;border-radius:12px;margin:20px 0;"><tr><td style="padding:16px 20px;"><table width="100%" cellpadding="0" cellspacing="0" border="0">${detailsRows}</table></td></tr></table>` : ''
-                            const ctaBtn = templateData.joining_link ? `<table cellpadding="0" cellspacing="0" border="0" style="margin:20px auto;"><tr><td align="center" style="border-radius:10px;background:#4f46e5;"><a href="${templateData.joining_link}" style="display:inline-block;padding:14px 36px;background:#4f46e5;color:#fff;font-size:15px;font-weight:700;text-decoration:none;border-radius:10px;">🎯 Join Webinar Now</a></td></tr></table>` : ''
-                            const customBlock = templateData.custom_message ? `<p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 16px;">${templateData.custom_message}</p>` : ''
-                            return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:16px;background:#f4f4f7;font-family:Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(79,70,229,0.1);"><tr><td style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:28px;text-align:center;"><div style="color:#fff;font-size:20px;font-weight:700;">🤖 AIwithArijit</div><div style="color:rgba(255,255,255,0.7);font-size:11px;margin-top:4px;">AI Education &amp; Certification</div></td></tr><tr><td style="padding:28px;"><p style="font-size:17px;font-weight:700;color:#111827;margin:0 0 14px;">Hi ${templateData.name} 👋</p>${emailType === 'confirmation' ? `<p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 14px;">You're registered! We have confirmed your spot.</p>` : emailType === 'reminder' ? `<p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 14px;">Just a friendly reminder — your webinar is coming up soon!</p>` : ''}${customBlock}${detailsCard}${ctaBtn}${emailType === 'reminder' && templateData.joining_link ? `<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:13px;color:#92400e;">💡 <strong>Tip:</strong> A calendar invite (.ics) is attached to this email.</div>` : ''}</td></tr><tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px;text-align:center;"><p style="margin:0;color:#9ca3af;font-size:11px;">© 2025 AIwithArijit.com · <a href="mailto:ai@withArijit.com" style="color:#4f46e5;">ai@withArijit.com</a></p></td></tr></table></body></html>`
+                          const s = commRecipients[0]
+                          const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) : 'Saturday, 18 January 2025'
+                          // Build tech badges html
+                          const badgesHtml = emailTechLogos.map(k => {
+                            const b = TECH_BADGES[k]; if (!b) return ''
+                            return `<span style="display:inline-block;background:${b.bg};color:${b.color};padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;margin:3px 4px;">${emailBodyEmoji ? b.emoji+' ' : ''}${b.label}</span>`
+                          }).join('')
+                          const badgesSection = badgesHtml ? `<div style="margin:16px 0;text-align:center;"><div style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Technologies Covered</div>${badgesHtml}</div>` : ''
+                          // Logo header
+                          const aiwaImg = emailShowAIWA ? `<img src="/logo.jpg" alt="AI WithArijit" height="40" style="border-radius:6px;vertical-align:middle;margin:0 8px;" border="0"/>` : ''
+                          const oStaranImg = emailShowOStaran ? `<span style="background:#000;border-radius:6px;padding:2px 8px;display:inline-block;vertical-align:middle;margin:0 8px;"><img src="/oStaran.png" alt="oStaran" height="36" border="0"/></span>` : ''
+                          const logoHeader = (emailShowAIWA || emailShowOStaran)
+                            ? `<div style="margin-bottom:8px;">${aiwaImg}${oStaranImg}</div>`
+                            : `<div style="color:#fff;font-size:20px;font-weight:700;">🤖 AIwithArijit</div>`
+                          const trainerCard = emailShowTrainer ? `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;margin:0 0 20px;"><tr><td width="68" style="padding:14px;" valign="middle"><img src="/trainer-arijit.jpg" width="54" height="54" style="border-radius:50%;display:block;border:2px solid #e0e7ff;" border="0"/></td><td style="padding:14px 14px 14px 0;" valign="middle"><div style="font-size:13px;font-weight:700;color:#111827;">Arijit Chowdhury</div><div style="font-size:11px;color:#4f46e5;margin-top:2px;">AI Trainer &amp; Educator</div><div style="font-size:11px;color:#6b7280;margin-top:4px;"><a href="https://aiwitharijit.com" style="color:#4f46e5;text-decoration:none;">aiwitharijit.com</a></div></td></tr></table>` : ''
+                          // Minimal per-template preview body
+                          const name = s?.name || 'Rahul Sharma'
+                          const course = s?.course_name || 'AI Fundamentals'
+                          const date = fmtDate(s?.webinar_date)
+                          const time = s?.webinar_time || '11:00 AM IST'
+                          const em = emailBodyEmoji
+                          const detailsCard = `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f3ff;border:1.5px solid #e0e7ff;border-radius:10px;margin:16px 0;"><tr><td style="padding:14px 18px;font-size:13px;"><table width="100%"><tr><td style="color:#6b7280;width:100px;">${em?'📚 ':''}Course</td><td style="color:#111827;font-weight:600;">${course}</td></tr><tr><td style="color:#6b7280;">${em?'📅 ':''}Date</td><td style="color:#111827;font-weight:600;">${date}</td></tr><tr><td style="color:#6b7280;">${em?'🕐 ':''}Time</td><td style="color:#111827;font-weight:600;">${time}</td></tr></table></td></tr></table>`
+                          const ctaBtn = (label: string, url: string, color='#4f46e5') => url ? `<div style="text-align:center;margin:16px 0;"><a href="${url}" style="display:inline-block;padding:12px 28px;background:${color};color:#fff;font-weight:700;text-decoration:none;border-radius:10px;font-size:14px;">${label}</a></div>` : ''
+                          const customBlock = emailCustomMessage ? `<p style="font-size:14px;color:#374151;line-height:1.7;margin:12px 0;">${emailCustomMessage.replace(/\{\{name\}\}/g,name).replace(/\{\{course\}\}/g,course)}</p>` : ''
+                          let bodyContent = ''
+                          if (selectedTemplate === 'webinar_today') {
+                            bodyContent = `<div style="background:linear-gradient(135deg,#dc2626,#ea580c);padding:14px 20px;text-align:center;margin:-20px -20px 16px;border-radius:0;"><div style="color:#fff;font-size:24px;font-weight:900;">${em?'⏰ ':''}IT'S TODAY!</div><div style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:4px;">Starts ${time}!</div></div><p style="font-size:17px;font-weight:700;color:#111827;margin:0 0 10px;">Hi ${name} ${em?'👋':''}</p><p style="font-size:14px;color:#374151;line-height:1.7;margin:0;">Your webinar on <strong>${course}</strong> is <strong>TODAY!</strong></p>${customBlock}${detailsCard}${badgesSection}${ctaBtn(em?'🎯 Join Now — Don\'t Be Late!':'Join Now', emailJoiningLink,'#dc2626')}`
+                          } else if (selectedTemplate === 'registration_confirmation') {
+                            bodyContent = `<div style="text-align:center;margin-bottom:16px;"><div style="display:inline-block;background:#d1fae5;border-radius:50%;width:60px;height:60px;line-height:60px;font-size:30px;">${em?'✅':''}</div><h2 style="margin:10px 0 4px;font-size:20px;color:#111827;">You're Registered!</h2><p style="margin:0;font-size:13px;color:#6b7280;">Hi ${name}, your spot is confirmed ${em?'🎉':''}</p></div>${customBlock}${detailsCard}${badgesSection}${ctaBtn(em?'📅 Add to Calendar & Join':'Add to Calendar', emailJoiningLink,'#059669')}`
+                          } else if (selectedTemplate === 'post_webinar_followup') {
+                            bodyContent = `<div style="text-align:center;font-size:36px;margin-bottom:12px;">${em?'🙏':''}</div><h2 style="text-align:center;font-size:20px;color:#111827;margin:0 0 12px;">Thank You for Attending!</h2><p style="font-size:14px;color:#374151;line-height:1.7;margin:0 0 12px;">Hi ${name}, it was wonderful having you at <strong>${course}</strong>!</p>${customBlock}${badgesSection}${emailRecordingLink?ctaBtn(em?'▶️ Watch the Recording':'Watch Recording',emailRecordingLink,'#2563eb'):''}${ctaBtn(emailCtaLabel||'',emailCtaUrl)}`
+                          } else if (selectedTemplate === 'certificate_ready') {
+                            bodyContent = `<div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:14px;text-align:center;margin:-20px -20px 16px;"><div style="font-size:40px;">${em?'🎓':''}</div><div style="color:#fff;font-weight:700;font-size:16px;">Certificate of Completion</div></div><h2 style="font-size:20px;color:#111827;margin:16px 0 10px;">Congratulations, ${name}! ${em?'🎉':''}</h2><p style="font-size:14px;color:#374151;line-height:1.7;margin:0 0 12px;">You've completed <strong>${course}</strong>!</p>${customBlock}${badgesSection}${ctaBtn(em?'📜 Download Your Certificate':'Download Certificate',emailCertificateLink,'#d97706')}`
+                          } else if (selectedTemplate === 'special_offer') {
+                            bodyContent = `<div style="background:linear-gradient(135deg,#7c3aed,#db2777);padding:16px;text-align:center;margin:-20px -20px 16px;">${emailDiscountPercent?`<div style="color:#fff;font-size:36px;font-weight:900;">${emailDiscountPercent}% OFF</div>`:`<div style="font-size:32px;">${em?'🎁':''}</div>`}<div style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:4px;">Just for you, ${name}!</div></div><p style="font-size:14px;color:#374151;line-height:1.7;margin:12px 0;">${customBlock}</p>${emailDiscountCode?`<div style="text-align:center;margin:16px 0;"><div style="font-size:11px;color:#6b7280;margin-bottom:8px;">Your Discount Code</div><div style="display:inline-block;background:#faf5ff;border:2.5px dashed #7c3aed;border-radius:10px;padding:12px 28px;font-size:24px;font-weight:900;color:#7c3aed;letter-spacing:4px;">${emailDiscountCode}</div></div>`:''} ${badgesSection}${ctaBtn(emailCtaLabel||'Get the Offer',emailCtaUrl,'#7c3aed')}`
+                          } else if (selectedTemplate === 'course_launch') {
+                            bodyContent = `<div style="display:inline-block;background:#4f46e5;border-radius:20px;padding:5px 16px;color:#fff;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;">${em?'🚀 ':''}New Course Launch</div><h2 style="font-size:20px;color:#111827;margin:0 0 12px;">Hi ${name} ${em?'👋':''}</h2><p style="font-size:14px;color:#374151;line-height:1.7;margin:0 0 12px;"><strong>${course}</strong> is now live!</p>${customBlock}${detailsCard}${badgesSection}${ctaBtn(emailCtaLabel||(em?'🚀 Register Now — Limited Seats!':'Register Now'),emailCtaUrl||emailJoiningLink)}`
+                          } else if (selectedTemplate === 'custom_broadcast') {
+                            bodyContent = `<p style="font-size:17px;font-weight:700;color:#111827;margin:0 0 12px;">Hi ${name} ${em?'👋':''}</p>${customBlock}${badgesSection}${ctaBtn(emailCtaLabel||'',emailCtaUrl)}`
+                          } else {
+                            // Default: webinar_reminder
+                            bodyContent = `<p style="font-size:17px;font-weight:700;color:#111827;margin:0 0 10px;">Hi ${name} ${em?'👋':''}</p><p style="font-size:14px;color:#374151;line-height:1.7;margin:0 0 12px;">Your webinar is <strong>tomorrow</strong>! ${em?'🎯':''}</p>${customBlock}${detailsCard}${badgesSection}${ctaBtn(em?'🎯 Join Webinar Now':'Join Webinar Now',emailJoiningLink)}${emailJoiningLink&&TEMPLATE_CATALOGUE[selectedTemplate].hasICS?`<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:12px 16px;margin-top:14px;font-size:12px;color:#92400e;">${em?'💡 ':''}Calendar invite (.ics) is attached!</div>`:''}`
                           }
-                          return buildEmailForPreview()
+                          return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:12px;background:#f0f0f5;font-family:Arial,sans-serif;"><div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(79,70,229,0.1);"><div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:22px;text-align:center;">${logoHeader}<div style="color:rgba(255,255,255,0.65);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-top:6px;">AI Education &amp; Certification</div></div><div style="padding:22px 22px 8px;">${bodyContent}</div>${trainerCard?`<div style="padding:0 22px 16px;">${trainerCard}</div>`:''}<div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:18px;text-align:center;font-size:11px;color:#9ca3af;">© 2025 AIwithArijit.com</div></div></body></html>`
                         })()}
                       />
                     </div>
