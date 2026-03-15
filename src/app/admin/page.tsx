@@ -257,7 +257,24 @@ export default function AdminPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
-  const [activeTab, setActiveTab] = useState<'utm' | 'analytics' | 'ratings'>('utm')
+  const [activeTab, setActiveTab] = useState<'utm' | 'analytics' | 'ratings' | 'communications'>('utm')
+
+  // Communications state
+  const [commSubTab, setCommSubTab] = useState<'email' | 'whatsapp' | 'history'>('email')
+  const [commSource, setCommSource] = useState<'registrants' | 'users'>('registrants')
+  const [emailType, setEmailType] = useState<'confirmation' | 'reminder' | 'custom'>('reminder')
+  const [commRecipients, setCommRecipients] = useState<any[]>([])
+  const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set())
+  const [emailSubject, setEmailSubject] = useState('')
+  const [emailBody, setEmailBody] = useState('')
+  const [waTemplateName, setWaTemplateName] = useState('')
+  const [waTemplateParams, setWaTemplateParams] = useState<string[]>(['', '', '', '', ''])
+  const [commLoading, setCommLoading] = useState(false)
+  const [commSending, setCommSending] = useState(false)
+  const [commResult, setCommResult] = useState<{ sent: number; failed: number; errors?: any[] } | null>(null)
+  const [emailHistory, setEmailHistory] = useState<any[]>([])
+  const [waHistory, setWaHistory] = useState<any[]>([])
+  const [commFilter, setCommFilter] = useState({ webinarDate: '', status: '', course: '' })
   
   // UTM State
   const [campaigns, setCampaigns] = useState<UTMCampaign[]>([])
@@ -747,6 +764,106 @@ export default function AdminPage() {
     return <span className="text-indigo-600 ml-1">{ratingsSortOrder === 'asc' ? '↑' : '↓'}</span>
   }
 
+  // Communications helpers
+  const ADMIN_SECRET = process.env.NEXT_PUBLIC_ADMIN_SECRET || ''
+
+  async function loadCommRecipients() {
+    setCommLoading(true)
+    setCommResult(null)
+    setSelectedRecipients(new Set())
+    try {
+      const params = new URLSearchParams({
+        source: commSource,
+        emailType,
+        ...(commFilter.webinarDate && { webinarDate: commFilter.webinarDate }),
+        ...(commFilter.status && { status: commFilter.status }),
+        ...(commFilter.course && { course: commFilter.course }),
+      })
+      const res = await fetch(`/api/admin/recipients?${params}`, {
+        headers: { 'x-admin-secret': ADMIN_SECRET }
+      })
+      const data = await res.json()
+      setCommRecipients(data.recipients || [])
+    } catch (e) {
+      console.error('Error loading recipients', e)
+    } finally {
+      setCommLoading(false)
+    }
+  }
+
+  function toggleRecipient(id: string) {
+    setSelectedRecipients(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function toggleAllRecipients() {
+    if (selectedRecipients.size === commRecipients.length) {
+      setSelectedRecipients(new Set())
+    } else {
+      setSelectedRecipients(new Set(commRecipients.map(r => r.id)))
+    }
+  }
+
+  async function sendEmails() {
+    const recipients = commRecipients.filter(r => selectedRecipients.has(r.id))
+    if (!recipients.length || !emailSubject || !emailBody) return
+    setCommSending(true)
+    setCommResult(null)
+    try {
+      const res = await fetch('/api/admin/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-secret': ADMIN_SECRET },
+        body: JSON.stringify({ recipients, subject: emailSubject, htmlBody: emailBody, emailType })
+      })
+      const data = await res.json()
+      setCommResult(data)
+    } catch (e) {
+      console.error('Error sending emails', e)
+    } finally {
+      setCommSending(false)
+    }
+  }
+
+  async function sendWhatsApps() {
+    const recipients = commRecipients.filter(r => selectedRecipients.has(r.id))
+    if (!recipients.length || !waTemplateName) return
+    setCommSending(true)
+    setCommResult(null)
+    try {
+      const res = await fetch('/api/admin/send-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-secret': ADMIN_SECRET },
+        body: JSON.stringify({ recipients, templateName: waTemplateName, templateParams: waTemplateParams.filter(p => p.trim()) })
+      })
+      const data = await res.json()
+      setCommResult(data)
+    } catch (e) {
+      console.error('Error sending WhatsApp', e)
+    } finally {
+      setCommSending(false)
+    }
+  }
+
+  async function loadHistory() {
+    const { data: emails } = await supabase
+      .from('awa_email_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50)
+    setEmailHistory(emails || [])
+
+    const { data: was } = await supabase
+      .from('whatsapp_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50)
+    setWaHistory(was || [])
+  }
+
   // Login Screen
   if (!isAuthenticated) {
     return (
@@ -829,6 +946,12 @@ export default function AdminPage() {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'ratings' ? 'bg-white shadow text-indigo-600' : 'text-gray-600'}`}
               >
                 ⭐ Ratings
+              </button>
+              <button
+                onClick={() => setActiveTab('communications')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'communications' ? 'bg-white shadow text-indigo-600' : 'text-gray-600'}`}
+              >
+                📨 Communications
               </button>
             </div>
             <button
@@ -1471,6 +1594,390 @@ export default function AdminPage() {
               Showing {ratings.length} rating{ratings.length !== 1 ? 's' : ''}
               {ratingsSearch && ` matching "${ratingsSearch}"`}
             </div>
+          </div>
+        )}
+
+        {/* Communications Tab */}
+        {activeTab === 'communications' && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Communications</h2>
+              <span className="text-sm text-gray-500">Email & WhatsApp Reminders</span>
+            </div>
+
+            {/* Sub-tabs */}
+            <div className="flex gap-2 mb-6 border-b">
+              {(['email', 'whatsapp', 'history'] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => { setCommSubTab(tab); if (tab === 'history') loadHistory() }}
+                  className={`px-5 py-2 text-sm font-medium border-b-2 transition-colors capitalize ${commSubTab === tab ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                >
+                  {tab === 'email' ? '✉️ Email' : tab === 'whatsapp' ? '💬 WhatsApp' : '🕘 History'}
+                </button>
+              ))}
+            </div>
+
+            {/* Shared: Source + Filters + Recipient Loader */}
+            {commSubTab !== 'history' && (
+              <div className="bg-white rounded-xl border p-5 mb-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Source */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Recipient Source</label>
+                    <select
+                      className="w-full px-3 py-2 border rounded-lg text-sm"
+                      value={commSource}
+                      onChange={e => setCommSource(e.target.value as any)}
+                    >
+                      <option value="registrants">Webinar Registrants</option>
+                      <option value="users">All Users (Students)</option>
+                    </select>
+                  </div>
+
+                  {/* Email Type (only for email sub-tab) */}
+                  {commSubTab === 'email' && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Email Type</label>
+                      <select
+                        className="w-full px-3 py-2 border rounded-lg text-sm"
+                        value={emailType}
+                        onChange={e => setEmailType(e.target.value as any)}
+                      >
+                        <option value="reminder">Webinar Reminder</option>
+                        <option value="confirmation">Registration Confirmation</option>
+                        <option value="custom">Custom Broadcast</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Filters */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Webinar Date</label>
+                    <input
+                      type="date"
+                      className="w-full px-3 py-2 border rounded-lg text-sm"
+                      value={commFilter.webinarDate}
+                      onChange={e => setCommFilter(f => ({ ...f, webinarDate: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Course (contains)</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border rounded-lg text-sm"
+                      placeholder="e.g. AI, Python"
+                      value={commFilter.course}
+                      onChange={e => setCommFilter(f => ({ ...f, course: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={loadCommRecipients}
+                    disabled={commLoading}
+                    className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                  >
+                    {commLoading ? 'Loading...' : 'Load Recipients'}
+                  </button>
+                  {commRecipients.length > 0 && (
+                    <span className="text-sm text-gray-600">
+                      <span className="font-semibold text-indigo-600">{commRecipients.length}</span> found,{' '}
+                      <span className="font-semibold">{selectedRecipients.size}</span> selected
+                    </span>
+                  )}
+                  {commRecipients.length > 0 && (
+                    <button
+                      onClick={toggleAllRecipients}
+                      className="text-sm text-indigo-600 hover:underline"
+                    >
+                      {selectedRecipients.size === commRecipients.length ? 'Deselect All' : 'Select All'}
+                    </button>
+                  )}
+                </div>
+
+                {/* Recipient Table */}
+                {commRecipients.length > 0 && (
+                  <div className="overflow-x-auto max-h-48 overflow-y-auto border rounded-lg">
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="px-3 py-2 text-left w-8">
+                            <input
+                              type="checkbox"
+                              checked={selectedRecipients.size === commRecipients.length}
+                              onChange={toggleAllRecipients}
+                              className="rounded"
+                            />
+                          </th>
+                          <th className="px-3 py-2 text-left font-medium text-gray-600">Name</th>
+                          <th className="px-3 py-2 text-left font-medium text-gray-600">Email</th>
+                          <th className="px-3 py-2 text-left font-medium text-gray-600">Mobile</th>
+                          <th className="px-3 py-2 text-left font-medium text-gray-600">Course</th>
+                          {commSource === 'registrants' && (
+                            <>
+                              <th className="px-3 py-2 text-left font-medium text-gray-600">Webinar Date</th>
+                              <th className="px-3 py-2 text-center font-medium text-gray-600">Email Sent</th>
+                              <th className="px-3 py-2 text-center font-medium text-gray-600">WA Sent</th>
+                            </>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {commRecipients.map(r => (
+                          <tr key={r.id} className={`hover:bg-gray-50 ${selectedRecipients.has(r.id) ? 'bg-indigo-50' : ''}`}>
+                            <td className="px-3 py-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedRecipients.has(r.id)}
+                                onChange={() => toggleRecipient(r.id)}
+                                className="rounded"
+                              />
+                            </td>
+                            <td className="px-3 py-2 font-medium">{r.name}</td>
+                            <td className="px-3 py-2 text-gray-500">{r.email}</td>
+                            <td className="px-3 py-2 text-gray-500">{r.mobile}</td>
+                            <td className="px-3 py-2 text-gray-500">{r.course_name || '-'}</td>
+                            {commSource === 'registrants' && (
+                              <>
+                                <td className="px-3 py-2 text-gray-500">{r.webinar_date || '-'}</td>
+                                <td className="px-3 py-2 text-center">
+                                  {r.confirmation_email_sent || r.reminder_email_sent
+                                    ? <span className="text-green-600">✓</span>
+                                    : <span className="text-gray-300">—</span>}
+                                </td>
+                                <td className="px-3 py-2 text-center">
+                                  {r.whatsapp_sent
+                                    ? <span className="text-green-600">✓</span>
+                                    : <span className="text-gray-300">—</span>}
+                                </td>
+                              </>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* EMAIL Composer */}
+            {commSubTab === 'email' && (
+              <div className="bg-white rounded-xl border p-5 space-y-4">
+                <h3 className="font-semibold text-gray-800">Compose Email</h3>
+                <p className="text-xs text-gray-500">
+                  Available variables: <code className="bg-gray-100 px-1 rounded">{'{{name}}'}</code>{' '}
+                  <code className="bg-gray-100 px-1 rounded">{'{{course}}'}</code>{' '}
+                  <code className="bg-gray-100 px-1 rounded">{'{{webinar_date}}'}</code>{' '}
+                  <code className="bg-gray-100 px-1 rounded">{'{{webinar_time}}'}</code>
+                </p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    placeholder="e.g. Reminder: Your AI webinar is tomorrow, {{name}}!"
+                    value={emailSubject}
+                    onChange={e => setEmailSubject(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Body (HTML supported)</label>
+                  <textarea
+                    rows={12}
+                    className="w-full px-3 py-2 border rounded-lg text-sm font-mono"
+                    placeholder={`Hi {{name}},\n\nThis is a reminder that your webinar on {{course}} is scheduled for {{webinar_date}} at {{webinar_time}}.\n\nSee you there!\n\nTeam AIwithArijit`}
+                    value={emailBody}
+                    onChange={e => setEmailBody(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={sendEmails}
+                    disabled={commSending || selectedRecipients.size === 0 || !emailSubject || !emailBody}
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                  >
+                    {commSending ? 'Sending...' : `Send to ${selectedRecipients.size} recipient${selectedRecipients.size !== 1 ? 's' : ''}`}
+                  </button>
+                  {commSending && (
+                    <span className="text-sm text-gray-500 animate-pulse">Sending emails, please wait…</span>
+                  )}
+                </div>
+                {commResult && (
+                  <div className={`p-4 rounded-lg text-sm ${commResult.failed === 0 ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+                    <p className="font-semibold">
+                      ✅ Sent: {commResult.sent} &nbsp; {commResult.failed > 0 && `❌ Failed: ${commResult.failed}`}
+                    </p>
+                    {commResult.errors && commResult.errors.length > 0 && (
+                      <ul className="mt-2 space-y-1 text-xs text-red-600">
+                        {commResult.errors.slice(0, 5).map((e: any, i: number) => (
+                          <li key={i}>{e.email}: {e.error}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* WHATSAPP Composer */}
+            {commSubTab === 'whatsapp' && (
+              <div className="bg-white rounded-xl border p-5 space-y-4">
+                <h3 className="font-semibold text-gray-800">WhatsApp Template Message (via AiSensy)</h3>
+                <p className="text-xs text-gray-500">
+                  Enter the exact pre-approved template name from your AiSensy dashboard. Params support{' '}
+                  <code className="bg-gray-100 px-1 rounded">{'{{name}}'}</code>{' '}
+                  <code className="bg-gray-100 px-1 rounded">{'{{course}}'}</code>{' '}
+                  <code className="bg-gray-100 px-1 rounded">{'{{webinar_date}}'}</code>{' '}
+                  <code className="bg-gray-100 px-1 rounded">{'{{webinar_time}}'}</code>
+                </p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    placeholder="e.g. webinar_reminder_v1"
+                    value={waTemplateName}
+                    onChange={e => setWaTemplateName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Template Parameters</label>
+                  <div className="space-y-2">
+                    {waTemplateParams.map((p, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500 w-12">{'{{' + (i + 1) + '}}'}</span>
+                        <input
+                          type="text"
+                          className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                          placeholder={`Parameter ${i + 1} value or variable`}
+                          value={p}
+                          onChange={e => {
+                            const next = [...waTemplateParams]
+                            next[i] = e.target.value
+                            setWaTemplateParams(next)
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={sendWhatsApps}
+                    disabled={commSending || selectedRecipients.size === 0 || !waTemplateName}
+                    className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  >
+                    {commSending ? 'Sending...' : `Send WhatsApp to ${selectedRecipients.size}`}
+                  </button>
+                  {commSending && (
+                    <span className="text-sm text-gray-500 animate-pulse">Sending messages, this may take a moment…</span>
+                  )}
+                </div>
+                {commResult && (
+                  <div className={`p-4 rounded-lg text-sm ${commResult.failed === 0 ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+                    <p className="font-semibold">
+                      ✅ Sent: {commResult.sent} &nbsp; {commResult.failed > 0 && `❌ Failed: ${commResult.failed}`}
+                    </p>
+                    {commResult.errors && commResult.errors.length > 0 && (
+                      <ul className="mt-2 space-y-1 text-xs text-red-600">
+                        {commResult.errors.slice(0, 5).map((e: any, i: number) => (
+                          <li key={i}>{e.mobile}: {e.error}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* HISTORY */}
+            {commSubTab === 'history' && (
+              <div className="space-y-6">
+                {/* Email History */}
+                <div className="bg-white rounded-xl border p-5">
+                  <h3 className="font-semibold text-gray-800 mb-3">Email Log (last 50)</h3>
+                  {emailHistory.length === 0 ? (
+                    <p className="text-gray-400 text-sm">No emails sent yet.</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-3 py-2 text-left font-medium text-gray-600">Recipient</th>
+                            <th className="px-3 py-2 text-left font-medium text-gray-600">Subject</th>
+                            <th className="px-3 py-2 text-left font-medium text-gray-600">Type</th>
+                            <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
+                            <th className="px-3 py-2 text-left font-medium text-gray-600">Sent At</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {emailHistory.map(e => (
+                            <tr key={e.id}>
+                              <td className="px-3 py-2">
+                                <div className="font-medium">{e.recipient_name}</div>
+                                <div className="text-gray-400">{e.recipient_email}</div>
+                              </td>
+                              <td className="px-3 py-2 text-gray-600 max-w-[200px] truncate">{e.subject}</td>
+                              <td className="px-3 py-2 text-gray-500">{e.template_name}</td>
+                              <td className="px-3 py-2">
+                                <span className={`px-2 py-0.5 rounded-full font-medium ${e.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                  {e.status}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2 text-gray-400 whitespace-nowrap">
+                                {e.sent_at ? new Date(e.sent_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {/* WhatsApp History */}
+                <div className="bg-white rounded-xl border p-5">
+                  <h3 className="font-semibold text-gray-800 mb-3">WhatsApp Log (last 50)</h3>
+                  {waHistory.length === 0 ? (
+                    <p className="text-gray-400 text-sm">No WhatsApp messages sent yet.</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-3 py-2 text-left font-medium text-gray-600">Recipient</th>
+                            <th className="px-3 py-2 text-left font-medium text-gray-600">Phone</th>
+                            <th className="px-3 py-2 text-left font-medium text-gray-600">Template</th>
+                            <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
+                            <th className="px-3 py-2 text-left font-medium text-gray-600">Sent At</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {waHistory.map(w => (
+                            <tr key={w.id}>
+                              <td className="px-3 py-2 font-medium">{w.recipient_name}</td>
+                              <td className="px-3 py-2 text-gray-500">{w.recipient_phone}</td>
+                              <td className="px-3 py-2 text-gray-500">{w.template_name}</td>
+                              <td className="px-3 py-2">
+                                <span className={`px-2 py-0.5 rounded-full font-medium ${w.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                  {w.status}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2 text-gray-400 whitespace-nowrap">
+                                {w.sent_at ? new Date(w.sent_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
