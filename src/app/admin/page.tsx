@@ -266,7 +266,11 @@ export default function AdminPage() {
   const [commRecipients, setCommRecipients] = useState<any[]>([])
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set())
   const [emailSubject, setEmailSubject] = useState('')
-  const [emailBody, setEmailBody] = useState('')
+  const [emailJoiningLink, setEmailJoiningLink] = useState('')
+  const [emailCustomMessage, setEmailCustomMessage] = useState('')
+  const [emailCtaLabel, setEmailCtaLabel] = useState('')
+  const [emailCtaUrl, setEmailCtaUrl] = useState('')
+  const [emailPreviewOpen, setEmailPreviewOpen] = useState(false)
   const [waTemplateName, setWaTemplateName] = useState('')
   const [waTemplateParams, setWaTemplateParams] = useState<string[]>(['', '', '', '', ''])
   const [commLoading, setCommLoading] = useState(false)
@@ -810,14 +814,22 @@ export default function AdminPage() {
 
   async function sendEmails() {
     const recipients = commRecipients.filter(r => selectedRecipients.has(r.id))
-    if (!recipients.length || !emailSubject || !emailBody) return
+    if (!recipients.length || !emailSubject) return
     setCommSending(true)
     setCommResult(null)
     try {
       const res = await fetch('/api/admin/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-secret': ADMIN_SECRET },
-        body: JSON.stringify({ recipients, subject: emailSubject, htmlBody: emailBody, emailType })
+        body: JSON.stringify({
+          recipients,
+          subject: emailSubject,
+          emailType,
+          joining_link: emailJoiningLink || undefined,
+          custom_message: emailCustomMessage || undefined,
+          cta_label: emailCtaLabel || undefined,
+          cta_url: emailCtaUrl || undefined,
+        })
       })
       const data = await res.json()
       setCommResult(data)
@@ -1763,62 +1775,211 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* EMAIL Composer */}
+            {/* EMAIL Composer — Rich Template Editor */}
             {commSubTab === 'email' && (
-              <div className="bg-white rounded-xl border p-5 space-y-4">
-                <h3 className="font-semibold text-gray-800">Compose Email</h3>
-                <p className="text-xs text-gray-500">
-                  Available variables: <code className="bg-gray-100 px-1 rounded">{'{{name}}'}</code>{' '}
-                  <code className="bg-gray-100 px-1 rounded">{'{{course}}'}</code>{' '}
-                  <code className="bg-gray-100 px-1 rounded">{'{{webinar_date}}'}</code>{' '}
-                  <code className="bg-gray-100 px-1 rounded">{'{{webinar_time}}'}</code>
-                </p>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border rounded-lg text-sm"
-                    placeholder="e.g. Reminder: Your AI webinar is tomorrow, {{name}}!"
-                    value={emailSubject}
-                    onChange={e => setEmailSubject(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Body (HTML supported)</label>
-                  <textarea
-                    rows={12}
-                    className="w-full px-3 py-2 border rounded-lg text-sm font-mono"
-                    placeholder={`Hi {{name}},\n\nThis is a reminder that your webinar on {{course}} is scheduled for {{webinar_date}} at {{webinar_time}}.\n\nSee you there!\n\nTeam AIwithArijit`}
-                    value={emailBody}
-                    onChange={e => setEmailBody(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={sendEmails}
-                    disabled={commSending || selectedRecipients.size === 0 || !emailSubject || !emailBody}
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-                  >
-                    {commSending ? 'Sending...' : `Send to ${selectedRecipients.size} recipient${selectedRecipients.size !== 1 ? 's' : ''}`}
-                  </button>
-                  {commSending && (
-                    <span className="text-sm text-gray-500 animate-pulse">Sending emails, please wait…</span>
-                  )}
-                </div>
-                {commResult && (
-                  <div className={`p-4 rounded-lg text-sm ${commResult.failed === 0 ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
-                    <p className="font-semibold">
-                      ✅ Sent: {commResult.sent} &nbsp; {commResult.failed > 0 && `❌ Failed: ${commResult.failed}`}
+              <div className="bg-white rounded-xl border p-5 space-y-5">
+
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-800">Compose Email</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Variables supported in Subject &amp; Message:{' '}
+                      {['{{name}}','{{course}}','{{webinar_date}}','{{webinar_time}}'].map(v => (
+                        <code key={v} className="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-xs mx-0.5">{v}</code>
+                      ))}
                     </p>
-                    {commResult.errors && commResult.errors.length > 0 && (
-                      <ul className="mt-2 space-y-1 text-xs text-red-600">
-                        {commResult.errors.slice(0, 5).map((e: any, i: number) => (
-                          <li key={i}>{e.email}: {e.error}</li>
-                        ))}
-                      </ul>
+                  </div>
+                  <button
+                    onClick={() => setEmailPreviewOpen(p => !p)}
+                    className="text-sm text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors"
+                  >
+                    {emailPreviewOpen ? '✕ Close Preview' : '👁 Preview Email'}
+                  </button>
+                </div>
+
+                <div className={`grid gap-5 ${emailPreviewOpen ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
+                  {/* LEFT: Form fields */}
+                  <div className="space-y-4">
+
+                    {/* Subject */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Subject Line <span className="text-red-500">*</span></label>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border rounded-lg text-sm"
+                        placeholder={
+                          emailType === 'reminder'     ? "Reminder: Your {{course}} webinar is tomorrow, {{name}}!" :
+                          emailType === 'confirmation' ? "✅ You're registered for {{course}}, {{name}}!" :
+                          "Important update from AIwithArijit"
+                        }
+                        value={emailSubject}
+                        onChange={e => setEmailSubject(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Webinar joining link — for reminder + confirmation */}
+                    {(emailType === 'reminder' || emailType === 'confirmation') && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          🔗 Webinar Joining Link
+                          <span className="text-gray-400 font-normal ml-1">(Teams / Zoom / Meet URL)</span>
+                        </label>
+                        <input
+                          type="url"
+                          className="w-full px-3 py-2 border rounded-lg text-sm"
+                          placeholder="https://teams.microsoft.com/l/meetup-join/..."
+                          value={emailJoiningLink}
+                          onChange={e => setEmailJoiningLink(e.target.value)}
+                        />
+                        {emailType === 'reminder' && emailJoiningLink && (
+                          <p className="text-xs text-green-600 mt-1">✅ A &ldquo;Join Webinar Now&rdquo; button + .ics calendar invite will be included automatically</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Custom message */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {emailType === 'custom' ? 'Message Body' : 'Additional Message (optional)'}
+                      </label>
+                      <textarea
+                        rows={emailType === 'custom' ? 10 : 4}
+                        className="w-full px-3 py-2 border rounded-lg text-sm resize-y"
+                        placeholder={
+                          emailType === 'reminder'     ? "e.g. Come prepared with questions! We'll also be sharing a bonus resource." :
+                          emailType === 'confirmation' ? "e.g. We're excited to have you join us! Expect an amazing session." :
+                          "Write your message here. HTML is supported. Use {{name}}, {{course}} for personalization."
+                        }
+                        value={emailCustomMessage}
+                        onChange={e => setEmailCustomMessage(e.target.value)}
+                      />
+                    </div>
+
+                    {/* CTA button — custom only */}
+                    {emailType === 'custom' && (
+                      <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 rounded-lg border border-dashed">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">CTA Button Label (optional)</label>
+                          <input
+                            type="text"
+                            className="w-full px-3 py-2 border rounded-lg text-sm"
+                            placeholder="e.g. Register Now"
+                            value={emailCtaLabel}
+                            onChange={e => setEmailCtaLabel(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">CTA Button URL</label>
+                          <input
+                            type="url"
+                            className="w-full px-3 py-2 border rounded-lg text-sm"
+                            placeholder="https://..."
+                            value={emailCtaUrl}
+                            onChange={e => setEmailCtaUrl(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Template description */}
+                    <div className={`p-3 rounded-lg text-xs ${
+                      emailType === 'reminder'     ? 'bg-blue-50 border border-blue-100 text-blue-700' :
+                      emailType === 'confirmation' ? 'bg-green-50 border border-green-100 text-green-700' :
+                                                     'bg-purple-50 border border-purple-100 text-purple-700'
+                    }`}>
+                      {emailType === 'reminder' && <>
+                        <strong>📅 Reminder Template</strong> — Includes: personalized greeting, webinar details card (date/time/course),
+                        {emailJoiningLink ? ' "Join Webinar Now" button,' : ''} tip box, and a .ics calendar invite attachment.
+                      </>}
+                      {emailType === 'confirmation' && <>
+                        <strong>✅ Confirmation Template</strong> — Includes: registration confirmed badge, personalized greeting,
+                        webinar details card{emailJoiningLink ? ', and "Add to Calendar & Join" button' : ''}.
+                      </>}
+                      {emailType === 'custom' && <>
+                        <strong>📢 Custom Broadcast</strong> — Branded AIwithArijit header + footer with your message body.
+                        {emailCtaLabel && emailCtaUrl ? ' Includes your custom CTA button.' : ''}
+                      </>}
+                    </div>
+
+                    {/* Send button */}
+                    <div className="flex items-center gap-4 pt-1">
+                      <button
+                        onClick={sendEmails}
+                        disabled={commSending || selectedRecipients.size === 0 || !emailSubject}
+                        className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                      >
+                        {commSending
+                          ? '⏳ Sending…'
+                          : `✉️ Send to ${selectedRecipients.size} recipient${selectedRecipients.size !== 1 ? 's' : ''}`}
+                      </button>
+                      {selectedRecipients.size === 0 && (
+                        <span className="text-xs text-amber-600">⚠ Load &amp; select recipients first</span>
+                      )}
+                    </div>
+
+                    {/* Result banner */}
+                    {commResult && (
+                      <div className={`p-4 rounded-lg text-sm ${commResult.failed === 0 ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+                        <p className="font-semibold">
+                          ✅ Sent: {commResult.sent}
+                          {commResult.failed > 0 && <span className="ml-3 text-red-600">❌ Failed: {commResult.failed}</span>}
+                        </p>
+                        {commResult.errors && commResult.errors.length > 0 && (
+                          <ul className="mt-2 space-y-1 text-xs text-red-600">
+                            {commResult.errors.slice(0, 5).map((e: any, i: number) => (
+                              <li key={i}>{e.email}: {e.error}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
+
+                  {/* RIGHT: Live Preview */}
+                  {emailPreviewOpen && (
+                    <div className="border rounded-xl overflow-hidden bg-gray-100">
+                      <div className="px-4 py-2 bg-gray-200 text-xs text-gray-500 font-medium flex items-center gap-2">
+                        <span>📧 Email Preview</span>
+                        <span className="text-gray-400">(sample data)</span>
+                      </div>
+                      <iframe
+                        title="Email Preview"
+                        className="w-full border-0"
+                        style={{ height: 560 }}
+                        srcDoc={(() => {
+                          // Build a preview with sample data
+                          const sampleRecipient = commRecipients[0]
+                          const buildEmailForPreview = () => {
+                            const templateData = {
+                              name: sampleRecipient?.name || 'Rahul Sharma',
+                              course_name: sampleRecipient?.course_name || 'AI Fundamentals',
+                              webinar_date: sampleRecipient?.webinar_date
+                                ? new Date(sampleRecipient.webinar_date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                                : 'Saturday, 18 January 2025',
+                              webinar_time: sampleRecipient?.webinar_time || '11:00 AM IST',
+                              joining_link: emailJoiningLink || undefined,
+                              custom_message: emailCustomMessage || undefined,
+                              cta_label: emailCtaLabel || undefined,
+                              cta_url: emailCtaUrl || undefined,
+                            }
+                            // Inline a minimal template builder for preview
+                            const detailsRows = [
+                              templateData.course_name && `<tr><td style="color:#6b7280;font-size:13px;padding:6px 0;width:110px;">📚 Course</td><td style="color:#111827;font-size:13px;font-weight:600;padding:6px 0;">${templateData.course_name}</td></tr>`,
+                              templateData.webinar_date && `<tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">📅 Date</td><td style="color:#111827;font-size:13px;font-weight:600;padding:6px 0;">${templateData.webinar_date}</td></tr>`,
+                              templateData.webinar_time && `<tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">🕐 Time</td><td style="color:#111827;font-size:13px;font-weight:600;padding:6px 0;">${templateData.webinar_time}</td></tr>`,
+                            ].filter(Boolean).join('')
+                            const detailsCard = detailsRows ? `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f3ff;border:1.5px solid #e0e7ff;border-radius:12px;margin:20px 0;"><tr><td style="padding:16px 20px;"><table width="100%" cellpadding="0" cellspacing="0" border="0">${detailsRows}</table></td></tr></table>` : ''
+                            const ctaBtn = templateData.joining_link ? `<table cellpadding="0" cellspacing="0" border="0" style="margin:20px auto;"><tr><td align="center" style="border-radius:10px;background:#4f46e5;"><a href="${templateData.joining_link}" style="display:inline-block;padding:14px 36px;background:#4f46e5;color:#fff;font-size:15px;font-weight:700;text-decoration:none;border-radius:10px;">🎯 Join Webinar Now</a></td></tr></table>` : ''
+                            const customBlock = templateData.custom_message ? `<p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 16px;">${templateData.custom_message}</p>` : ''
+                            return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:16px;background:#f4f4f7;font-family:Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(79,70,229,0.1);"><tr><td style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:28px;text-align:center;"><div style="color:#fff;font-size:20px;font-weight:700;">🤖 AIwithArijit</div><div style="color:rgba(255,255,255,0.7);font-size:11px;margin-top:4px;">AI Education &amp; Certification</div></td></tr><tr><td style="padding:28px;"><p style="font-size:17px;font-weight:700;color:#111827;margin:0 0 14px;">Hi ${templateData.name} 👋</p>${emailType === 'confirmation' ? `<p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 14px;">You're registered! We have confirmed your spot.</p>` : emailType === 'reminder' ? `<p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 14px;">Just a friendly reminder — your webinar is coming up soon!</p>` : ''}${customBlock}${detailsCard}${ctaBtn}${emailType === 'reminder' && templateData.joining_link ? `<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:13px;color:#92400e;">💡 <strong>Tip:</strong> A calendar invite (.ics) is attached to this email.</div>` : ''}</td></tr><tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px;text-align:center;"><p style="margin:0;color:#9ca3af;font-size:11px;">© 2025 AIwithArijit.com · <a href="mailto:ai@withArijit.com" style="color:#4f46e5;">ai@withArijit.com</a></p></td></tr></table></body></html>`
+                          }
+                          return buildEmailForPreview()
+                        })()}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
