@@ -1,24 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import nodemailer from 'nodemailer'
 import { createClient } from '@supabase/supabase-js'
 import { buildEmail, templateCategory } from '@/lib/email-templates'
 import { generateICS } from '@/lib/ics'
 import { TEMPLATE_CATALOGUE } from '@/lib/email-assets'
+import { sendMailWithFallback, type MailOptions } from '@/lib/mailer'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp.hostinger.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-})
 
 export interface EmailRecipient {
   id: string
@@ -138,7 +128,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Build .ics if template supports it and we have date+time
-    const attachments: nodemailer.SendMailOptions['attachments'] = []
+    const attachments: MailOptions['attachments'] = []
     if (hasICS && recipient.webinar_date && recipient.webinar_time) {
       const icsContent = generateICS({
         title: `AIwithArijit Webinar: ${recipient.course_name || 'AI Certification'}`,
@@ -165,13 +155,16 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      await transporter.sendMail({
-        from: `"${process.env.SMTP_FROM_NAME || 'AIwithArijit'}" <${process.env.SMTP_USER}>`,
+      const mailOptions: MailOptions = {
         to: `"${recipient.name}" <${recipient.email}>`,
         subject: personalizedSubject,
         html: htmlBody,
         attachments,
-      })
+      }
+      const { provider, usedFallback } = await sendMailWithFallback(mailOptions)
+      if (usedFallback) {
+        console.log(`[send-email] Brevo fallback used for ${recipient.email}`)
+      }
 
       await supabase.from('awa_email_log').insert({
         recipient_email: recipient.email,
@@ -182,6 +175,7 @@ export async function POST(req: NextRequest) {
         sent_at: new Date().toISOString(),
         ref_id: recipient.id || null,
         ref_type: recipient.ref_type || null,
+        provider,
       })
 
       if (recipient.ref_type === 'webinar_registrant' && recipient.id) {

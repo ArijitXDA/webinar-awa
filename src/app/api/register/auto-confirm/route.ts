@@ -3,34 +3,23 @@
  *
  * Called automatically by a Supabase pg_net trigger on every INSERT into
  * qr_landing_registrations.  Sends a branded registration-confirmation email
- * (with .ics calendar invite) using the existing nodemailer + template system,
- * then logs the send and updates the confirmation_email_sent flag.
+ * (with .ics calendar invite) then logs the send and updates the flag.
  *
+ * Email delivery: Hostinger primary → Brevo fallback (via shared mailer.ts)
  * Security: protected by x-webhook-secret header === ADMIN_SECRET env var.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import nodemailer from 'nodemailer'
 import { createClient } from '@supabase/supabase-js'
 import { buildEmail } from '@/lib/email-templates'
 import { generateICS } from '@/lib/ics'
+import { sendMailWithFallback, type MailOptions } from '@/lib/mailer'
 
 // ─── Supabase (service role) ──────────────────────────────────────────────────
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
-
-// ─── SMTP transporter ─────────────────────────────────────────────────────────
-const transporter = nodemailer.createTransport({
-  host: 'smtp.hostinger.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-})
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatDate(dateStr?: string): string {
@@ -51,8 +40,8 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Parse the Supabase NEW row payload
-  //    The pg_net trigger sends: { record: { id, full_name, email, mobile, course_name, webinar_date, webinar_time, ... } }
-  //    We also accept a flat payload for flexibility (direct testing).
+  //    pg_net trigger sends: { record: { id, full_name, email, ... } }
+  //    Also accepts flat payload for direct testing.
   let record: {
     id?: string
     full_name?: string
@@ -65,13 +54,12 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    // Supabase webhook sends { type, table, schema, record, old_record }
     record = body?.record ?? body
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { id, full_name, email, mobile, course_name, webinar_date, webinar_time } = record
+  const { id, full_name, email, course_name, webinar_date, webinar_time } = record
 
   if (!email || !full_name) {
     return NextResponse.json({ error: 'Missing email or full_name in payload' }, { status: 400 })
@@ -80,7 +68,7 @@ export async function POST(req: NextRequest) {
   const formattedDate = formatDate(webinar_date)
   const recipientName = full_name
 
-  // 3. Build HTML email body using registration_confirmation template
+  // 3. Build HTML email body
   const htmlBody = buildEmail('registration_confirmation', {
     name: recipientName,
     course_name,
@@ -93,8 +81,8 @@ export async function POST(req: NextRequest) {
     techLogos: [],
   })
 
-  // 4. Build .ics calendar attachment (registration_confirmation has hasICS: true)
-  const attachments: nodemailer.SendMailOptions['attachments'] = []
+  // 4. Build .ics calendar attachment
+  const attachments: MailOptions['attachments'] = []
   if (webinar_date && webinar_time) {
     const icsContent = generateICS({
       title: `AIwithArijit Webinar: ${course_name || 'AI Certification'}`,
@@ -117,19 +105,24 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 5. Compose subject
+  // 5. Subject
   const subject = `✅ You're Registered for ${course_name || 'the AI Webinar'}, ${recipientName}!`
 
-  // 6. Send email
+  // 6. Send — Hostinger primary, Brevo fallback
   let sendError: string | null = null
+  let provider: 'hostinger' | 'brevo' = 'hostinger'
+
   try {
-    await transporter.sendMail({
-      from: `"${process.env.SMTP_FROM_NAME || 'AIwithArijit'}" <${process.env.SMTP_USER}>`,
+    const result = await sendMailWithFallback({
       to: `"${recipientName}" <${email}>`,
       subject,
       html: htmlBody,
       attachments,
     })
+    provider = result.provider
+    if (result.usedFallback) {
+      console.log(`[auto-confirm] Brevo fallback used for ${email}`)
+    }
   } catch (err: unknown) {
     sendError = err instanceof Error ? err.message : String(err)
   }
@@ -145,9 +138,10 @@ export async function POST(req: NextRequest) {
     error_message: sendError ?? null,
     ref_id: id ?? null,
     ref_type: 'webinar_registrant',
+    provider: sendError ? null : provider,
   })
 
-  // 8. Update confirmation_email_sent flag if send succeeded
+  // 8. Update flag on success
   if (!sendError && id) {
     await supabase
       .from('qr_landing_registrations')
@@ -161,6 +155,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: sendError }, { status: 500 })
   }
 
-  console.log('[auto-confirm] Confirmation email sent to', email)
-  return NextResponse.json({ success: true, email, template: 'registration_confirmation' })
+  console.log(`[auto-confirm] Sent via ${provider} to ${email}`)
+  return NextResponse.json({ success: true, email, provider, template: 'registration_confirmation' })
 }
