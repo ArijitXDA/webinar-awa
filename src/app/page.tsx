@@ -199,11 +199,12 @@ function getUTMParams(): { [key: string]: string } {
   if (typeof window === 'undefined') return {}
   const params = new URLSearchParams(window.location.search)
   return {
-    utm_source: params.get('utm_source') || '',
-    utm_medium: params.get('utm_medium') || '',
-    utm_campaign: params.get('utm_campaign') || '',
-    utm_term: params.get('utm_term') || '',
-    utm_content: params.get('utm_content') || '',
+    utm_source:        params.get('utm_source')   || '',
+    utm_medium:        params.get('utm_medium')   || '',
+    utm_campaign:      params.get('utm_campaign') || '',
+    utm_term:          params.get('utm_term')     || '',
+    utm_content:       params.get('utm_content')  || '',
+    referred_by_email: params.get('ref')          || '', // ?ref=student@email.com
   }
 }
 
@@ -328,11 +329,12 @@ export default function Home() {
         webinar_time: selectedWebinar.webinar_time,
         timezone: selectedWebinar.timezone,
         marketing_consent: formData.marketing_consent,
-        utm_source: utmParams.utm_source || null,
-        utm_medium: utmParams.utm_medium || null,
-        utm_campaign: utmParams.utm_campaign || null,
-        utm_term: utmParams.utm_term || null,
-        utm_content: utmParams.utm_content || null,
+        utm_source:        utmParams.utm_source        || null,
+        utm_medium:        utmParams.utm_medium        || null,
+        utm_campaign:      utmParams.utm_campaign      || null,
+        utm_term:          utmParams.utm_term          || null,
+        utm_content:       utmParams.utm_content       || null,
+        referred_by_email: utmParams.referred_by_email || null,
         referrer_url: typeof document !== 'undefined' ? document.referrer || null : null,
         landing_page_url: typeof window !== 'undefined' ? window.location.href : null,
         user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
@@ -379,6 +381,18 @@ export default function Home() {
   }
 
   function getWhatsAppShareLink(): string {
+    // Build referral URL — preserves partner code + marks as student_referral + adds referring student email
+    const utmParams = getUTMParams()
+    const partnerCode = utmParams.utm_source || ''
+    const referralParams = new URLSearchParams()
+    if (partnerCode) referralParams.set('utm_source', partnerCode)
+    referralParams.set('utm_medium', 'student_referral')
+    referralParams.set('utm_campaign', 'invite')
+    // Use formData.email if submitted, otherwise try to read from current URL's ref param
+    const sharerEmail = formData.email || utmParams.referred_by_email || ''
+    if (sharerEmail) referralParams.set('ref', sharerEmail)
+    const referralUrl = `${typeof window !== 'undefined' ? window.location.origin + window.location.pathname : 'https://webinar.ostaran.com'}?${referralParams.toString()}`
+
     const message = encodeURIComponent(
       `🎓 I am attending this 90 minute AI Certification webinar by AI Researcher & trainer Arijit Chowdhury.\n\n` +
       `✅ You also can register yourself now!\n\n` +
@@ -388,7 +402,7 @@ export default function Home() {
       `🚀 Career prospects with AI skills\n\n` +
       `⏱️ It's a 90 Minute online webinar\n` +
       `💯 It's completely FREE!\n\n` +
-      `👉 Register here: ${landingUrl}`
+      `👉 Register here: ${referralUrl}`
     )
     return `https://wa.me/?text=${message}`
   }
