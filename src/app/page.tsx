@@ -254,6 +254,20 @@ export default function Home() {
       if (source) {
         setUtmLocation(source)
       }
+
+      // ── Track registration page open (fire-and-forget) ────────────────
+      // Only fires when a partner code (utm_source) is present.
+      // Records the link open BEFORE the student fills the form —
+      // unlocks the "Reg Link Clicks" metric in admin analytics.
+      // Zero side-effects: errors are silently caught, never blocks the form.
+      if (source) {
+        const trackUrl = 'https://www.ostaran.com/api/track/click'
+          + '?t=registration'
+          + '&p=' + encodeURIComponent(source)
+          + '&c=' + encodeURIComponent(params.get('utm_content') || '')
+          + '&m=' + encodeURIComponent(params.get('utm_medium') || 'partner_share')
+        void fetch(trackUrl, { method: 'GET', mode: 'no-cors' }).catch(() => {})
+      }
     }
     fetchWebinars()
   }, [])
