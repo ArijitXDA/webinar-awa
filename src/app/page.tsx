@@ -266,7 +266,7 @@ export default function Home() {
           + '&p=' + encodeURIComponent(source)
           + '&c=' + encodeURIComponent(params.get('utm_content') || '')
           + '&m=' + encodeURIComponent(params.get('utm_medium') || 'partner_share')
-        void fetch(trackUrl, { method: 'GET', mode: 'no-cors' }).catch(() => {})
+        void fetch(trackUrl, { method: 'GET' }).catch(() => {})
       }
     }
     fetchWebinars()
@@ -957,13 +957,11 @@ export default function Home() {
                     </div>
                   )}
 
-                  <div className="flex items-start gap-2">
-                    <input type="checkbox" id="consent" className="w-4 h-4 mt-0.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      checked={formData.marketing_consent} onChange={(e) => setFormData({...formData, marketing_consent: e.target.checked})} />
-                    <label htmlFor="consent" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
-                      You authorize <span className="font-semibold">AIwithArijit, Star Analytix, oStaran</span> to send you AI course related communications.
-                    </label>
-                  </div>
+                  <p className="text-[11px] text-gray-500 leading-relaxed">
+                    By registering, you agree to receive webinar reminders &amp; AI course updates from <span className="font-semibold">oStaran / AIwithArijit (Star Analytix Pvt Ltd)</span> on WhatsApp &amp; email, and to our{' '}
+                    <a href="https://www.ostaran.com/terms" target="_blank" rel="noreferrer" className="underline">Terms</a> and{' '}
+                    <a href="https://www.ostaran.com/privacy" target="_blank" rel="noreferrer" className="underline">Privacy Policy</a>. This live session is recorded.
+                  </p>
                 </form>
               ) : (
                 <div className="text-center py-2">
