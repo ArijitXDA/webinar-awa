@@ -181,8 +181,13 @@ const fallbackWebinars = [
 
 // Format date for display
 function formatDate(dateStr: string): string {
+  // dateStr is a plain DATE (e.g. '2025-01-19'); new Date() parses it as UTC
+  // midnight, so a viewer west of IST (e.g. the US) sees the PREVIOUS day. Pin to
+  // IST so the displayed date always matches the IST webinar date + time.
   const date = new Date(dateStr)
-  return date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+  return date.toLocaleDateString('en-IN', {
+    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata',
+  })
 }
 
 // Format time for display
