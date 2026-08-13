@@ -840,53 +840,106 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Sample certificate */}
-          <div className="rounded-2xl p-3 sm:p-4 shadow-lg border" style={{ borderColor: '#e8e4d8', background: 'linear-gradient(160deg, #faf8f2 0%, #f5f1e8 100%)' }}>
-            <div className="rounded-xl px-4 py-5 sm:px-7 sm:py-7 text-center" style={{ border: '2px solid #d4a843' }}>
-              <p className="text-[9px] sm:text-[10px] font-bold tracking-[0.22em]" style={{ color: '#5a6e5a' }}>
-                AIWITHARIJIT × OSTARAN PLATFORM
-              </p>
-              <h3 className="mt-2 text-lg sm:text-2xl font-black tracking-wide" style={{ color: '#1a4d2e' }}>
-                Certificate of Participation
-              </h3>
-              <div className="mx-auto my-3 h-px w-24" style={{ background: '#d4a843' }} />
-              <p className="text-[10px] sm:text-xs" style={{ color: '#5a6e5a' }}>This is proudly presented to</p>
-              <p className="mt-1.5 text-xl sm:text-3xl font-extrabold" style={{ color: '#1a4d2e' }}>
-                Anaant Balasubramiyam
-              </p>
-              <p className="mx-auto mt-2 max-w-md text-[10px] sm:text-xs leading-relaxed" style={{ color: '#5a6e5a' }}>
-                for successfully attending the <strong>FREE AI Certification Masterclass</strong> — a live
-                90-minute programme on Artificial Intelligence, delivered online.
-              </p>
+          {/* Sample certificate — wooden frame, gold mat, ivory face, wax-red seal */}
+          <div
+            className="rounded-2xl p-3 sm:p-4"
+            style={{
+              background:
+                'repeating-linear-gradient(88deg, rgba(0,0,0,0.10) 0 2px, rgba(255,255,255,0.05) 2px 6px), linear-gradient(145deg,#A9743F 0%,#7A4A22 45%,#5C3317 100%)',
+              boxShadow:
+                '0 18px 42px rgba(0,0,0,0.35), inset 0 2px 6px rgba(255,255,255,0.28), inset 0 -4px 10px rgba(0,0,0,0.40)',
+            }}
+          >
+            <div className="rounded-lg p-[3px]" style={{ background: 'linear-gradient(135deg,#E3C071,#B8912F 40%,#F0DFA6 70%,#B8912F)' }}>
+              <div
+                className="relative rounded-md px-4 py-6 sm:px-8 sm:py-8 text-center overflow-hidden"
+                style={{ background: 'linear-gradient(160deg,#FEFCF7 0%,#F7F1E3 100%)' }}
+              >
+                {/* corner rules */}
+                <div className="pointer-events-none absolute inset-2 rounded" style={{ border: '1px solid rgba(15,42,74,0.18)' }} />
 
-              <div className="mt-5 flex items-end justify-between gap-3">
-                <div className="flex-1 text-center">
-                  <svg viewBox="0 0 150 44" className="mx-auto h-9 w-28" fill="none" stroke="#1a3d6b" strokeLinecap="round" strokeLinejoin="round">
-                    <path strokeWidth="1.9" d="M7 30 C9 16, 15 6, 21 8 C27 10, 24 22, 19 27 C14 32, 12 24, 17 20 C24 15, 31 22, 34 28 C36 32, 40 31, 41 25 C42 19, 45 16, 48 21 C51 26, 49 31, 53 30 C58 29, 59 18, 63 15 C67 12, 69 19, 68 26 C67 31, 71 32, 75 27 C79 22, 78 12, 83 11 C88 10, 87 24, 91 28 C95 32, 101 27, 104 20 C107 13, 112 11, 116 17 C120 23, 118 30, 123 29 C129 28, 133 21, 139 13" />
-                    <path strokeWidth="1.1" d="M64 20 C72 18, 82 19, 92 17" />
-                    <path strokeWidth="1.2" d="M96 33 C106 39, 120 38, 134 31" />
-                  </svg>
-                  <div className="mt-1 h-px w-full" style={{ background: '#9cb89c' }} />
-                  <p className="mt-1 text-[9px] sm:text-[10px] font-bold" style={{ color: '#1a4d2e' }}>Arijit Chowdhury</p>
-                  <p className="text-[8px] sm:text-[9px]" style={{ color: '#5a6e5a' }}>Founder &amp; Lead Trainer, oStaran</p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/oStaran.png" alt="oStaran" className="relative mx-auto h-8 sm:h-10 w-auto object-contain" />
+
+                <h3 className="relative mt-3 text-lg sm:text-2xl font-black tracking-[0.06em]" style={{ color: '#0F2A4A' }}>
+                  CERTIFICATE OF PARTICIPATION
+                </h3>
+                <div className="relative mx-auto my-3 h-[2px] w-28" style={{ background: 'linear-gradient(90deg,transparent,#B8912F,transparent)' }} />
+
+                <p className="relative text-[10px] sm:text-xs italic" style={{ color: '#6B7280' }}>This is proudly presented to</p>
+                <p className="relative mt-1.5 text-xl sm:text-3xl font-extrabold" style={{ color: '#0F2A4A', fontFamily: 'Georgia, serif' }}>
+                  Anaant Balasubramiyam
+                </p>
+                <div className="relative mx-auto mt-1.5 h-px w-56 max-w-full" style={{ background: 'rgba(15,42,74,0.25)' }} />
+
+                <p className="relative mx-auto mt-3 max-w-md text-[10px] sm:text-xs leading-relaxed" style={{ color: '#4B5563' }}>
+                  for successfully completing the <strong style={{ color: '#0F2A4A' }}>AI Certification Masterclass</strong> — a live
+                  90-minute programme on Artificial Intelligence, delivered online.
+                </p>
+
+                {/* specialisation emblems */}
+                <div className="relative mt-4 flex items-center justify-center gap-2 sm:gap-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] sm:text-[10px] font-bold"
+                        style={{ background: 'rgba(15,42,74,0.06)', color: '#0F2A4A', border: '1px solid rgba(184,145,47,0.45)' }}>
+                    <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="#0F2A4A" strokeWidth="2">
+                      <circle cx="12" cy="5" r="2.2" /><circle cx="5" cy="18" r="2.2" /><circle cx="19" cy="18" r="2.2" />
+                      <path d="M12 7.2 7 15.8M12 7.2l5 8.6M7.2 18h9.6" />
+                    </svg>
+                    Agentic AI
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] sm:text-[10px] font-bold"
+                        style={{ background: 'rgba(15,42,74,0.06)', color: '#0F2A4A', border: '1px solid rgba(184,145,47,0.45)' }}>
+                    <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="#0F2A4A" strokeWidth="1.8">
+                      <circle cx="12" cy="12" r="1.8" fill="#0F2A4A" />
+                      <ellipse cx="12" cy="12" rx="10" ry="4.2" />
+                      <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)" />
+                      <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)" />
+                    </svg>
+                    Quantum Computing
+                  </span>
                 </div>
-                <div className="flex-1 text-center">
-                  <svg viewBox="0 0 150 44" className="mx-auto h-9 w-28" fill="none" stroke="#1a3d6b" strokeLinecap="round" strokeLinejoin="round">
-                    <path strokeWidth="1.9" d="M6 31 C11 14, 18 5, 23 9 C28 13, 22 24, 17 28 C13 31, 13 23, 18 19 C25 14, 30 21, 32 27 C34 32, 39 31, 41 24 C43 18, 47 17, 49 23 C51 29, 56 30, 59 24 C62 18, 60 10, 65 9 C70 8, 71 21, 76 26 C80 30, 86 28, 88 21 C90 15, 95 12, 99 18 C103 24, 101 30, 106 29 C112 28, 115 17, 121 14 C127 11, 131 18, 137 12" />
-                    <path strokeWidth="1.1" d="M56 21 C66 19, 78 20, 88 18" />
-                    <path strokeWidth="1.2" d="M92 34 C103 40, 118 38, 132 30" />
-                  </svg>
-                  <div className="mt-1 h-px w-full" style={{ background: '#9cb89c' }} />
-                  <p className="mt-1 text-[9px] sm:text-[10px] font-bold" style={{ color: '#1a4d2e' }}>Antara Chowdhury</p>
-                  <p className="text-[8px] sm:text-[9px]" style={{ color: '#5a6e5a' }}>Director, Star Analytix Pvt. Ltd.</p>
+
+                <div className="relative mt-6 flex items-end justify-between gap-3">
+                  <div className="flex-1 text-center">
+                    <svg viewBox="0 0 150 44" className="mx-auto h-9 w-28" fill="none" stroke="#1a3d6b" strokeLinecap="round" strokeLinejoin="round">
+                      <path strokeWidth="1.9" d="M7 30 C9 16, 15 6, 21 8 C27 10, 24 22, 19 27 C14 32, 12 24, 17 20 C24 15, 31 22, 34 28 C36 32, 40 31, 41 25 C42 19, 45 16, 48 21 C51 26, 49 31, 53 30 C58 29, 59 18, 63 15 C67 12, 69 19, 68 26 C67 31, 71 32, 75 27 C79 22, 78 12, 83 11 C88 10, 87 24, 91 28 C95 32, 101 27, 104 20 C107 13, 112 11, 116 17 C120 23, 118 30, 123 29 C129 28, 133 21, 139 13" />
+                      <path strokeWidth="1.1" d="M64 20 C72 18, 82 19, 92 17" />
+                      <path strokeWidth="1.2" d="M96 33 C106 39, 120 38, 134 31" />
+                    </svg>
+                    <div className="mt-1 h-px w-full" style={{ background: 'rgba(15,42,74,0.3)' }} />
+                    <p className="mt-1 text-[9px] sm:text-[10px] font-bold" style={{ color: '#0F2A4A' }}>Arijit Chowdhury</p>
+                    <p className="text-[8px] sm:text-[9px]" style={{ color: '#6B7280' }}>Founder &amp; Lead Trainer, oStaran</p>
+                  </div>
+                  <div className="flex-1 text-center">
+                    <svg viewBox="0 0 150 44" className="mx-auto h-9 w-28" fill="none" stroke="#1a3d6b" strokeLinecap="round" strokeLinejoin="round">
+                      <path strokeWidth="1.9" d="M6 31 C11 14, 18 5, 23 9 C28 13, 22 24, 17 28 C13 31, 13 23, 18 19 C25 14, 30 21, 32 27 C34 32, 39 31, 41 24 C43 18, 47 17, 49 23 C51 29, 56 30, 59 24 C62 18, 60 10, 65 9 C70 8, 71 21, 76 26 C80 30, 86 28, 88 21 C90 15, 95 12, 99 18 C103 24, 101 30, 106 29 C112 28, 115 17, 121 14 C127 11, 131 18, 137 12" />
+                      <path strokeWidth="1.1" d="M56 21 C66 19, 78 20, 88 18" />
+                      <path strokeWidth="1.2" d="M92 34 C103 40, 118 38, 132 30" />
+                    </svg>
+                    <div className="mt-1 h-px w-full" style={{ background: 'rgba(15,42,74,0.3)' }} />
+                    <p className="mt-1 text-[9px] sm:text-[10px] font-bold" style={{ color: '#0F2A4A' }}>Antara Chowdhury</p>
+                    <p className="text-[8px] sm:text-[9px]" style={{ color: '#6B7280' }}>Director, Star Analytix Pvt. Ltd.</p>
+                  </div>
                 </div>
+
+                {/* wax-red certified seal */}
+                <div className="absolute right-3 bottom-3 sm:right-5 sm:bottom-5 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full text-center"
+                     style={{ background: 'radial-gradient(circle at 32% 28%, #D93B4B 0%, #B01B2E 45%, #7F1220 100%)',
+                              border: '2px solid #E3C071',
+                              boxShadow: '0 4px 12px rgba(127,18,32,0.45), inset 0 2px 5px rgba(255,255,255,0.28)' }}>
+                    <div className="leading-tight">
+                      <p className="text-[13px] sm:text-[15px]">★</p>
+                      <p className="text-[6px] sm:text-[7px] font-black tracking-[0.10em] text-white">CERTIFIED</p>
+                      <p className="text-[5px] sm:text-[6px] font-bold tracking-wider" style={{ color: '#F5D98B' }}>oSTARAN</p>
+                    </div>
+                </div>
+
+                <p className="relative mt-4 text-[8px] sm:text-[9px]" style={{ color: '#9CA3AF' }}>
+                  Certificate ID: OST-SAMPLE-0000 · Star Analytix Private Limited, Mumbai — Powered by oStaran AI Education Platform
+                </p>
               </div>
-
-              <p className="mt-4 text-[8px] sm:text-[9px]" style={{ color: '#9cb89c' }}>
-                Certificate ID: OST-SAMPLE-0000 · Star Analytix Private Limited, Mumbai — Powered by oStaran AI Education Platform
-              </p>
             </div>
-            <p className="mt-2 text-center text-[10px] font-semibold" style={{ color: '#5a6e5a' }}>
+            <p className="mt-2.5 text-center text-[10px] font-semibold" style={{ color: '#F0DFA6' }}>
               Sample certificate · your name and unique ID appear on yours
             </p>
           </div>
