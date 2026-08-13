@@ -859,7 +859,7 @@ export default function Home() {
                 <div className="pointer-events-none absolute inset-2 rounded" style={{ border: '1px solid rgba(15,42,74,0.18)' }} />
 
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/oStaran.png" alt="oStaran" className="relative mx-auto h-8 sm:h-10 w-auto object-contain" />
+                <img src="/ostaran-logo-transparent.png" alt="oStaran" className="relative mx-auto h-8 sm:h-10 w-auto object-contain" />
 
                 <h3 className="relative mt-3 text-lg sm:text-2xl font-black tracking-[0.06em]" style={{ color: '#0F2A4A' }}>
                   CERTIFICATE OF PARTICIPATION
@@ -899,7 +899,7 @@ export default function Home() {
                   </span>
                 </div>
 
-                <div className="relative mt-6 flex items-end justify-between gap-3">
+                <div className="relative mt-6 flex items-end justify-between gap-2 sm:gap-3">
                   <div className="flex-1 text-center">
                     <svg viewBox="0 0 150 44" className="mx-auto h-9 w-28" fill="none" stroke="#1a3d6b" strokeLinecap="round" strokeLinejoin="round">
                       <path strokeWidth="1.9" d="M7 30 C9 16, 15 6, 21 8 C27 10, 24 22, 19 27 C14 32, 12 24, 17 20 C24 15, 31 22, 34 28 C36 32, 40 31, 41 25 C42 19, 45 16, 48 21 C51 26, 49 31, 53 30 C58 29, 59 18, 63 15 C67 12, 69 19, 68 26 C67 31, 71 32, 75 27 C79 22, 78 12, 83 11 C88 10, 87 24, 91 28 C95 32, 101 27, 104 20 C107 13, 112 11, 116 17 C120 23, 118 30, 123 29 C129 28, 133 21, 139 13" />
@@ -910,6 +910,20 @@ export default function Home() {
                     <p className="mt-1 text-[9px] sm:text-[10px] font-bold" style={{ color: '#0F2A4A' }}>Arijit Chowdhury</p>
                     <p className="text-[8px] sm:text-[9px]" style={{ color: '#6B7280' }}>Founder &amp; Lead Trainer, oStaran</p>
                   </div>
+                  {/* wax-red seal — a flex sibling, so it can never sit on the caption */}
+                  <div className="shrink-0 self-center px-0.5">
+                    <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full text-center"
+                         style={{ background: 'radial-gradient(circle at 32% 28%, #D93B4B 0%, #B01B2E 45%, #7F1220 100%)',
+                                  border: '2px solid #E3C071',
+                                  boxShadow: '0 4px 12px rgba(127,18,32,0.45), inset 0 2px 5px rgba(255,255,255,0.28)' }}>
+                      <div className="leading-tight">
+                        <p className="text-[13px] sm:text-[15px]">★</p>
+                        <p className="text-[6px] sm:text-[7px] font-black tracking-[0.10em] text-white">CERTIFIED</p>
+                        <p className="text-[5px] sm:text-[6px] font-bold tracking-wider" style={{ color: '#F5D98B' }}>oSTARAN</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex-1 text-center">
                     <svg viewBox="0 0 150 44" className="mx-auto h-9 w-28" fill="none" stroke="#1a3d6b" strokeLinecap="round" strokeLinejoin="round">
                       <path strokeWidth="1.9" d="M6 31 C11 14, 18 5, 23 9 C28 13, 22 24, 17 28 C13 31, 13 23, 18 19 C25 14, 30 21, 32 27 C34 32, 39 31, 41 24 C43 18, 47 17, 49 23 C51 29, 56 30, 59 24 C62 18, 60 10, 65 9 C70 8, 71 21, 76 26 C80 30, 86 28, 88 21 C90 15, 95 12, 99 18 C103 24, 101 30, 106 29 C112 28, 115 17, 121 14 C127 11, 131 18, 137 12" />
@@ -922,17 +936,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* wax-red certified seal */}
-                <div className="absolute right-3 bottom-3 sm:right-5 sm:bottom-5 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full text-center"
-                     style={{ background: 'radial-gradient(circle at 32% 28%, #D93B4B 0%, #B01B2E 45%, #7F1220 100%)',
-                              border: '2px solid #E3C071',
-                              boxShadow: '0 4px 12px rgba(127,18,32,0.45), inset 0 2px 5px rgba(255,255,255,0.28)' }}>
-                    <div className="leading-tight">
-                      <p className="text-[13px] sm:text-[15px]">★</p>
-                      <p className="text-[6px] sm:text-[7px] font-black tracking-[0.10em] text-white">CERTIFIED</p>
-                      <p className="text-[5px] sm:text-[6px] font-bold tracking-wider" style={{ color: '#F5D98B' }}>oSTARAN</p>
-                    </div>
-                </div>
 
                 <p className="relative mt-4 text-[8px] sm:text-[9px]" style={{ color: '#9CA3AF' }}>
                   Certificate ID: OST-SAMPLE-0000 · Star Analytix Private Limited, Mumbai — Powered by oStaran AI Education Platform
