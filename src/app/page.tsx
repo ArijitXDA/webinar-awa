@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase, WebinarLink, Registration } from '@/lib/supabase'
+import { CURRICULUM, TECH_ICONS } from '@/lib/curriculum'
 
 // Icons as inline SVGs
 const ClockIcon = () => (
@@ -760,7 +761,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-{/* What You Will Learn Section */}
+{/* What You Will Learn Section — data + real brand logos live in src/lib/curriculum.ts */}
       <section className="relative z-10 px-4 py-8 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-6">
@@ -771,162 +772,52 @@ export default function Home() {
               🎯 What You Will Learn
             </h2>
             <p className="text-sm text-gray-600">
-              Master cutting-edge AI tools, frameworks & platforms
+              Master cutting-edge AI tools, frameworks &amp; platforms — cloud, LLMs, MLOps, quantum &amp; robotics
             </p>
           </div>
 
           <div className="space-y-4">
-            {/* No-Code Tools */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-sm">🧠</span>
-                <h3 className="font-bold text-gray-900 text-sm">AI Agents – No-Code Tools</h3>
+            {CURRICULUM.map((group) => (
+              <div key={group.title} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="w-1.5 h-6 rounded-full shrink-0" style={{ background: group.accent }} />
+                  <h3 className="font-bold text-gray-900 text-sm">{group.title}</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {group.items.map((item) => {
+                    const ic = item.icon ? TECH_ICONS[item.icon] : undefined
+                    return (
+                      <span
+                        key={item.label}
+                        className="inline-flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 bg-gray-50 border border-gray-200 text-gray-800 rounded-full text-xs font-medium"
+                      >
+                        {ic?.path ? (
+                          // Real brand mark, drawn from embedded SVG path data — no network request.
+                          <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0" fill={ic.hex} aria-hidden="true">
+                            <path d={ic.path} />
+                          </svg>
+                        ) : (
+                          // Brands the CC0 set does not carry, and pure concepts, get a lettermark
+                          // rather than a look-alike logo.
+                          <span
+                            className="w-4 h-4 shrink-0 rounded-[4px] flex items-center justify-center text-[8px] font-black text-white"
+                            style={{ background: ic?.hex || group.accent }}
+                          >
+                            {item.label.replace(/[^A-Za-z]/g, '').slice(0, 1).toUpperCase()}
+                          </span>
+                        )}
+                        {item.label}
+                      </span>
+                    )
+                  })}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {['⚡ Bolt.new', '🤖 Make.com', '🧩 OpenAI Agent Builder', '📊 Airtable', '🔁 Zapier', '🌐 Bubble'].map((tool) => (
-                  <span key={tool} className="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-medium">{tool}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Low-Code Platforms */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center text-white text-sm">⚙️</span>
-                <h3 className="font-bold text-gray-900 text-sm">AI Agents – Low-Code Platforms</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {['🔗 n8n', '📈 Streamlit', '🎛️ Gradio', '🗄️ Supabase', '🏢 Power Apps'].map((tool) => (
-                  <span key={tool} className="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">{tool}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* AI IDEs */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg flex items-center justify-center text-white text-sm">🤖</span>
-                <h3 className="font-bold text-gray-900 text-sm">AI IDEs & Coding Environments</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {['🧠 Cursor', '👨‍💻 GitHub Copilot', '🧩 Claude Code', '🚀 Antigravity'].map((tool) => (
-                  <span key={tool} className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">{tool}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Agentic Frameworks */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center text-white text-sm">🧩</span>
-                <h3 className="font-bold text-gray-900 text-sm">Agentic AI Frameworks</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {['🔗 LangChain', '📚 LlamaIndex', '🕸️ LangGraph', '🤝 AutoGen', '👥 CrewAI', '⚙️ BabyAGI'].map((tool) => (
-                  <span key={tool} className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium">{tool}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Python Data Analysis */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center text-white text-sm">🐍</span>
-                <h3 className="font-bold text-gray-900 text-sm">Python – Data Analysis</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {['📊 Pandas', '🔢 NumPy', '📈 Matplotlib', '🎨 Seaborn'].map((tool) => (
-                  <span key={tool} className="px-2.5 py-1 bg-yellow-50 text-yellow-700 rounded-full text-xs font-medium">{tool}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Python ML & AI */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center text-white text-sm">🧠</span>
-                <h3 className="font-bold text-gray-900 text-sm">Python – ML & AI</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {['🤖 Scikit-learn', '🧠 TensorFlow', '🧩 Keras', '🔥 PyTorch', '📚 Transformers'].map((tool) => (
-                  <span key={tool} className="px-2.5 py-1 bg-red-50 text-red-700 rounded-full text-xs font-medium">{tool}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Model Fine-Tuning */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">🚀</span>
-                <h3 className="font-bold text-gray-900 text-sm">Model Fine-Tuning</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {['🧠 LoRA', '⚡ PEFT'].map((tool) => (
-                  <span key={tool} className="px-2.5 py-1 bg-violet-50 text-violet-700 rounded-full text-xs font-medium">{tool}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Deployment */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-sky-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-sm">☁️</span>
-                <h3 className="font-bold text-gray-900 text-sm">Deployment & Production</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {['🐙 GitHub', '▲ Vercel', '🌐 Netlify', '🐳 Docker', '☁️ AWS', '🔷 Azure', '🟡 GCP', '🚄 Render', '🚆 Railway'].map((tool) => (
-                  <span key={tool} className="px-2.5 py-1 bg-sky-50 text-sky-700 rounded-full text-xs font-medium">{tool}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Business Intelligence */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center text-white text-sm">📊</span>
-                <h3 className="font-bold text-gray-900 text-sm">Business Intelligence</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {['📊 Power BI', '📈 Tableau', '📑 Advanced Excel', '🐍 Python for BI', '🤖 Copilot for Analytics'].map((tool) => (
-                  <span key={tool} className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-medium">{tool}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Automation & Enterprise */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-sm">🔁</span>
-                <h3 className="font-bold text-gray-900 text-sm">Automation & Enterprise</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {['🔄 Power Automate', '🤖 Copilot Studio', '☁️ OneDrive / SharePoint', '📐 DAX', '🧮 Power Query (M)'].map((tool) => (
-                  <span key={tool} className="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">{tool}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Daily AI Productivity */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg flex items-center justify-center text-white text-sm">🧰</span>
-                <h3 className="font-bold text-gray-900 text-sm">Daily AI Productivity</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {['💬 ChatGPT (Custom GPTs)', '🧠 Claude Projects', '📓 Copilot Notebooks', '📚 NotebookLM', '🔎 Perplexity Spaces', '💎 Gemini Gems', '🗂️ Notion', '🎨 Gamma', '🖌️ Canva'].map((tool) => (
-                  <span key={tool} className="px-2.5 py-1 bg-pink-50 text-pink-700 rounded-full text-xs font-medium">{tool}</span>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
 
-          {/* Note */}
-          <div className="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
-            <p className="text-xs text-gray-600 text-center leading-relaxed">
-              <span className="font-semibold text-indigo-700">📌 Note:</span> Coverage depth varies by track. 
-              <span className="font-medium"> No prior coding knowledge required</span> for non-tech tracks.
-            </p>
-          </div>
+          <p className="mt-5 text-center text-[11px] text-gray-500 leading-relaxed">
+            Product names and logos are trademarks of their respective owners, shown for identification only.
+          </p>
         </div>
       </section>
       {/* Footer */}
