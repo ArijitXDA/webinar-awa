@@ -833,10 +833,10 @@ export default function Home() {
               YOUR CERTIFICATE
             </span>
             <h2 className="text-2xl font-extrabold text-gray-900 mb-2">
-              🏅 Certificate of Participation
+              🏅 A Globally Recognized Certificate
             </h2>
             <p className="text-sm text-gray-600">
-              Issued to your email after you attend and rate the session
+              Issued post your attendance · LinkedIn-ready · add it to your career résumé
             </p>
           </div>
 
@@ -861,16 +861,20 @@ export default function Home() {
 
               <div className="mt-5 flex items-end justify-between gap-3">
                 <div className="flex-1 text-center">
-                  <svg viewBox="0 0 150 30" className="mx-auto h-6 w-24" fill="none" stroke="#1a4d2e" strokeWidth="1.6" strokeLinecap="round">
-                    <path d="M10 18 C22 8, 34 26, 50 14 C60 7, 70 22, 84 16 C94 12, 104 24, 118 14 C124 10, 132 18, 140 12" />
+                  <svg viewBox="0 0 150 44" className="mx-auto h-9 w-28" fill="none" stroke="#1a3d6b" strokeLinecap="round" strokeLinejoin="round">
+                    <path strokeWidth="1.9" d="M7 30 C9 16, 15 6, 21 8 C27 10, 24 22, 19 27 C14 32, 12 24, 17 20 C24 15, 31 22, 34 28 C36 32, 40 31, 41 25 C42 19, 45 16, 48 21 C51 26, 49 31, 53 30 C58 29, 59 18, 63 15 C67 12, 69 19, 68 26 C67 31, 71 32, 75 27 C79 22, 78 12, 83 11 C88 10, 87 24, 91 28 C95 32, 101 27, 104 20 C107 13, 112 11, 116 17 C120 23, 118 30, 123 29 C129 28, 133 21, 139 13" />
+                    <path strokeWidth="1.1" d="M64 20 C72 18, 82 19, 92 17" />
+                    <path strokeWidth="1.2" d="M96 33 C106 39, 120 38, 134 31" />
                   </svg>
                   <div className="mt-1 h-px w-full" style={{ background: '#9cb89c' }} />
                   <p className="mt-1 text-[9px] sm:text-[10px] font-bold" style={{ color: '#1a4d2e' }}>Arijit Chowdhury</p>
                   <p className="text-[8px] sm:text-[9px]" style={{ color: '#5a6e5a' }}>Founder &amp; Lead Trainer, oStaran</p>
                 </div>
                 <div className="flex-1 text-center">
-                  <svg viewBox="0 0 150 30" className="mx-auto h-6 w-24" fill="none" stroke="#1a4d2e" strokeWidth="1.6" strokeLinecap="round">
-                    <path d="M10 20 C20 10, 32 24, 46 16 C54 11, 62 22, 74 18 C82 15, 90 22, 100 16 C108 11, 118 20, 130 14" />
+                  <svg viewBox="0 0 150 44" className="mx-auto h-9 w-28" fill="none" stroke="#1a3d6b" strokeLinecap="round" strokeLinejoin="round">
+                    <path strokeWidth="1.9" d="M6 31 C11 14, 18 5, 23 9 C28 13, 22 24, 17 28 C13 31, 13 23, 18 19 C25 14, 30 21, 32 27 C34 32, 39 31, 41 24 C43 18, 47 17, 49 23 C51 29, 56 30, 59 24 C62 18, 60 10, 65 9 C70 8, 71 21, 76 26 C80 30, 86 28, 88 21 C90 15, 95 12, 99 18 C103 24, 101 30, 106 29 C112 28, 115 17, 121 14 C127 11, 131 18, 137 12" />
+                    <path strokeWidth="1.1" d="M56 21 C66 19, 78 20, 88 18" />
+                    <path strokeWidth="1.2" d="M92 34 C103 40, 118 38, 132 30" />
                   </svg>
                   <div className="mt-1 h-px w-full" style={{ background: '#9cb89c' }} />
                   <p className="mt-1 text-[9px] sm:text-[10px] font-bold" style={{ color: '#1a4d2e' }}>Antara Chowdhury</p>
@@ -888,7 +892,7 @@ export default function Home() {
           </div>
 
           <p className="mt-3 text-center text-xs text-gray-600">
-            🔒 Every certificate carries a unique ID, verifiable online — so a recruiter can check it in seconds.
+            🔒 Globally recognized &amp; independently verifiable — every certificate carries a unique ID a recruiter can check in seconds.
           </p>
 
           {/* What attending unlocks */}
