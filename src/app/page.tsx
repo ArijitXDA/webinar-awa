@@ -820,6 +820,100 @@ export default function Home() {
           </p>
         </div>
       </section>
+
+      {/* Certificate + what attending unlocks.
+          The certificate replica uses the SAME palette, wording and signatories as the real
+          one (src/app/certificate/[certId] in the platform repo) so what people see here is
+          what lands in their inbox. Deliberately no salary, hike or placement promises —
+          only what can be evidenced: a verifiable, shareable credential. */}
+      <section className="relative z-10 px-4 py-9 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-5">
+            <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold mb-2">
+              YOUR CERTIFICATE
+            </span>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-2">
+              🏅 Certificate of Participation
+            </h2>
+            <p className="text-sm text-gray-600">
+              Issued to your email after you attend and rate the session
+            </p>
+          </div>
+
+          {/* Sample certificate */}
+          <div className="rounded-2xl p-3 sm:p-4 shadow-lg border" style={{ borderColor: '#e8e4d8', background: 'linear-gradient(160deg, #faf8f2 0%, #f5f1e8 100%)' }}>
+            <div className="rounded-xl px-4 py-5 sm:px-7 sm:py-7 text-center" style={{ border: '2px solid #d4a843' }}>
+              <p className="text-[9px] sm:text-[10px] font-bold tracking-[0.22em]" style={{ color: '#5a6e5a' }}>
+                AIWITHARIJIT × OSTARAN PLATFORM
+              </p>
+              <h3 className="mt-2 text-lg sm:text-2xl font-black tracking-wide" style={{ color: '#1a4d2e' }}>
+                Certificate of Participation
+              </h3>
+              <div className="mx-auto my-3 h-px w-24" style={{ background: '#d4a843' }} />
+              <p className="text-[10px] sm:text-xs" style={{ color: '#5a6e5a' }}>This is proudly presented to</p>
+              <p className="mt-1.5 text-xl sm:text-3xl font-extrabold" style={{ color: '#1a4d2e' }}>
+                Anaant Balasubramiyam
+              </p>
+              <p className="mx-auto mt-2 max-w-md text-[10px] sm:text-xs leading-relaxed" style={{ color: '#5a6e5a' }}>
+                for successfully attending the <strong>FREE AI Certification Masterclass</strong> — a live
+                90-minute programme on Artificial Intelligence, delivered online.
+              </p>
+
+              <div className="mt-5 flex items-end justify-between gap-3">
+                <div className="flex-1 text-center">
+                  <svg viewBox="0 0 150 30" className="mx-auto h-6 w-24" fill="none" stroke="#1a4d2e" strokeWidth="1.6" strokeLinecap="round">
+                    <path d="M10 18 C22 8, 34 26, 50 14 C60 7, 70 22, 84 16 C94 12, 104 24, 118 14 C124 10, 132 18, 140 12" />
+                  </svg>
+                  <div className="mt-1 h-px w-full" style={{ background: '#9cb89c' }} />
+                  <p className="mt-1 text-[9px] sm:text-[10px] font-bold" style={{ color: '#1a4d2e' }}>Arijit Chowdhury</p>
+                  <p className="text-[8px] sm:text-[9px]" style={{ color: '#5a6e5a' }}>Founder &amp; Lead Trainer, oStaran</p>
+                </div>
+                <div className="flex-1 text-center">
+                  <svg viewBox="0 0 150 30" className="mx-auto h-6 w-24" fill="none" stroke="#1a4d2e" strokeWidth="1.6" strokeLinecap="round">
+                    <path d="M10 20 C20 10, 32 24, 46 16 C54 11, 62 22, 74 18 C82 15, 90 22, 100 16 C108 11, 118 20, 130 14" />
+                  </svg>
+                  <div className="mt-1 h-px w-full" style={{ background: '#9cb89c' }} />
+                  <p className="mt-1 text-[9px] sm:text-[10px] font-bold" style={{ color: '#1a4d2e' }}>Antara Chowdhury</p>
+                  <p className="text-[8px] sm:text-[9px]" style={{ color: '#5a6e5a' }}>Director, Star Analytix Pvt. Ltd.</p>
+                </div>
+              </div>
+
+              <p className="mt-4 text-[8px] sm:text-[9px]" style={{ color: '#9cb89c' }}>
+                Certificate ID: OST-SAMPLE-0000 · Star Analytix Private Limited, Mumbai — Powered by oStaran AI Education Platform
+              </p>
+            </div>
+            <p className="mt-2 text-center text-[10px] font-semibold" style={{ color: '#5a6e5a' }}>
+              Sample certificate · your name and unique ID appear on yours
+            </p>
+          </div>
+
+          <p className="mt-3 text-center text-xs text-gray-600">
+            🔒 Every certificate carries a unique ID, verifiable online — so a recruiter can check it in seconds.
+          </p>
+
+          {/* What attending unlocks */}
+          <div className="mt-7">
+            <h3 className="text-center text-lg font-extrabold text-gray-900 mb-1">Attending also unlocks</h3>
+            <p className="text-center text-xs text-gray-600 mb-4">Free, for every attendee</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { icon: '📚', t: 'AI Library access',      d: 'Recordings, templates, prompt packs & project resources' },
+                { icon: '💼', t: 'AI Job Board',           d: 'AI-specific job roles from the industry, plus a CV repository recruiters search' },
+                { icon: '🔬', t: 'Trained by researchers', d: 'Live sessions led by AI researchers and industry practitioners' },
+                { icon: '🚀', t: 'Future-ready portfolio', d: 'Build real AI projects you can show on your résumé and LinkedIn' },
+              ].map(c => (
+                <div key={c.t} className="flex gap-3 rounded-xl border border-gray-200 bg-white p-3.5 shadow-sm">
+                  <span className="text-xl leading-none">{c.icon}</span>
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">{c.t}</p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-gray-600">{c.d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
       {/* Footer */}
       <footer className="relative z-10 py-4 px-4 border-t border-gray-100 bg-white/50">
         <div className="max-w-lg mx-auto text-center">
