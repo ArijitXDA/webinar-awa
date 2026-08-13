@@ -250,6 +250,14 @@ export default function Home() {
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({})
   const [utmLocation, setUtmLocation] = useState<string | null>(null)
 
+  // Partner attribution. Resolved from the DB, never rendered straight from the URL:
+  // partner_public_badge() returns rows only for an EXACT, active partner_code, so an
+  // unrecognised or hand-crafted ?utm_source= simply renders nothing instead of putting
+  // arbitrary attacker-supplied text inside our branded banner.
+  const [partnerBadge, setPartnerBadge] = useState<
+    { display_name: string; company_name: string | null; avatar_url: string | null } | null
+  >(null)
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setLandingUrl(window.location.origin + window.location.pathname)
@@ -265,6 +273,17 @@ export default function Home() {
       // Records the link open BEFORE the student fills the form —
       // unlocks the "Reg Link Clicks" metric in admin analytics.
       // Zero side-effects: errors are silently caught, never blocks the form.
+      // Resolve the code to a real partner for the attribution card. Non-PII by
+      // construction (name / company / avatar only) and fire-and-forget: if it fails the
+      // page simply shows no card.
+      if (source) {
+        supabase
+          .rpc('partner_public_badge', { p_code: source })
+          .then(({ data, error }) => {
+            if (!error && Array.isArray(data) && data.length > 0) setPartnerBadge(data[0])
+          })
+      }
+
       if (source) {
         const trackUrl = 'https://www.ostaran.com/api/track/click'
           + '?t=registration'
@@ -488,6 +507,50 @@ export default function Home() {
               </div>
             )}
             
+            {/* Partner attribution — the human behind the invitation.
+                Only rendered for a code that resolved to an active partner. Most partners
+                have no photo (12 of 52), so the initials disc is the common path and is
+                styled to look deliberate rather than like a missing image. */}
+            {partnerBadge && (
+              <div className="flex justify-center mb-3">
+                <div className="flex items-center gap-3.5 rounded-2xl border-2 border-amber-300/70 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 px-4 py-3 shadow-md max-w-[19rem] sm:max-w-sm">
+                  {partnerBadge.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={partnerBadge.avatar_url}
+                      alt=""
+                      className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-amber-400 shadow-sm"
+                    />
+                  ) : (
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-white text-lg font-black ring-2 ring-amber-400 shadow-sm">
+                      {partnerBadge.display_name
+                        .split(' ')
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map(w => w[0].toUpperCase())
+                        .join('')}
+                    </div>
+                  )}
+                  <div className="min-w-0 text-left">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700">
+                      Brought to you by
+                    </p>
+                    <p className="truncate text-base font-extrabold leading-tight text-gray-900">
+                      {partnerBadge.display_name}
+                    </p>
+                    {partnerBadge.company_name && (
+                      <p className="truncate text-xs font-medium text-gray-600">
+                        {partnerBadge.company_name}
+                      </p>
+                    )}
+                    <p className="text-[10px] font-semibold text-amber-700/80">
+                      Official oStaran Partner
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2 leading-tight">
               <span className="gradient-text">FREE AI Certification</span>
               <br />in Just 90 Minutes
