@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase, WebinarLink, Registration } from '@/lib/supabase'
 import { CURRICULUM, TECH_ICONS } from '@/lib/curriculum'
+import VideoShowcase from '@/components/VideoShowcase'
 
 // Icons as inline SVGs
 const ClockIcon = () => (
@@ -706,6 +707,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* See oStaran in action - video showcase (click-to-load, privacy-first) */}
+      <VideoShowcase />
 
       {/* Testimonials Section - PREMIUM BLACK GOLD THEME */}
       <section className="relative z-10 px-3 pb-4">
