@@ -499,12 +499,13 @@ export default function Home() {
               <span>100% FREE, Limited Seats</span>
             </div>
             
-            {/* Dynamic Location Tag - shows utm_source */}
+            {/* Urgency tag (partner-link context). Raw partner code removed per founder —
+                the partner NAME still shows in the "Brought to you by" badge below. */}
             {utmLocation && (
               <div className="block mb-2">
                 <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs shadow-lg">
-                  <span>📍</span>
-                  <span>Exclusive at <span className="font-black bg-white/30 px-1.5 py-0.5 rounded text-yellow-100">{utmLocation}</span>, <span className="font-black underline decoration-2 decoration-yellow-200">only for today!</span></span>
+                  <span>🔥</span>
+                  <span className="font-black underline decoration-2 decoration-yellow-200">Only for today!</span>
                 </span>
               </div>
             )}
@@ -579,9 +580,9 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Course Cards Section */}
+      {/* Course Cards Section — framed in a dark border to highlight it */}
       <section className="relative z-10 px-3 pb-4">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg mx-auto rounded-2xl border-2 border-gray-800 p-4 shadow-sm">
           <h2 className="text-center text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
             Choose your webinar
           </h2>
