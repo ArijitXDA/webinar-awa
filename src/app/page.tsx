@@ -242,6 +242,10 @@ export default function Home() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [registeredData, setRegisteredData] = useState<{name: string, date: string, time: string, timezone: string} | null>(null)
+  // Set when the submitting email already has a registration on the selected webinar DATE.
+  // Carries the existing registration's details + join link so we can show it instead of
+  // inserting a duplicate.
+  const [alreadyRegistered, setAlreadyRegistered] = useState<{courseName: string, date: string, time: string, timezone: string, joinLink: string | null} | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [landingUrl, setLandingUrl] = useState('')
   
@@ -354,11 +358,47 @@ export default function Home() {
     setErrorMessage(null)
     
     try {
+      const email = formData.email.trim().toLowerCase()
+
+      // ── Duplicate-registration blocker ────────────────────────────────────
+      // One registration per email per webinar DATE. Multiple distinct webinars
+      // can share a single date, so we key the check on (email, webinar_date):
+      // if this email already registered for ANY webinar on the selected date,
+      // block a second (or duplicate) registration for that same date and show
+      // the existing registration + join link instead of inserting. Other
+      // (future) dates are unaffected.
+      // NOTE: match email with .eq() on the lowercased value, never .ilike() —
+      // an email can contain "_"/"%", which ilike would treat as wildcards.
+      const { data: existing, error: dupError } = await supabase
+        .from('qr_landing_registrations')
+        .select('course_id, course_name, webinar_date, webinar_time, timezone')
+        .eq('email', email)
+        .eq('webinar_date', selectedWebinar.webinar_date)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+
+      if (dupError) throw dupError
+
+      if (existing) {
+        const matchWebinar = webinars.find(
+          (w) => w.course_id === existing.course_id && w.webinar_date === existing.webinar_date
+        )
+        setAlreadyRegistered({
+          courseName: existing.course_name || selectedWebinar.course_name,
+          date: formatDate(existing.webinar_date),
+          time: formatTime(existing.webinar_time, existing.timezone),
+          timezone: existing.timezone,
+          joinLink: matchWebinar?.ms_teams_link || selectedWebinar.ms_teams_link || null,
+        })
+        return
+      }
+
       const utmParams = getUTMParams()
-      
+
       const registrationData = {
         full_name: formData.full_name.trim(),
-        email: formData.email.trim().toLowerCase(),
+        email,
         mobile: formData.mobile.trim(),
         age: formData.age,
         profession_choice: formData.profession_choice,
@@ -408,6 +448,7 @@ export default function Home() {
     setSelectedWebinar(webinar)
     setShowModal(true)
     setSubmitted(false)
+    setAlreadyRegistered(null)
     setErrorMessage(null)
     setFormData({ full_name: '', email: '', mobile: '', age: '', profession_choice: '', other_profession_description: '', marketing_consent: true })
     setFormErrors({})
@@ -417,6 +458,7 @@ export default function Home() {
     setShowModal(false)
     setSelectedWebinar(null)
     setSubmitted(false)
+    setAlreadyRegistered(null)
     setErrorMessage(null)
   }
 
@@ -1022,7 +1064,38 @@ export default function Home() {
                 </div>
               )}
 
-              {!submitted ? (
+              {alreadyRegistered ? (
+                <div className="text-center py-2">
+                  <div className="w-16 h-16 mx-auto mb-3 bg-amber-100 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">You&apos;re already registered!</h3>
+                  <p className="text-gray-600 mb-3 text-sm">
+                    You are already registered for{' '}
+                    <span className="font-semibold">{alreadyRegistered.courseName}</span> on{' '}
+                    <span className="font-semibold">{alreadyRegistered.date}</span> at{' '}
+                    <span className="font-semibold">{alreadyRegistered.time}</span>. You don&apos;t need to register again for the same date&apos;s webinar.
+                  </p>
+
+                  {alreadyRegistered.joinLink && (
+                    <a href={alreadyRegistered.joinLink} target="_blank" rel="noopener noreferrer"
+                      className="w-full py-2.5 rounded-lg font-semibold text-white text-sm bg-indigo-600 hover:bg-indigo-700 shadow-md flex items-center justify-center gap-2 mb-3 transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                      Join Link
+                    </a>
+                  )}
+
+                  <div className="bg-blue-50 rounded-lg p-3 mb-3">
+                    <p className="text-sm text-blue-800">📧 Your <span className="font-semibold">Live Session Registration Link</span> was also sent to your email &amp; WhatsApp.</p>
+                  </div>
+
+                  <p className="text-xs text-gray-500">
+                    Want to attend another session? You can register again for any webinar on a <span className="font-semibold">future date</span>.
+                  </p>
+                </div>
+              ) : !submitted ? (
                 <form onSubmit={handleSubmit} className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
@@ -1122,7 +1195,12 @@ export default function Home() {
 
             {/* Fixed Footer with Submit Button - ALWAYS VISIBLE */}
             <div className="flex-shrink-0 px-4 py-3 border-t border-gray-100 bg-white rounded-b-2xl">
-              {!submitted ? (
+              {alreadyRegistered ? (
+                <button type="button" onClick={closeModal}
+                  className="w-full py-3 rounded-xl font-semibold text-white bg-gray-700 hover:bg-gray-800 shadow-lg transition-all">
+                  Got it
+                </button>
+              ) : !submitted ? (
                 <button type="button" onClick={handleSubmit} disabled={submitting}
                   className={`w-full py-3 rounded-xl font-bold text-white text-base bg-gradient-to-r ${courseColors[selectedWebinar.course_order] || courseColors[1]} shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed`}>
                   {submitting ? (
