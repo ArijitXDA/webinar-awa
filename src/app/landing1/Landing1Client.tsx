@@ -103,6 +103,8 @@ export default function Landing1Client() {
               avatar_url: b.avatar_url ?? null,
               whatsapp: null,
               partner_code: partnerCode,
+              is_poc: false,
+              use_ostaran: false,
             });
           }
         }

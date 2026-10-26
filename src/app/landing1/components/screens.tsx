@@ -53,6 +53,7 @@ export function PartnerIntroScreen({
   loading: boolean;
   onNext: () => void;
 }) {
+  const useOstaran = Boolean(partner?.use_ostaran);
   const name = partner?.display_name;
   return (
     <div className="flex flex-col items-center text-center">
@@ -62,13 +63,20 @@ export function PartnerIntroScreen({
 
       {loading ? (
         <div className="mb-6 h-24 w-24 animate-pulse rounded-full bg-slate-200" />
+      ) : useOstaran ? (
+        <div className="mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-white p-3 shadow-md ring-4 ring-white">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/oStaran.png" alt="oStaran" className="h-full w-full object-contain" />
+        </div>
       ) : partner ? (
         <div className="mb-5 flex flex-col items-center">
           {partner.avatar_url ? (
             <SmartImage
               src={partner.avatar_url}
               alt={name ?? 'Partner'}
-              className="h-24 w-24 rounded-full object-cover shadow-md ring-4 ring-white"
+              className={`h-24 w-24 rounded-full shadow-md ring-4 ring-white ${
+                partner.is_poc ? 'bg-white object-contain p-2' : 'object-cover'
+              }`}
             />
           ) : (
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-accent-500 text-3xl font-bold text-white">
@@ -79,15 +87,15 @@ export function PartnerIntroScreen({
       ) : null}
 
       <h1 className="text-[26px] font-bold leading-tight text-slate-900">
-        {name ? (
-          <>
-            {name} invites you to master AI with oStaran
-          </>
+        {useOstaran ? (
+          <>You&apos;re invited to master AI with oStaran</>
+        ) : name ? (
+          <>{name} invites you to master AI with oStaran</>
         ) : (
           <>Master AI and earn your certificate with oStaran</>
         )}
       </h1>
-      {partner?.company_name && (
+      {partner?.company_name && !useOstaran && (
         <p className="mt-1 text-sm font-medium text-slate-500">{partner.company_name}</p>
       )}
       <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-slate-500">
