@@ -66,7 +66,8 @@ begin
 
   select * into pr from public.partners where id = v_pid;
 
-  -- Approved POC brand for this partner, if any.
+  -- Approved POC brand for this partner: either the partner OWNS the POC node,
+  -- or the partner IS the POC's operating user (poc_user_id = auth_user_id).
   select p.display_name as poc_name,
          bv.display_name as bv_name,
          bv.logo_path_approved as logo_path,
@@ -74,13 +75,16 @@ begin
          coalesce(nullif(p.contact_email, ''), nullif(bv.contact_email, '')) as poc_email,
          nullif(bv.address, '') as poc_address
     into poc
-  from public.nnwd_nodes n
-  join public.nnwd_pocs p on p.owner_node_id = n.id
+  from public.nnwd_pocs p
   join public.nnwd_poc_brand_versions bv on bv.id = p.approved_version_id
-  where n.partner_id = v_pid
-    and p.status = 'approved'
+  left join public.nnwd_nodes n on n.id = p.owner_node_id
+  where p.status = 'approved'
     and bv.status = 'approved'
     and bv.logo_path_approved is not null
+    and (
+      n.partner_id = v_pid
+      or (pr.auth_user_id is not null and p.poc_user_id = pr.auth_user_id)
+    )
   order by p.approved_at desc nulls last, p.updated_at desc nulls last
   limit 1;
 

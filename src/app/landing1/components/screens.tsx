@@ -62,11 +62,20 @@ export function PartnerIntroScreen({
       </span>
 
       {loading ? (
-        <div className="mb-6 h-24 w-24 animate-pulse rounded-full bg-slate-200" />
+        <div className="mb-6 h-24 w-48 animate-pulse rounded-2xl bg-slate-200" />
       ) : useOstaran ? (
-        <div className="mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-white p-3 shadow-md ring-4 ring-white">
+        <div className="mb-6 flex items-center justify-center rounded-2xl bg-white px-7 py-5 shadow-xl shadow-slate-300/60 ring-1 ring-slate-100">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/oStaran.png" alt="oStaran" className="h-full w-full object-contain" />
+          <img src="/oStaran.png" alt="oStaran" className="h-12 w-auto max-w-[220px] object-contain" />
+        </div>
+      ) : partner && partner.is_poc && partner.avatar_url ? (
+        // POC approved brand logo — shown full (not cropped) in a shadowed card.
+        <div className="mb-6 flex min-h-[88px] min-w-[180px] items-center justify-center rounded-2xl bg-white px-7 py-5 shadow-xl shadow-slate-300/60 ring-1 ring-slate-100">
+          <SmartImage
+            src={partner.avatar_url}
+            alt={name ?? 'Partner'}
+            className="h-16 w-auto max-w-[240px] object-contain"
+          />
         </div>
       ) : partner ? (
         <div className="mb-5 flex flex-col items-center">
@@ -74,9 +83,7 @@ export function PartnerIntroScreen({
             <SmartImage
               src={partner.avatar_url}
               alt={name ?? 'Partner'}
-              className={`h-24 w-24 rounded-full shadow-md ring-4 ring-white ${
-                partner.is_poc ? 'bg-white object-contain p-2' : 'object-cover'
-              }`}
+              className="h-24 w-24 rounded-full object-cover shadow-md ring-4 ring-white"
             />
           ) : (
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-accent-500 text-3xl font-bold text-white">
