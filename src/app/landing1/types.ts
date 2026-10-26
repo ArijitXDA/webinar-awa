@@ -42,8 +42,15 @@ export type InputStep = {
   subtitle?: string;
 };
 
+export type CourseStep = {
+  kind: 'course';
+  id: string;
+  title: string;
+  subtitle?: string;
+};
+
 export type SimpleStep = {
-  kind: 'partnerIntro' | 'course' | 'summary' | 'program' | 'learn' | 'proof';
+  kind: 'partnerIntro' | 'summary' | 'program' | 'learn' | 'proof';
   id: string;
 };
 
@@ -52,6 +59,7 @@ export type Step =
   | StatementStep
   | LoaderStep
   | InputStep
+  | CourseStep
   | SimpleStep;
 
 export type Answers = Record<string, string>;
