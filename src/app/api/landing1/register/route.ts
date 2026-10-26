@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { buildCongratsEmail } from '@/app/landing1/congratsEmail';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
+// Make.com webhook that sends the co-branded congrats email. Set via env only
+// (this is a public repo — never hardcode the webhook token). When unset, the
+// email step is skipped and registration still succeeds.
+const MAKE_WEBHOOK = process.env.MAKE_LANDING1_WEBHOOK_URL || '';
 
 type Body = {
   name?: string;
@@ -42,6 +47,52 @@ function whenString(date: string | null, time: string | null, tz: string | null)
   const datePart = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' });
   const timePart = time ? time.slice(0, 5) : '';
   return `${datePart}${timePart ? ` • ${timePart} ${tz ?? 'IST'}` : ''}`;
+}
+
+// Best-effort: fetch partner/POC branding and fire the co-branded congrats
+// email through the Make webhook. Never throws — email must not block or fail
+// the registration itself.
+async function sendCongratsEmail(args: {
+  db: SupabaseClient<any, any, any>;
+  name: string;
+  email: string;
+  courseName: string;
+  webinarWhen: string | null;
+  joinToken?: string | null;
+  partnerCode: string | null;
+}): Promise<void> {
+  if (!MAKE_WEBHOOK) return;
+  try {
+    let partner = null;
+    if (args.partnerCode) {
+      const { data } = await args.db.rpc('landing1_partner_card', { p_code: args.partnerCode });
+      partner = Array.isArray(data) ? data[0] ?? null : data ?? null;
+    }
+    const joinUrl = args.joinToken
+      ? `https://partner.ostaran.com/join/${args.joinToken}`
+      : 'https://webinar.ostaran.com';
+    const { subject, html, replyTo } = buildCongratsEmail({
+      name: args.name,
+      email: args.email,
+      courseName: args.courseName,
+      webinarWhen: args.webinarWhen,
+      joinUrl,
+      partner,
+    });
+    await fetch(MAKE_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to_name: args.name,
+        to_email: args.email,
+        reply_to: replyTo,
+        subject,
+        html,
+      }),
+    });
+  } catch {
+    /* email is best-effort */
+  }
 }
 
 export async function POST(req: Request) {
@@ -136,16 +187,35 @@ export async function POST(req: Request) {
   // Try the full insert (needs supabase_landing1.sql applied). If the new
   // columns don't exist yet, fall back to a core insert so registration still
   // works — the quiz detail is simply not persisted until the migration runs.
-  let insertErr = (await db.from('qr_landing_registrations').insert([{ ...base, ...extras }])).error;
+  let { data: inserted, error: insertErr } = await db
+    .from('qr_landing_registrations')
+    .insert([{ ...base, ...extras }])
+    .select('join_token')
+    .maybeSingle();
   let degraded = false;
   if (insertErr && /column .* does not exist|reg_source|landing1_quiz|daily_goal_minutes|readiness_score/i.test(insertErr.message)) {
     degraded = true;
-    insertErr = (await db.from('qr_landing_registrations').insert([base])).error;
+    ({ data: inserted, error: insertErr } = await db
+      .from('qr_landing_registrations')
+      .insert([base])
+      .select('join_token')
+      .maybeSingle());
   }
 
   if (insertErr) {
     return NextResponse.json({ ok: false, error: insertErr.message }, { status: 500 });
   }
+
+  // Co-branded congratulations email via the Make webhook (best-effort).
+  await sendCongratsEmail({
+    db,
+    name,
+    email,
+    courseName: course.course_name,
+    webinarWhen,
+    joinToken: (inserted as { join_token?: string } | null)?.join_token ?? null,
+    partnerCode: body.utm?.utm_source ?? body.partner_code ?? null,
+  });
 
   return NextResponse.json({
     ok: true,

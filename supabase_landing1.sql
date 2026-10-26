@@ -1,7 +1,7 @@
 -- ============================================================================
 -- landing1 funnel — schema additions for the paginated registration flow
 -- Target project: enszifyeqnwcnxaqrmrq (shared oStaran Supabase)
--- Safe to run multiple times (idempotent: IF NOT EXISTS / CREATE OR REPLACE).
+-- Safe to run multiple times (idempotent: IF NOT EXISTS / DROP + CREATE).
 -- Apply via Supabase SQL editor (or psql with the project connection string).
 -- ============================================================================
 
@@ -21,10 +21,11 @@ create index if not exists idx_qr_reg_reg_source on public.qr_landing_registrati
 
 -- 2) Additive public RPC for the landing1 partner card ------------------------
 -- Does NOT touch the existing partner_public_badge. Resolution priority:
---   1. Approved NNWD POC brand  -> POC approved logo + POC name
---   2. Identified partner       -> partner profile pic + name
---   3. Hidden identity / no pic  -> oStaran logo + "oStaran" (use_ostaran=true)
--- SECURITY DEFINER so the anon client can read it safely.
+--   1. Approved NNWD POC brand   -> POC approved logo + POC name
+--   2. Identified partner        -> partner profile pic + name
+--   3. Hidden identity / no pic   -> oStaran logo + "oStaran" (use_ostaran=true)
+-- Also returns footer contact fields (email, address, website) for the
+-- co-branded congratulations email. SECURITY DEFINER so anon can read it.
 drop function if exists public.landing1_partner_card(text);
 
 create or replace function public.landing1_partner_card(p_code text)
@@ -35,7 +36,10 @@ returns table (
   whatsapp     text,
   partner_code text,
   is_poc       boolean,
-  use_ostaran  boolean
+  use_ostaran  boolean,
+  email        text,
+  address      text,
+  website      text
 )
 language plpgsql
 security definer
@@ -66,7 +70,9 @@ begin
   select p.display_name as poc_name,
          bv.display_name as bv_name,
          bv.logo_path_approved as logo_path,
-         coalesce(nullif(p.contact_whatsapp, ''), nullif(bv.contact_whatsapp, '')) as poc_wa
+         coalesce(nullif(p.contact_whatsapp, ''), nullif(bv.contact_whatsapp, '')) as poc_wa,
+         coalesce(nullif(p.contact_email, ''), nullif(bv.contact_email, '')) as poc_email,
+         nullif(bv.address, '') as poc_address
     into poc
   from public.nnwd_nodes n
   join public.nnwd_pocs p on p.owner_node_id = n.id
@@ -86,10 +92,14 @@ begin
       coalesce(poc.poc_wa, nullif(pr.mobile, '')),
       coalesce(nullif(pr.partner_code_v2, ''), pr.partner_code),
       true,
-      false;
+      false,
+      poc.poc_email,
+      poc.poc_address,
+      null::text;
     return;
   end if;
 
+  -- Not a POC (or no approved logo): hidden identity or no pic -> oStaran.
   if coalesce(pr.hide_identity, false) = true or nullif(pr.profile_pic_url, '') is null then
     return query select
       'oStaran'::text,
@@ -98,10 +108,14 @@ begin
       null::text,
       coalesce(nullif(pr.partner_code_v2, ''), pr.partner_code),
       false,
-      true;
+      true,
+      null::text,
+      null::text,
+      null::text;
     return;
   end if;
 
+  -- Identified partner with a profile pic.
   return query select
     coalesce(nullif(pr.full_name, ''), nullif(pr.company_name, ''), 'An oStaran Partner'),
     nullif(pr.company_name, ''),
@@ -109,7 +123,10 @@ begin
     nullif(pr.mobile, ''),
     coalesce(nullif(pr.partner_code_v2, ''), pr.partner_code),
     false,
-    false;
+    false,
+    nullif(pr.email, ''),
+    nullif(concat_ws(', ', nullif(pr.city_village, ''), nullif(pr.district, ''), nullif(pr.state, ''), nullif(pr.pin_zip, '')), ''),
+    null::text;
 end;
 $$;
 
