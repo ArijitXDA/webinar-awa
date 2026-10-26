@@ -70,6 +70,8 @@ export type PartnerCard = {
   avatar_url: string | null;
   whatsapp: string | null;
   partner_code: string | null;
+  is_poc?: boolean | null;
+  use_ostaran?: boolean | null;
 };
 
 export type WebinarCourse = {
