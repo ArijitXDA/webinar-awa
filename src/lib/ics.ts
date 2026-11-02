@@ -50,7 +50,7 @@ function escICS(str: string): string {
 
 /** Generate a simple unique ID */
 function uid(): string {
-  return `awa-webinar-${Date.now()}-${Math.random().toString(36).slice(2)}@aiwitharijit.com`
+  return `awa-webinar-${Date.now()}-${Math.random().toString(36).slice(2)}@witharijit.com`
 }
 
 export function generateICS(event: ICSEventData): string | null {
@@ -63,7 +63,7 @@ export function generateICS(event: ICSEventData): string | null {
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//AIwithArijit//Webinar//EN',
+    'PRODID:-//withArijit//Webinar//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:REQUEST',
     'BEGIN:VEVENT',
@@ -90,12 +90,12 @@ export function generateICS(event: ICSEventData): string | null {
     'BEGIN:VALARM',
     'TRIGGER:-PT60M',
     'ACTION:DISPLAY',
-    'DESCRIPTION:Reminder: Your AIwithArijit webinar starts in 1 hour!',
+    'DESCRIPTION:Reminder: Your withArijit webinar starts in 1 hour!',
     'END:VALARM',
     'BEGIN:VALARM',
     'TRIGGER:-PT15M',
     'ACTION:DISPLAY',
-    'DESCRIPTION:Reminder: Your AIwithArijit webinar starts in 15 minutes!',
+    'DESCRIPTION:Reminder: Your withArijit webinar starts in 15 minutes!',
     'END:VALARM',
     'END:VEVENT',
     'END:VCALENDAR',

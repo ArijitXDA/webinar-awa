@@ -365,7 +365,7 @@ export default function WebinarRatingsPage() {
                 {/* CTA */}
                 <div className="mt-6 space-y-3">
                   <a
-                    href="https://www.AIwithArijit.com"
+                    href="https://www.withArijit.com"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all text-center"
@@ -388,7 +388,7 @@ export default function WebinarRatingsPage() {
 
         {/* Footer */}
         <p className="text-center text-gray-400 text-xs mt-6">
-          © 2025 AIwithArijit.com • oStaran.com
+          © 2025 withArijit.com • oStaran.com
         </p>
       </div>
 

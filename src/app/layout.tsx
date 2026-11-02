@@ -2,21 +2,21 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'AI Certification in 90 Minutes - FREE | AIwithArijit.com',
+  title: 'AI Certification in 90 Minutes - FREE | withArijit.com',
   description: 'Get certified in Agentic AI in just 90 minutes, absolutely FREE! Update your resume, boost your LinkedIn profile, and grab high-paying AI jobs. Training by industry experts & AI researchers.',
-  keywords: 'AI certification, Agentic AI, free AI course, AI training, AI webinar, AI jobs, career in AI, AIwithArijit',
-  authors: [{ name: 'Arijit', url: 'https://AIwithArijit.com' }],
+  keywords: 'AI certification, Agentic AI, free AI course, AI training, AI webinar, AI jobs, career in AI, withArijit',
+  authors: [{ name: 'Arijit', url: 'https://withArijit.com' }],
   openGraph: {
-    title: 'FREE AI Certification in 90 Minutes | AIwithArijit.com',
+    title: 'FREE AI Certification in 90 Minutes | withArijit.com',
     description: 'Get certified in Agentic AI in just 90 minutes, absolutely FREE! Boost your career with AI skills.',
-    url: 'https://AIwithArijit.com',
-    siteName: 'AIwithArijit.com',
+    url: 'https://withArijit.com',
+    siteName: 'withArijit.com',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'AI Certification by AIwithArijit.com',
+        alt: 'AI Certification by withArijit.com',
       },
     ],
     locale: 'en_IN',

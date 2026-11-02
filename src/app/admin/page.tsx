@@ -915,7 +915,7 @@ export default function AdminPage() {
               <span className="text-white text-2xl font-bold">AI</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-            <p className="text-gray-500 text-sm mt-1">AIwithArijit.com Webinar Dashboard</p>
+            <p className="text-gray-500 text-sm mt-1">withArijit.com Webinar Dashboard</p>
           </div>
           
           <form onSubmit={handleLogin} className="space-y-4">
@@ -965,7 +965,7 @@ export default function AdminPage() {
             </div>
             <div>
               <h1 className="font-bold text-gray-900">Webinar Admin</h1>
-              <p className="text-xs text-gray-500">AIwithArijit.com</p>
+              <p className="text-xs text-gray-500">withArijit.com</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -1542,7 +1542,7 @@ export default function AdminPage() {
                               <span className="text-gray-600">{r.email}</span>
                               {r.email && (
                                 <a
-                                  href={`mailto:${r.email}?subject=Thanks for attending AIwithArijit Webinar&body=Hi ${r.full_name || ''},%0D%0A%0D%0AThanks for your rating!%0D%0A%0D%0ARegards,%0D%0ATeam AIwithArijit`}
+                                  href={`mailto:${r.email}?subject=Thanks for attending withArijit Webinar&body=Hi ${r.full_name || ''},%0D%0A%0D%0AThanks for your rating!%0D%0A%0D%0ARegards,%0D%0ATeam withArijit`}
                                   className="inline-flex items-center justify-center w-7 h-7 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full transition-colors"
                                   title="Send Email"
                                 >
@@ -1570,7 +1570,7 @@ export default function AdminPage() {
                                   </a>
                                   {/* WhatsApp Button */}
                                   <a
-                                    href={`https://wa.me/${r.mobile.replace(/[^0-9]/g, '').replace(/^0+/, '91')}?text=${encodeURIComponent(`Hi ${r.full_name || ''}!\n\nThanks for your Rating! 🙏\n\nRegards,\nTeam AIwithArijit\n🌐 AIwithArijit.com`)}`}
+                                    href={`https://wa.me/${r.mobile.replace(/[^0-9]/g, '').replace(/^0+/, '91')}?text=${encodeURIComponent(`Hi ${r.full_name || ''}!\n\nThanks for your Rating! 🙏\n\nRegards,\nTeam withArijit\n🌐 withArijit.com`)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center justify-center w-7 h-7 bg-emerald-100 hover:bg-emerald-200 text-emerald-600 rounded-full transition-colors"
@@ -2043,8 +2043,8 @@ export default function AdminPage() {
                           const oStaranImg = emailShowOStaran ? `<span style="background:#000;border-radius:6px;padding:2px 8px;display:inline-block;vertical-align:middle;margin:0 8px;"><img src="/oStaran.png" alt="oStaran" height="36" border="0"/></span>` : ''
                           const logoHeader = (emailShowAIWA || emailShowOStaran)
                             ? `<div style="margin-bottom:8px;">${aiwaImg}${oStaranImg}</div>`
-                            : `<div style="color:#fff;font-size:20px;font-weight:700;">🤖 AIwithArijit</div>`
-                          const trainerCard = emailShowTrainer ? `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;margin:0 0 20px;"><tr><td width="68" style="padding:14px;" valign="middle"><img src="/trainer-arijit.jpg" width="54" height="54" style="border-radius:50%;display:block;border:2px solid #e0e7ff;" border="0"/></td><td style="padding:14px 14px 14px 0;" valign="middle"><div style="font-size:13px;font-weight:700;color:#111827;">Arijit Chowdhury</div><div style="font-size:11px;color:#4f46e5;margin-top:2px;">AI Trainer &amp; Educator</div><div style="font-size:11px;color:#6b7280;margin-top:4px;"><a href="https://aiwitharijit.com" style="color:#4f46e5;text-decoration:none;">aiwitharijit.com</a></div></td></tr></table>` : ''
+                            : `<div style="color:#fff;font-size:20px;font-weight:700;">🤖 withArijit</div>`
+                          const trainerCard = emailShowTrainer ? `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;margin:0 0 20px;"><tr><td width="68" style="padding:14px;" valign="middle"><img src="/trainer-arijit.jpg" width="54" height="54" style="border-radius:50%;display:block;border:2px solid #e0e7ff;" border="0"/></td><td style="padding:14px 14px 14px 0;" valign="middle"><div style="font-size:13px;font-weight:700;color:#111827;">Arijit Chowdhury</div><div style="font-size:11px;color:#4f46e5;margin-top:2px;">AI Trainer &amp; Educator</div><div style="font-size:11px;color:#6b7280;margin-top:4px;"><a href="https://witharijit.com" style="color:#4f46e5;text-decoration:none;">witharijit.com</a></div></td></tr></table>` : ''
                           // Minimal per-template preview body
                           const name = s?.name || 'Rahul Sharma'
                           const course = s?.course_name || 'AI Fundamentals'
@@ -2073,7 +2073,7 @@ export default function AdminPage() {
                             // Default: webinar_reminder
                             bodyContent = `<p style="font-size:17px;font-weight:700;color:#111827;margin:0 0 10px;">Hi ${name} ${em?'👋':''}</p><p style="font-size:14px;color:#374151;line-height:1.7;margin:0 0 12px;">Your webinar is <strong>tomorrow</strong>! ${em?'🎯':''}</p>${customBlock}${detailsCard}${badgesSection}${ctaBtn(em?'🎯 Join Webinar Now':'Join Webinar Now',emailJoiningLink)}${emailJoiningLink&&TEMPLATE_CATALOGUE[selectedTemplate].hasICS?`<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:12px 16px;margin-top:14px;font-size:12px;color:#92400e;">${em?'💡 ':''}Calendar invite (.ics) is attached!</div>`:''}`
                           }
-                          return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:12px;background:#f0f0f5;font-family:Arial,sans-serif;"><div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(79,70,229,0.1);"><div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:22px;text-align:center;">${logoHeader}<div style="color:rgba(255,255,255,0.65);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-top:6px;">AI Education &amp; Certification</div></div><div style="padding:22px 22px 8px;">${bodyContent}</div>${trainerCard?`<div style="padding:0 22px 16px;">${trainerCard}</div>`:''}<div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:18px;text-align:center;font-size:11px;color:#9ca3af;">© 2025 AIwithArijit.com</div></div></body></html>`
+                          return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:12px;background:#f0f0f5;font-family:Arial,sans-serif;"><div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(79,70,229,0.1);"><div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:22px;text-align:center;">${logoHeader}<div style="color:rgba(255,255,255,0.65);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-top:6px;">AI Education &amp; Certification</div></div><div style="padding:22px 22px 8px;">${bodyContent}</div>${trainerCard?`<div style="padding:0 22px 16px;">${trainerCard}</div>`:''}<div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:18px;text-align:center;font-size:11px;color:#9ca3af;">© 2025 withArijit.com</div></div></body></html>`
                         })()}
                       />
                     </div>

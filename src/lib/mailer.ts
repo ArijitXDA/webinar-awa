@@ -76,7 +76,7 @@ export interface SendResult {
  * Any other error (bad auth, bad address, network) is re-thrown immediately.
  */
 export async function sendMailWithFallback(options: MailOptions): Promise<SendResult> {
-  const fromName  = process.env.SMTP_FROM_NAME || 'AIwithArijit'
+  const fromName  = process.env.SMTP_FROM_NAME || 'withArijit'
 
   // Hostinger FROM: ai@withArijit.com  (existing, verified)
   const hostingerFrom = `"${fromName}" <${process.env.SMTP_USER}>`

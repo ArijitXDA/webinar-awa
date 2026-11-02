@@ -20,7 +20,7 @@ export const BRAND = {
     photoUrl: `${BASE_URL}/trainer-arijit.jpg`,
     name: 'Arijit Chowdhury',
     title: 'AI Trainer & Educator',
-    website: 'aiwitharijit.com',
+    website: 'witharijit.com',
   },
 }
 
@@ -109,7 +109,7 @@ export const TEMPLATE_CATALOGUE = {
   custom_broadcast: {
     label: '📢 Custom Broadcast',
     category: 'custom' as const,
-    defaultSubject: 'A message from AIwithArijit',
+    defaultSubject: 'A message from withArijit',
     fields: ['custom_message', 'cta_label', 'cta_url'] as const,
     hasICS: false,
     description: 'Free-form email with branded header/footer and optional CTA button',

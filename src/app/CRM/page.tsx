@@ -249,7 +249,7 @@ export default function CRMLoginPage() {
             <span className="text-amber-400">o</span>CRM
           </h1>
           <p className="text-slate-400 text-sm">Customer Relationship Management</p>
-          <p className="text-amber-500/60 text-xs mt-1 font-medium">by AIwithArijit.com</p>
+          <p className="text-amber-500/60 text-xs mt-1 font-medium">by withArijit.com</p>
         </div>
 
         {/* Login Card */}
@@ -386,7 +386,7 @@ export default function CRMLoginPage() {
 
         {/* Version */}
         <p className="text-center text-slate-600 text-xs mt-4">
-          oCRM v1.0 • © 2025 AIwithArijit.com
+          oCRM v1.0 • © 2025 withArijit.com
         </p>
       </div>
     </div>

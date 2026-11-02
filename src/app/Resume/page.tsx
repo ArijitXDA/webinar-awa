@@ -532,7 +532,7 @@ export default function ResumePage() {
                 Stand out in the era of AI-first hiring and command <strong>30-50% higher salaries</strong>.
               </p>
               <a
-                href="https://AIwithArijit.com"
+                href="https://withArijit.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl hover:shadow-lg transition-all"
@@ -544,11 +544,11 @@ export default function ResumePage() {
             {/* Social Links */}
             <div className="flex justify-center gap-4">
               <a
-                href="https://AIwithArijit.com"
+                href="https://withArijit.com"
                 target="_blank"
                 className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors"
               >
-                🌐 AIwithArijit.com
+                🌐 withArijit.com
               </a>
               <a
                 href="https://www.linkedin.com/in/arijit-chowdhury-86020b19/"
@@ -1102,10 +1102,10 @@ export default function ResumePage() {
             <span className="text-white font-semibold">WithArijit.com</span>
           </div>
           <p className="text-indigo-300 text-sm">
-            © {new Date().getFullYear()} AIwithArijit.com • AI & Agentic AI Training
+            © {new Date().getFullYear()} withArijit.com • AI & Agentic AI Training
           </p>
           <div className="flex justify-center gap-4 mt-4">
-            <a href="https://AIwithArijit.com" className="text-indigo-400 hover:text-white text-sm">Website</a>
+            <a href="https://withArijit.com" className="text-indigo-400 hover:text-white text-sm">Website</a>
             <a href="https://www.linkedin.com/in/arijit-chowdhury-86020b19/" className="text-indigo-400 hover:text-white text-sm">LinkedIn</a>
           </div>
         </div>
