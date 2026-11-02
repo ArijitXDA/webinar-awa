@@ -237,7 +237,7 @@ export default function WhatsAppTemplatesPage() {
       .replace(/\{\{lead\.full_name\}\}/g, 'John Doe')
       .replace(/\{\{lead\.course\}\}/g, 'AI Fundamentals')
       .replace(/\{\{employee\.full_name\}\}/g, currentUser?.full_name || 'Team Member')
-      .replace(/\{\{company\.name\}\}/g, 'AIwithArijit')
+      .replace(/\{\{company\.name\}\}/g, 'withArijit')
     return preview
   }
 
@@ -404,7 +404,7 @@ export default function WhatsAppTemplatesPage() {
                     </button>
                   ))}
                 </div>
-                <textarea value={form.template_content} onChange={(e) => setForm({ ...form, template_content: e.target.value })} rows={6} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white resize-none" placeholder="Hi {{lead.full_name}}! Welcome to AIwithArijit..." />
+                <textarea value={form.template_content} onChange={(e) => setForm({ ...form, template_content: e.target.value })} rows={6} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white resize-none" placeholder="Hi {{lead.full_name}}! Welcome to withArijit..." />
               </div>
 
               <div className="flex items-center gap-3">
@@ -421,7 +421,7 @@ export default function WhatsAppTemplatesPage() {
                       .replace(/\{\{lead\.full_name\}\}/g, 'John Doe')
                       .replace(/\{\{lead\.course\}\}/g, 'AI Fundamentals')
                       .replace(/\{\{employee\.full_name\}\}/g, currentUser?.full_name || 'Team Member')
-                      .replace(/\{\{company\.name\}\}/g, 'AIwithArijit')
+                      .replace(/\{\{company\.name\}\}/g, 'withArijit')
                     }
                   </p>
                 </div>

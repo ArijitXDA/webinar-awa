@@ -511,7 +511,7 @@ export default function Home() {
         <div className="max-w-lg mx-auto">
           {/* Logo */}
           <div className="flex items-center justify-center gap-3 mb-3">
-            {/* AIwithArijit.com Logo */}
+            {/* withArijit.com Logo */}
             <div className="flex items-center gap-1.5">
               <div className="w-7 h-7 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-md flex items-center justify-center text-white font-bold text-xs shadow-md shadow-blue-500/30">
                 AI
@@ -1025,7 +1025,7 @@ export default function Home() {
       <footer className="relative z-10 py-4 px-4 border-t border-gray-100 bg-white/50">
         <div className="max-w-lg mx-auto text-center">
           <p className="text-xs text-gray-500">
-            © 2025 AIwithArijit.com | <a href="mailto:AI@withArijit.com" className="text-indigo-600 hover:underline">AI@withArijit.com</a>
+            © 2025 withArijit.com | <a href="mailto:AI@withArijit.com" className="text-indigo-600 hover:underline">AI@withArijit.com</a>
           </p>
           <p className="text-xs text-gray-400 mt-1">
             Star Analytix • oStaran
@@ -1149,7 +1149,7 @@ export default function Home() {
                   )}
 
                   <p className="text-[11px] text-gray-500 leading-relaxed">
-                    By registering, you agree to receive webinar reminders &amp; AI course updates from <span className="font-semibold">oStaran / AIwithArijit (Star Analytix Pvt Ltd)</span> on WhatsApp &amp; email, and to our{' '}
+                    By registering, you agree to receive webinar reminders &amp; AI course updates from <span className="font-semibold">oStaran / withArijit (Star Analytix Pvt Ltd)</span> on WhatsApp &amp; email, and to our{' '}
                     <a href="https://www.ostaran.com/terms" target="_blank" rel="noreferrer" className="underline">Terms</a> and{' '}
                     <a href="https://www.ostaran.com/privacy" target="_blank" rel="noreferrer" className="underline">Privacy Policy</a>. This live session is recorded.
                   </p>
@@ -1218,9 +1218,9 @@ export default function Home() {
                   <button onClick={closeModal} className="w-full py-3 rounded-xl font-semibold text-white bg-gray-700 hover:bg-gray-800 shadow-lg transition-all">
                     Done
                   </button>
-                  <a href="https://www.AIwithArijit.com" target="_blank" rel="noopener noreferrer"
+                  <a href="https://www.withArijit.com" target="_blank" rel="noopener noreferrer"
                     className="w-full py-2 rounded-lg font-medium text-indigo-600 text-sm bg-indigo-50 hover:bg-indigo-100 flex items-center justify-center gap-1 transition-colors">
-                    Visit www.AIwithArijit.com →
+                    Visit www.withArijit.com →
                   </a>
                 </div>
               )}

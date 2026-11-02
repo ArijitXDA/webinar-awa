@@ -1,6 +1,6 @@
 -- =====================================================
 -- SUPABASE SQL SCRIPT FOR AI WEBINAR LANDING PAGE
--- AIwithArijit.com - QR Code Landing Page Tables
+-- withArijit.com - QR Code Landing Page Tables
 -- VERSION 2.0 - With Admin & UTM Management
 -- =====================================================
 
@@ -229,7 +229,7 @@ INSERT INTO QR_landing_webinar_links (
     NULL,
     true,
     'Master Agentic AI concepts and learn how AI Agents are transforming businesses. Understand how to leverage AI in your current role and boost your career prospects.',
-    '["Official AI Certification from AIwithArijit.com", "Opportunity to build AI Agents yourself", "Training by Industry Experts & AI Researchers", "Chance to join the full-length AI Program at discounted rates", "Lifetime FREE access to AI Library, Books & Articles", "Resume & LinkedIn Profile Enhancement Tips", "Access to Exclusive AI Job Opportunities"]'::jsonb,
+    '["Official AI Certification from withArijit.com", "Opportunity to build AI Agents yourself", "Training by Industry Experts & AI Researchers", "Chance to join the full-length AI Program at discounted rates", "Lifetime FREE access to AI Library, Books & Articles", "Resume & LinkedIn Profile Enhancement Tips", "Access to Exclusive AI Job Opportunities"]'::jsonb,
     1
 ),
 (

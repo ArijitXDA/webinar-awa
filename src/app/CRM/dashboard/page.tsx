@@ -204,7 +204,7 @@ export default function DashboardPage() {
       case 'employee.full_name':
         return currentUser?.full_name || ''
       case 'company.name':
-        return 'AIwithArijit'
+        return 'withArijit'
       default:
         return dynamicFields[placeholder] || `{{${placeholder}}}`
     }
@@ -290,7 +290,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h1 className="text-white font-bold">oCRM Dashboard</h1>
-                <p className="text-slate-400 text-xs">AIwithArijit.com</p>
+                <p className="text-slate-400 text-xs">withArijit.com</p>
               </div>
             </div>
 

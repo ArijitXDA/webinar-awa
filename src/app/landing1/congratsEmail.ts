@@ -150,7 +150,7 @@ export function buildCongratsEmail(input: {
     </td></tr>
 
     <tr><td style="padding:16px 36px;background:#f8fafc;border-top:1px solid #e5e9f0;">
-      <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.6;">You are receiving this because you registered for a free oStaran AI webinar. AIwithArijit and oStaran are education brands of Star Analytix.</p>
+      <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.6;">You are receiving this because you registered for a free oStaran AI webinar. withArijit and oStaran are education brands of Star Analytix.</p>
     </td></tr>
 
   </table>

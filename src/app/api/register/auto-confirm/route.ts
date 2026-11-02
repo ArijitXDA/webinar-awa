@@ -85,11 +85,11 @@ export async function POST(req: NextRequest) {
   const attachments: MailOptions['attachments'] = []
   if (webinar_date && webinar_time) {
     const icsContent = generateICS({
-      title: `AIwithArijit Webinar: ${course_name || 'AI Certification'}`,
-      description: `You're registered for the ${course_name || 'AI Certification'} webinar.\n\nHosted by AIwithArijit.com`,
+      title: `withArijit Webinar: ${course_name || 'AI Certification'}`,
+      description: `You're registered for the ${course_name || 'AI Certification'} webinar.\n\nHosted by withArijit.com`,
       location: 'Online (link will be shared before the webinar)',
-      organizerEmail: process.env.SMTP_USER || 'ai@aiwitharijit.com',
-      organizerName: 'AIwithArijit',
+      organizerEmail: process.env.SMTP_USER || 'ai@witharijit.com',
+      organizerName: 'withArijit',
       attendeeEmail: email,
       attendeeName: recipientName,
       dateStr: webinar_date,

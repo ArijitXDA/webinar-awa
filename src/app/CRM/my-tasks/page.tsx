@@ -286,7 +286,7 @@ export default function MyTasksPage() {
       case 'employee.full_name':
         return currentUser?.full_name || ''
       case 'company.name':
-        return 'AIwithArijit'
+        return 'withArijit'
       default:
         return dynamicFields[placeholder] || `{{${placeholder}}}`
     }

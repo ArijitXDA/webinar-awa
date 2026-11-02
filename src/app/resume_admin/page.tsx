@@ -238,7 +238,7 @@ export default function ResumeAdminPage() {
               <span className="text-white text-2xl">📄</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Resume Admin</h1>
-            <p className="text-gray-500 text-sm mt-1">AIwithArijit.com Repository</p>
+            <p className="text-gray-500 text-sm mt-1">withArijit.com Repository</p>
           </div>
           
           <form onSubmit={handleLogin} className="space-y-4">
@@ -286,7 +286,7 @@ export default function ResumeAdminPage() {
             </div>
             <div>
               <h1 className="font-bold text-gray-900">Resume Repository Admin</h1>
-              <p className="text-xs text-gray-500">AIwithArijit.com</p>
+              <p className="text-xs text-gray-500">withArijit.com</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -491,7 +491,7 @@ export default function ResumeAdminPage() {
                               <span className="text-xs">📞</span>
                             </a>
                             <a
-                              href={`https://wa.me/${r.mobile.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${r.full_name}!\n\nThanks for uploading your resume to AIwithArijit.com\n\nRegards,\nTeam AIwithArijit`)}`}
+                              href={`https://wa.me/${r.mobile.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${r.full_name}!\n\nThanks for uploading your resume to withArijit.com\n\nRegards,\nTeam withArijit`)}`}
                               target="_blank"
                               className="w-5 h-5 bg-emerald-100 hover:bg-emerald-200 text-emerald-600 rounded flex items-center justify-center"
                               title="WhatsApp"

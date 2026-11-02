@@ -521,7 +521,7 @@ export default function LeadsPage() {
       case 'employee.full_name':
         return currentUser?.full_name || ''
       case 'company.name':
-        return 'AIwithArijit'
+        return 'withArijit'
       default:
         return dynamicFields[placeholder] || `{{${placeholder}}}`
     }
@@ -558,7 +558,7 @@ export default function LeadsPage() {
 
   function sendEmail(lead: Lead) {
     if (lead.email) {
-      window.open(`mailto:${lead.email}?subject=Follow-up from AIwithArijit`, '_self')
+      window.open(`mailto:${lead.email}?subject=Follow-up from withArijit`, '_self')
     }
   }
 

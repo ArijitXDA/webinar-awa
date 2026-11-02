@@ -118,7 +118,7 @@ function renderTrainerCard(emoji = true): string {
             <div style="font-size:14px;font-weight:700;color:#111827;">${BRAND.trainer.name}</div>
             <div style="font-size:12px;color:#4f46e5;margin-top:2px;">${BRAND.trainer.title}</div>
             <div style="font-size:12px;color:#6b7280;margin-top:6px;line-height:1.5;">
-              ${maybeStrip('🌐', emoji)} <a href="https://aiwitharijit.com" style="color:#4f46e5;text-decoration:none;">aiwitharijit.com</a>
+              ${maybeStrip('🌐', emoji)} <a href="https://witharijit.com" style="color:#4f46e5;text-decoration:none;">witharijit.com</a>
               &nbsp;·&nbsp;
               ${maybeStrip('📧', emoji)} <a href="mailto:ai@withArijit.com" style="color:#4f46e5;text-decoration:none;">ai@withArijit.com</a>
             </div>
@@ -184,7 +184,7 @@ function wrapLayout(bodyRows: string, preheader = ''): string {
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>AIwithArijit</title>
+  <title>withArijit</title>
 </head>
 <body style="margin:0;padding:0;background:#f0f0f5;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;">
   ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;">${preheader} &zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;</div>` : ''}
@@ -197,11 +197,11 @@ function wrapLayout(bodyRows: string, preheader = ''): string {
         <tr>
           <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:24px 40px;text-align:center;">
             <p style="margin:0 0 6px;color:#6b7280;font-size:12px;">
-              © 2025 AIwithArijit.com &nbsp;·&nbsp;
+              © 2025 withArijit.com &nbsp;·&nbsp;
               <a href="mailto:ai@withArijit.com" style="color:#4f46e5;text-decoration:none;">ai@withArijit.com</a>
             </p>
             <p style="margin:0;color:#9ca3af;font-size:11px;line-height:1.5;">
-              You received this because you registered for an AIwithArijit webinar.
+              You received this because you registered for an withArijit webinar.
             </p>
           </td>
         </tr>
